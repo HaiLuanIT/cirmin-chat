@@ -1,0 +1,6 @@
+@Moji.API_HostAddress = http://localhost:5008
+
+GET {{Moji.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
