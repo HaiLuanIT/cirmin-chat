@@ -22,7 +22,7 @@ public static class ApplicationServiceExtensions
 
     public static IServiceCollection AddServiceServices(this IServiceCollection services)
     {
-        
+        services.AddSingleton(TimeProvider.System);
         return services;
     }
 
