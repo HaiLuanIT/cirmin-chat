@@ -16,7 +16,6 @@ builder.Services.AddServiceServices();
 builder.Services.AddRepositoryServices();
 
 //add signalR
-builder.Services.AddSignalR();
 
 //add db
 builder.Services.AddDatabaseServices(builder.Configuration);
@@ -33,7 +32,8 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger(); //create file swagger.json
+    app.UseSwaggerUI(); //show swagger ui
 }
 
 app.UseHttpsRedirection();
