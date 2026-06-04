@@ -21,8 +21,4 @@
       <ProjectReference Include="..\Moji.BusinessLogic\Moji.BusinessLogic.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Controllers\" />
-    </ItemGroup>
-
 </Project>

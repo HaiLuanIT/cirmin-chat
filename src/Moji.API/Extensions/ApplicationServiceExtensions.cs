@@ -1,3 +1,7 @@
+using Moji.BusinessLogic.Services.Auth;
+using Moji.DataAccess.Repositories;
+using Moji.DataAccess.Repositories.Impl;
+
 namespace Moji.API.Extensions;
 
 public static class ApplicationServiceExtensions
@@ -23,11 +27,19 @@ public static class ApplicationServiceExtensions
     public static IServiceCollection AddServiceServices(this IServiceCollection services)
     {
         services.AddSingleton(TimeProvider.System);
+        
+        //config services
+        services.AddScoped<IPasswordHasher, PasswordHasher>();
+        services.AddScoped<ITokenService, TokenService>();
+        services.AddScoped<IAuthService, AuthService>();
+        
         return services;
     }
 
     public static IServiceCollection AddRepositoryServices(this IServiceCollection services)
     {
+        //config repositories
+        services.AddScoped<IUserRepository, UserRepository>();
         return services;
     }
 }
