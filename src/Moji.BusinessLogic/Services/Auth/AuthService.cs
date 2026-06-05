@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Configuration;
 using Moji.BusinessLogic.Models.Auth;
 using Moji.DataAccess.Entities;
 using Moji.DataAccess.Repositories;
@@ -9,12 +10,14 @@ public class AuthService : IAuthService
     private readonly IUserRepository _userRepository;
     private readonly IPasswordHasher _passwordHasher;
     private readonly ITokenService _tokenService;
+    private readonly IConfiguration _configuration;
 
-    public AuthService(IUserRepository userRepository, IPasswordHasher passwordHasher, ITokenService tokenService)
+    public AuthService(IUserRepository userRepository, IPasswordHasher passwordHasher, ITokenService tokenService, IConfiguration configuration)
     {
         _userRepository = userRepository;
         _passwordHasher = passwordHasher;
         _tokenService = tokenService;
+        _configuration = configuration;
     }
 
     public async Task SignUp(RegisterRequest request)
@@ -63,6 +66,15 @@ public class AuthService : IAuthService
 
         var refreshToken = _tokenService.GenerateRefreshToken();
 
+        var userToken = new UserToken()
+        {
+            Token = refreshToken,
+            UserId = user.Id,
+            ExpiresAt = DateTimeOffset.Now.AddDays(double.Parse(_configuration["Jwt:RefreshTokenExpirationInDays"] ??
+                                                                "15")).ToUniversalTime()
+        };
+        await _userRepository.AddTokenAsync(userToken);
+        
         var authResponse = new AuthResponse
         (
             new UserResponse

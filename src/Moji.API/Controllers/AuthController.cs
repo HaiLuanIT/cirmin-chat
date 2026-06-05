@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Moji.BusinessLogic.Models.Auth;
 using Moji.BusinessLogic.Services.Auth;
@@ -34,5 +35,12 @@ public class AuthController : ControllerBase
    {
        await _authService.SignUp(registerRequest);
        return Ok();
+   }
+   
+   [HttpGet("test")]
+   [Authorize]
+   public async Task<IActionResult> Test()
+   {
+       return Ok(new { Message = "Test" });
    }
 }

@@ -32,4 +32,15 @@ public class UserRepository : IUserRepository
     {
         return !await _context.Users.AnyAsync(x => x.Email == email);
     }
+
+    public async Task AddTokenAsync(UserToken userToken)
+    {
+        await _context.UserTokens.AddAsync(userToken);
+        await _context.SaveChangesAsync();   
+    }
+
+    public async Task<UserToken?> FindTokenAsync(Guid userId)
+    {
+        return await _context.UserTokens.FirstOrDefaultAsync(x => x.UserId == userId);
+    }
 }

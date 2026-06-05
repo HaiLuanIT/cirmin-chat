@@ -12,4 +12,8 @@ public interface IUserRepository
     
     Task<bool> IsEmailUniqueAsync(string email);
     
+    Task AddTokenAsync(UserToken userToken);
+    
+    Task<UserToken?> FindTokenAsync(Guid userId);
+    
 }

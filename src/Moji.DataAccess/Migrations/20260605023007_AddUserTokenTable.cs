@@ -12,7 +12,7 @@ namespace Moji.DataAccess.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "UserToken",
+                name: "UserTokens",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
@@ -27,9 +27,9 @@ namespace Moji.DataAccess.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_UserToken", x => x.Id);
+                    table.PrimaryKey("PK_UserTokens", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_UserToken_Users_UserId",
+                        name: "FK_UserTokens_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "Id",
@@ -37,14 +37,14 @@ namespace Moji.DataAccess.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_UserToken_Token",
-                table: "UserToken",
+                name: "IX_UserTokens_Token",
+                table: "UserTokens",
                 column: "Token",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_UserToken_UserId",
-                table: "UserToken",
+                name: "IX_UserTokens_UserId",
+                table: "UserTokens",
                 column: "UserId");
         }
 
@@ -52,7 +52,7 @@ namespace Moji.DataAccess.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "UserToken");
+                name: "UserTokens");
         }
     }
 }

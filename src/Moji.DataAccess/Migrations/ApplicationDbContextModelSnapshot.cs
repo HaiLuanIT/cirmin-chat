@@ -332,7 +332,7 @@ namespace Moji.DataAccess.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserToken");
+                    b.ToTable("UserTokens");
                 });
 
             modelBuilder.Entity("Moji.DataAccess.Entities.ConversationMember", b =>
