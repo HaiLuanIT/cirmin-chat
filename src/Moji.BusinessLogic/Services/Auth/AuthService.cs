@@ -8,16 +8,19 @@ namespace Moji.BusinessLogic.Services.Auth;
 public class AuthService : IAuthService
 {
     private readonly IUserRepository _userRepository;
+    private readonly IUserTokenRepository _userTokenRepository;
     private readonly IPasswordHasher _passwordHasher;
     private readonly ITokenService _tokenService;
     private readonly IConfiguration _configuration;
 
-    public AuthService(IUserRepository userRepository, IPasswordHasher passwordHasher, ITokenService tokenService, IConfiguration configuration)
+    public AuthService(IUserRepository userRepository, IPasswordHasher passwordHasher, ITokenService tokenService,
+        IConfiguration configuration, IUserTokenRepository userTokenRepository)
     {
         _userRepository = userRepository;
         _passwordHasher = passwordHasher;
         _tokenService = tokenService;
         _configuration = configuration;
+        _userTokenRepository = userTokenRepository;
     }
 
     public async Task SignUp(RegisterRequest request)
@@ -73,8 +76,8 @@ public class AuthService : IAuthService
             ExpiresAt = DateTimeOffset.Now.AddDays(double.Parse(_configuration["Jwt:RefreshTokenExpirationInDays"] ??
                                                                 "15")).ToUniversalTime()
         };
-        await _userRepository.AddTokenAsync(userToken);
-        
+        await _userTokenRepository.AddAsync(userToken);
+
         var authResponse = new AuthResponse
         (
             new UserResponse
@@ -89,5 +92,20 @@ public class AuthService : IAuthService
             refreshToken
         );
         return authResponse;
+    }
+
+    public async Task RevokeRefreshToken(string token)
+    {
+        if (string.IsNullOrEmpty(token))
+        {
+            throw new ArgumentException("Token is empty or invalid");
+        }
+        var userToken = await _userTokenRepository.FindByTokenAsync(token);
+        if (userToken == null || userToken.IsRevoked)
+        {
+            return;
+        }
+        userToken.IsRevoked = true;
+        await _userTokenRepository.RevokeTokenAsync(userToken);
     }
 }

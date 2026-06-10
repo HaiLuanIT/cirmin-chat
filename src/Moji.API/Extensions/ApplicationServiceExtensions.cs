@@ -32,7 +32,6 @@ public static class ApplicationServiceExtensions
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IAuthService, AuthService>();
-        
         return services;
     }
 
@@ -40,6 +39,7 @@ public static class ApplicationServiceExtensions
     {
         //config repositories
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IUserTokenRepository, UserTokenRepository>();
         return services;
     }
 }

@@ -7,4 +7,6 @@ public interface IAuthService
     Task SignUp(RegisterRequest request);
     
     Task<AuthResponse> SignIn(LoginRequest request);
+    
+    Task RevokeRefreshToken(string token);
 }
