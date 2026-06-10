@@ -1,0 +1,111 @@
+using Microsoft.Extensions.Configuration;
+using Moji.BusinessLogic.Models.Auth;
+using Moji.DataAccess.Entities;
+using Moji.DataAccess.Repositories;
+
+namespace Moji.BusinessLogic.Services.Auth;
+
+public class AuthService : IAuthService
+{
+    private readonly IUserRepository _userRepository;
+    private readonly IUserTokenRepository _userTokenRepository;
+    private readonly IPasswordHasher _passwordHasher;
+    private readonly ITokenService _tokenService;
+    private readonly IConfiguration _configuration;
+
+    public AuthService(IUserRepository userRepository, IPasswordHasher passwordHasher, ITokenService tokenService,
+        IConfiguration configuration, IUserTokenRepository userTokenRepository)
+    {
+        _userRepository = userRepository;
+        _passwordHasher = passwordHasher;
+        _tokenService = tokenService;
+        _configuration = configuration;
+        _userTokenRepository = userTokenRepository;
+    }
+
+    public async Task SignUp(RegisterRequest request)
+    {
+        var existedUser = await _userRepository.FindByUserNameAsync(request.UserName);
+        if (existedUser != null)
+        {
+            throw new ApplicationException("Tên tài khoản này đã tồn tại trong hệ thống!");
+        }
+
+        var isEmailUnique = await _userRepository.IsEmailUniqueAsync(request.Email);
+        if (!isEmailUnique)
+        {
+            throw new ApplicationException("Email đã sử dụng!");
+        }
+
+        var hashedPassword = _passwordHasher.HashPassword(request.Password);
+
+        var user = new User()
+        {
+            UserName = request.UserName,
+            HashedPassword = hashedPassword,
+            Email = request.Email,
+            FullName = request.FullName
+        };
+        await _userRepository.AddAsync(user);
+    }
+
+    public async Task<AuthResponse> SignIn(LoginRequest request)
+    {
+        var user = await _userRepository.FindByUserNameAsync(request.Username);
+
+        if (user == null)
+        {
+            throw new UnauthorizedAccessException("Username hoặc password không chính xác!");
+        }
+
+        var isMatchPassword = _passwordHasher.VerifyHashedPassword(user.HashedPassword, request.Password);
+
+        if (!isMatchPassword)
+        {
+            throw new UnauthorizedAccessException("Username hoặc password không chính xác!");
+        }
+
+        var accessToken = _tokenService.GenerateAccessToken(user);
+
+        var refreshToken = _tokenService.GenerateRefreshToken();
+
+        var userToken = new UserToken()
+        {
+            Token = refreshToken,
+            UserId = user.Id,
+            ExpiresAt = DateTimeOffset.Now.AddDays(double.Parse(_configuration["Jwt:RefreshTokenExpirationInDays"] ??
+                                                                "15")).ToUniversalTime()
+        };
+        await _userTokenRepository.AddAsync(userToken);
+
+        var authResponse = new AuthResponse
+        (
+            new UserResponse
+            (
+                user.Id,
+                user.UserName,
+                user.Email,
+                user.FullName,
+                user.AvatarUrl
+            ),
+            accessToken,
+            refreshToken
+        );
+        return authResponse;
+    }
+
+    public async Task RevokeRefreshToken(string token)
+    {
+        if (string.IsNullOrEmpty(token))
+        {
+            throw new ArgumentException("Token is empty or invalid");
+        }
+        var userToken = await _userTokenRepository.FindByTokenAsync(token);
+        if (userToken == null || userToken.IsRevoked)
+        {
+            return;
+        }
+        userToken.IsRevoked = true;
+        await _userTokenRepository.RevokeTokenAsync(userToken);
+    }
+}

@@ -16,6 +16,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<ConversationMember> ConversationMembers { get; set; }
     public DbSet<Message> Messages { get; set; }
     public DbSet<FriendShip> Friendships { get; set; }
+    public DbSet<UserToken> UserTokens { get; set; }
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

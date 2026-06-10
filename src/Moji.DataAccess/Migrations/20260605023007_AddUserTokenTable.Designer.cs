@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Moji.DataAccess.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260605020219_AddUserTokenTable")]
+    [Migration("20260605023007_AddUserTokenTable")]
     partial class AddUserTokenTable
     {
         /// <inheritdoc />
@@ -335,7 +335,7 @@ namespace Moji.DataAccess.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserToken");
+                    b.ToTable("UserTokens");
                 });
 
             modelBuilder.Entity("Moji.DataAccess.Entities.ConversationMember", b =>
