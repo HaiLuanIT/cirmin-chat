@@ -44,7 +44,7 @@ public class AuthService : IAuthService
             UserName = request.UserName,
             HashedPassword = hashedPassword,
             Email = request.Email,
-            FullName = request.FullName
+            FullName = request.FirstName + " " + request.LastName
         };
         await _userRepository.AddAsync(user);
     }
@@ -73,8 +73,8 @@ public class AuthService : IAuthService
         {
             Token = refreshToken,
             UserId = user.Id,
-            ExpiresAt = DateTimeOffset.Now.AddDays(double.Parse(_configuration["Jwt:RefreshTokenExpirationInDays"] ??
-                                                                "15")).ToUniversalTime()
+            ExpiresAt = DateTimeOffset.UtcNow.AddDays(double.Parse(_configuration["Jwt:RefreshTokenExpirationInDays"] ??
+                                                                "15"))
         };
         await _userTokenRepository.AddAsync(userToken);
 
@@ -86,7 +86,10 @@ public class AuthService : IAuthService
                 user.UserName,
                 user.Email,
                 user.FullName,
-                user.AvatarUrl
+                user.AvatarUrl,
+                user.Bio,
+                user.CreatedAt,
+                user.UpdatedAt
             ),
             accessToken,
             refreshToken
@@ -100,12 +103,86 @@ public class AuthService : IAuthService
         {
             throw new ArgumentException("Token is empty or invalid");
         }
+
         var userToken = await _userTokenRepository.FindByTokenAsync(token);
         if (userToken == null || userToken.IsRevoked)
         {
             return;
         }
+
         userToken.IsRevoked = true;
         await _userTokenRepository.RevokeTokenAsync(userToken);
+    }
+
+    public async Task<UserModel> GetUser(Guid id)
+    {
+        var user = await _userRepository.FindByIdAsync(id);
+        if (user == null)
+        {
+            throw new UnauthorizedAccessException();
+        }
+
+        var userModel = new UserModel
+        {
+            Id = user.Id,
+            UserName = user.UserName,
+            Email = user.Email,
+            DisplayName = user.FullName,
+            AvatarUrl = user.AvatarUrl,
+            Bio = user.Bio,
+            CreatedAt = user.CreatedAt,
+            UpdatedAt = user.UpdatedAt
+        };
+        return userModel;
+    }
+
+    public async Task<AuthResponse> RefreshToken(string oldToken)
+    {
+        //1. Find token in db
+        var token = await _userTokenRepository.FindByTokenAsync(oldToken);
+        if (token == null)
+        {
+            throw new UnauthorizedAccessException("Invalid token");
+        }
+
+        //2. Check revoke and expiredTime
+        if (token.IsRevoked || token.ExpiresAt < DateTimeOffset.UtcNow)
+        {
+            throw new ApplicationException("Token is revoked or expired");
+        }
+
+        // find user
+        var user = await _userRepository.FindByIdAsync(token.UserId);
+        if (user == null)
+        {
+            throw new UnauthorizedAccessException("User not found or disabled");
+        }
+        
+        //3. Generate new access token and refresh token
+        var newAccessToken = _tokenService.GenerateAccessToken(user);
+        var newRefreshToken = _tokenService.GenerateRefreshToken();
+        //4. Invalidate old refresh token
+        await RevokeRefreshToken(oldToken);
+
+        //5. Add new token in db
+        var userToken = new UserToken()
+        {
+            Token = newRefreshToken,
+            UserId = user.Id,
+            ExpiresAt = DateTimeOffset.UtcNow.AddDays(double.Parse(_configuration["Jwt:RefreshTokenExpirationInDays"] ??
+                                                                "15"))
+        };
+        await _userTokenRepository.AddAsync(userToken);
+        //6. Create res
+
+        var authResponse = new AuthResponse
+        (
+            new UserResponse(user.Id, user.UserName, user.Email, user.FullName, user.AvatarUrl, user.Bio,
+                user.CreatedAt, user.UpdatedAt),
+            newAccessToken,
+            newRefreshToken
+        );
+        //return res
+        return authResponse;
     }
 }

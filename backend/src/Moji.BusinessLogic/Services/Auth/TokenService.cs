@@ -36,7 +36,7 @@ public class TokenService : ITokenService
             new Claim("FullName", user.FullName ?? string.Empty),
         };
         
-        var expirationMinutes = double.Parse(_configuration["Jwt:ExpirationMinutes"] ?? "15");
+        var expirationMinutes = double.Parse(_configuration["Jwt:AccessTokenExpirationInMinutes"] ?? "15");
 
         var tokenOptions = new JwtSecurityToken(
             issuer: _configuration["Jwt:Issuer"],

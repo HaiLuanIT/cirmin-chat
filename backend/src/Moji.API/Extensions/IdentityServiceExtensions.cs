@@ -18,8 +18,9 @@ public static class IdentityServiceExtensions
                     ValidateAudience = true,
                     ValidIssuer = configuration["Jwt:Issuer"],
                     ValidAudience = configuration["Jwt:Audience"],
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:SecretKey"]!))
-
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:SecretKey"]!)),
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.Zero
                 };
             });
 

@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Moji.BusinessLogic.Models.Auth;
@@ -20,6 +21,13 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> SignIn([FromBody] LoginRequest loginRequest)
     {
         var result = await _authService.SignIn(loginRequest);
+        AppendRefreshTokenCookie(result);
+
+        return Ok(new { User = result.User, AccessToken = result.AccessToken });
+    }
+
+    private void AppendRefreshTokenCookie(AuthResponse result)
+    {
         Response.Cookies.Append("rt", result.RefreshToken, new CookieOptions
         {
             HttpOnly = true,
@@ -27,8 +35,6 @@ public class AuthController : ControllerBase
             SameSite = SameSiteMode.None,
             Expires = DateTimeOffset.Now.AddDays(7)
         });
-
-        return Ok(new { User = result.User, AccessToken = result.AccessToken });
     }
 
     [HttpPost("signup")]
@@ -36,13 +42,6 @@ public class AuthController : ControllerBase
     {
         await _authService.SignUp(registerRequest);
         return Ok();
-    }
-
-    [HttpGet("test")]
-    [Authorize]
-    public async Task<IActionResult> Test()
-    {
-        return Ok(new { Message = "Test" });
     }
 
     [HttpPost("signout")]
@@ -62,5 +61,36 @@ public class AuthController : ControllerBase
             Path = "/"
         });
         return Ok(new { Message = "Đăng xuất thành công!" });
+    }
+
+    [Authorize]
+    [HttpGet("me")]
+    public async Task<IActionResult> FetchMe()
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier);
+        if (userId == null) return Unauthorized();
+        Guid currentUserId = Guid.Parse(userId.Value);
+        var user = await _authService.GetUser(currentUserId);
+        return Ok(user);
+    }
+    
+    [HttpPost("refresh")]
+    public async Task<IActionResult> RefreshToken()
+    {
+        if (!Request.Cookies.TryGetValue("rt", out var oldToken))
+        {
+            return Unauthorized(new { Message = "Phiên đăng nhập đã hết hạn!" });
+        }
+        var result = await _authService.RefreshToken(oldToken);
+        
+        AppendRefreshTokenCookie(result);
+        return Ok(new { User = result.User, AccessToken = result.AccessToken });
+
+    }
+    [Authorize]
+    [HttpGet("test")]
+    public async Task<IActionResult> Test()
+    {
+        return Ok("Test");
     }
 }

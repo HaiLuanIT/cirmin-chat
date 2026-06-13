@@ -9,4 +9,8 @@ public interface IAuthService
     Task<AuthResponse> SignIn(LoginRequest request);
     
     Task RevokeRefreshToken(string token);
+
+    Task<UserModel> GetUser(Guid id);
+    
+    Task<AuthResponse> RefreshToken(string oldToken);
 }
