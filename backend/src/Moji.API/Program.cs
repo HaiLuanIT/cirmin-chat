@@ -30,6 +30,7 @@ builder.Services.AddSwaggerServices();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+app.UseApplicationExceptionHandler();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger(); //create file swagger.json

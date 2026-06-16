@@ -15,7 +15,7 @@ public class FriendShipService
 
     private (Guid,Guid) NormalizeRelationShip(Guid userA, Guid userB)
     {
-        if (userA == userB) throw new Exception("Cannot be friend with yourself");
+        if (userA == userB) throw new ArgumentException("Cannot be friend with yourself");
         var isALessThanB = userA.CompareTo(userB) < 0;
         
         var requester = isALessThanB ? userA : userB;
