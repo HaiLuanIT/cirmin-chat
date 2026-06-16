@@ -1,21 +1,26 @@
 using Moji.DataAccess.Commons;
+using Moji.DataAccess.Commons.Constants;
 
 namespace Moji.DataAccess.Entities;
 
 public class FriendShip : BaseEntity
 {
     public Guid Id { get; set; }
-    
-    public Guid RequesterId { get; set; }
-    
-    public Guid ReceiverId { get; set; }
-    
-    public string Status { get; set; } = "Pending";
-    
-    public string? Message { get; set; }
-    
-    //navigation
-    public virtual User Requester { get; set; } = null!;
 
-    public virtual User Receiver { get; set; } = null!;
+    public Guid UserLeftId { get; set; }
+
+    public Guid UserRightId { get; set; }
+
+    public Guid RequesterId { get; set; }
+
+    public string Status { get; set; } = FriendShipStatus.Pending;
+
+    public string? Message { get; set; }
+
+    //navigation
+    public virtual User UserLeft { get; set; } = null!;
+
+    public virtual User UserRight { get; set; } = null!;
+
+    public virtual User Requester { get; set; } = null!;
 }

@@ -14,7 +14,7 @@ public class Conversation : BaseEntity
   
   public string? LastMessage { get; set; }
   
-  public DateTimeOffset? LastMessageTime { get; set; }
+  public DateTime? LastMessageTime { get; set; }
   
   //navigation
   public virtual ICollection<ConversationMember> Members { get; set; } = new List<ConversationMember>();
