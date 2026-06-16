@@ -1,4 +1,5 @@
 using Moji.BusinessLogic.Services.Auth;
+using Moji.BusinessLogic.Services.Friends;
 using Moji.DataAccess.Repositories;
 using Moji.DataAccess.Repositories.Impl;
 
@@ -32,6 +33,7 @@ public static class ApplicationServiceExtensions
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IFriendShipService, FriendShipService>();
         return services;
     }
 
@@ -40,6 +42,7 @@ public static class ApplicationServiceExtensions
         //config repositories
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IUserTokenRepository, UserTokenRepository>();
+        services.AddScoped<IFriendShipRepository, FriendShipRepository>();
         return services;
     }
 }

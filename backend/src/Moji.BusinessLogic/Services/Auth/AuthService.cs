@@ -74,8 +74,8 @@ public class AuthService : IAuthService
         {
             Token = refreshToken,
             UserId = user.Id,
-            ExpiresAt = DateTimeOffset.UtcNow.AddDays(double.Parse(_configuration["Jwt:RefreshTokenExpirationInDays"] ??
-                                                                "15"))
+            ExpiresAt = DateTime.UtcNow.AddDays(double.Parse(_configuration["Jwt:RefreshTokenExpirationInDays"] ??
+                                                             "15"))
         };
         await _userTokenRepository.AddAsync(userToken);
 
@@ -166,8 +166,8 @@ public class AuthService : IAuthService
         {
             Token = newRefreshToken,
             UserId = user.Id,
-            ExpiresAt = DateTimeOffset.UtcNow.AddDays(double.Parse(_configuration["Jwt:RefreshTokenExpirationInDays"] ??
-                                                                "15"))
+            ExpiresAt = DateTime.UtcNow.AddDays(double.Parse(_configuration["Jwt:RefreshTokenExpirationInDays"] ??
+                                                             "15"))
         };
         await _userTokenRepository.AddAsync(userToken);
         //6. Create res
