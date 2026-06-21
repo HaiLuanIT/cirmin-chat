@@ -64,7 +64,7 @@ public class FriendShipService : IFriendShipService
         if (friendRequest == null) throw new MojiNotFoundException("Friend request not found");
 
         //check permission with friend request
-        if (friendRequest.RequesterId != currentUserId)
+        if (friendRequest.RequesterId == currentUserId)
         {
             throw new MojiForbiddenException("Bạn không có quyền thực hiện hành động này!");
         }

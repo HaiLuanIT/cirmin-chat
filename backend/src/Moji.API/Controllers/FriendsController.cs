@@ -9,11 +9,11 @@ using Moji.DataAccess.Commons.Constants;
 namespace Moji.API.Controllers;
 
 [Authorize]
-public class FriendController : BaseApiController
+public class FriendsController : BaseApiController
 {
     private readonly IFriendShipService _friendShipService;
 
-    public FriendController(IFriendShipService friendShipService)
+    public FriendsController(IFriendShipService friendShipService)
     {
         _friendShipService = friendShipService;
     }
@@ -36,7 +36,7 @@ public class FriendController : BaseApiController
     public async Task<IActionResult> AddFriend([FromBody] FriendRequestModel request)
     {
         await _friendShipService.AddFriend(CurrentUserId, request.ReceiverId, request.Message);
-        return Ok();
+        return StatusCode(201,"Gửi lời mời kết bạn thành công");
     }
     
     [HttpPost("requests/{requestId:Guid}/accept")]
