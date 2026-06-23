@@ -5,17 +5,21 @@ namespace Moji.DataAccess.Repositories;
 
 public interface IFriendShipRepository
 {
-    Task AddAsync(FriendShip friendShip);
+    void Add(FriendShip friendShip);
 
     Task<FriendShip> FindRequestAsync(Guid userLeftId, Guid userRightId);
 
     Task<FriendShip> FindByIdAsync(Guid id);
 
-    Task<bool> UpdateStatus(FriendShip friendShip, string status);
+    void Update(FriendShip friendShip);
+    
+    void Delete(FriendShip friendShip);
 
     Task<List<FriendshipRawData>> GetListFriend(Guid userId);
 
     Task<List<FriendshipRawData>> GetInboundRequestsAsync(Guid userId);
     
     Task<List<FriendshipRawData>> GetOutboundRequestsAsync(Guid userId);
+    
+    Task<bool> IsFriend(Guid userId, Guid friendId);
 }

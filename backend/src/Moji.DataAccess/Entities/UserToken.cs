@@ -8,7 +8,7 @@ public class UserToken : BaseEntity
     
     public string Token { get; set; }
     
-    public DateTime ExpiresAt { get; set; }
+    public DateTimeOffset ExpiresAt { get; set; }
     
     public bool IsRevoked { get; set; }
     

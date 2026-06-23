@@ -12,10 +12,9 @@ public class UserTokenRepository : IUserTokenRepository
         _context = context;
     }
     
-    public async Task AddAsync(UserToken userToken)
+    public void Add(UserToken userToken)
     {
-        await _context.UserTokens.AddAsync(userToken);
-        await _context.SaveChangesAsync();
+         _context.UserTokens.AddAsync(userToken);
     }
 
     public async Task<UserToken?> FindByTokenAsync(string token)
@@ -23,9 +22,8 @@ public class UserTokenRepository : IUserTokenRepository
         return await _context.UserTokens.FirstOrDefaultAsync(x => x.Token == token);
     }
 
-    public async Task<bool> RevokeTokenAsync(UserToken token)
+    public void RevokeToken(UserToken token)
     {
         _context.UserTokens.Update(token);
-        return await _context.SaveChangesAsync() > 0;
     }
 }

@@ -13,7 +13,7 @@ public class ConversationMember : BaseEntity
     public long LastSeenMessageId { get; set; }
     
     //time join conversation
-    public DateTime JoinedAt { get; set; }
+    public DateTimeOffset JoinedAt { get; set; }
     
     //navigation
     public virtual Conversation Conversation { get; set; } = null!;

@@ -6,9 +6,11 @@ public interface IFriendShipService
 {
     Task AddFriend(Guid currentUserId, Guid receiverId, string message);
 
-    Task<bool> ResponseFriendRequest(Guid currentUserId, Guid friendRequestId, string status);
+    Task ProcessFriendRequest(Guid currentUserId, Guid friendRequestId, bool isAccepted);
     
     Task<List<FriendResponse>> GetFriendList(Guid userId);
 
     Task<FriendRequestListResponse> GetFriendRequestList(Guid userId);
+    
+    Task<bool> IsFriend(Guid userId, Guid friendId);
 }

@@ -42,14 +42,14 @@ public class FriendsController : BaseApiController
     [HttpPost("requests/{requestId:Guid}/accept")]
     public async Task<IActionResult> AcceptFriendRequest([FromRoute] Guid requestId)
     {
-        await _friendShipService.ResponseFriendRequest(CurrentUserId, requestId, FriendShipStatus.Accept);
+        await _friendShipService.ProcessFriendRequest(CurrentUserId, requestId, true);
         return Ok(new { message = "Đã chấp nhận lời mời kết bạn!" });
     }
     
     [HttpPost("requests/{requestId:Guid}/reject")]
     public async Task<IActionResult> RejectFriendRequest([FromRoute] Guid requestId)
     {
-        await _friendShipService.ResponseFriendRequest(CurrentUserId, requestId, FriendShipStatus.Reject);
+        await _friendShipService.ProcessFriendRequest(CurrentUserId, requestId, false);
         return Ok(new { message = "Đã từ chối lời mời kết bạn!" });
     }
 }

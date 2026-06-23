@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Moji.BusinessLogic.Exceptions;
 using Moji.BusinessLogic.Models.Auth;
+using Moji.DataAccess.Commons.DbTransactionManagers;
 using Moji.DataAccess.Entities;
 using Moji.DataAccess.Repositories;
 
@@ -13,15 +14,17 @@ public class AuthService : IAuthService
     private readonly IPasswordHasher _passwordHasher;
     private readonly ITokenService _tokenService;
     private readonly IConfiguration _configuration;
+    private readonly IDbTransactionManager _txManager;
 
     public AuthService(IUserRepository userRepository, IPasswordHasher passwordHasher, ITokenService tokenService,
-        IConfiguration configuration, IUserTokenRepository userTokenRepository)
+        IConfiguration configuration, IUserTokenRepository userTokenRepository, IDbTransactionManager txManager)
     {
         _userRepository = userRepository;
         _passwordHasher = passwordHasher;
         _tokenService = tokenService;
         _configuration = configuration;
         _userTokenRepository = userTokenRepository;
+        _txManager = txManager;
     }
 
     public async Task SignUp(RegisterRequest request)
@@ -47,7 +50,8 @@ public class AuthService : IAuthService
             Email = request.Email,
             FullName = request.FirstName + " " + request.LastName
         };
-        await _userRepository.AddAsync(user);
+         _userRepository.Add(user);
+         await _txManager.SaveChangesAsync();
     }
 
     public async Task<AuthResponse> SignIn(LoginRequest request)
@@ -74,10 +78,11 @@ public class AuthService : IAuthService
         {
             Token = refreshToken,
             UserId = user.Id,
-            ExpiresAt = DateTime.UtcNow.AddDays(double.Parse(_configuration["Jwt:RefreshTokenExpirationInDays"] ??
+            ExpiresAt = DateTimeOffset.UtcNow.AddDays(double.Parse(_configuration["Jwt:RefreshTokenExpirationInDays"] ??
                                                              "15"))
         };
-        await _userTokenRepository.AddAsync(userToken);
+        _userTokenRepository.Add(userToken);
+        await _txManager.SaveChangesAsync();
 
         var authResponse = new AuthResponse
         (
@@ -105,10 +110,10 @@ public class AuthService : IAuthService
         {
             return;
         }
-
-        userToken.ExpiresAt = DateTime.UtcNow;
+        
         userToken.IsRevoked = true;
-        await _userTokenRepository.RevokeTokenAsync(userToken);
+        _userTokenRepository.RevokeToken(userToken);
+        await _txManager.SaveChangesAsync();
     }
 
     public async Task<UserModel> GetUser(Guid id)
@@ -166,10 +171,11 @@ public class AuthService : IAuthService
         {
             Token = newRefreshToken,
             UserId = user.Id,
-            ExpiresAt = DateTime.UtcNow.AddDays(double.Parse(_configuration["Jwt:RefreshTokenExpirationInDays"] ??
+            ExpiresAt = DateTimeOffset.UtcNow.AddDays(double.Parse(_configuration["Jwt:RefreshTokenExpirationInDays"] ??
                                                              "15"))
         };
-        await _userTokenRepository.AddAsync(userToken);
+         _userTokenRepository.Add(userToken);
+         await _txManager.SaveChangesAsync();
         //6. Create res
 
         var authResponse = new AuthResponse

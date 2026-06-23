@@ -15,16 +15,21 @@ public class FriendShipRepository : IFriendShipRepository
         _context = context;
     }
 
-    public async Task AddAsync(FriendShip friendShip)
+    public void Add(FriendShip friendShip)
     {
-        await _context.Friendships.AddAsync(friendShip);
-        await _context.SaveChangesAsync();
+        var (userLeftNormalize, userRightNormalize) = NormalizeRelationShip(friendShip.UserLeftId, friendShip.UserRightId);
+        
+        friendShip.UserLeftId = userLeftNormalize;
+        friendShip.UserRightId = userRightNormalize;
+        
+         _context.Friendships.Add(friendShip);
     }
 
     public async Task<FriendShip> FindRequestAsync(Guid userLeftId, Guid userRightId)
     {
+        var (userLeftNormalize, userRightNormalize) = NormalizeRelationShip(userLeftId, userRightId);
         return await _context.Friendships
-            .FirstOrDefaultAsync(x => x.UserLeftId == userLeftId && x.UserRightId == userRightId);
+            .FirstOrDefaultAsync(x => x.UserLeftId == userLeftNormalize && x.UserRightId == userRightNormalize);
     }
 
     public async Task<FriendShip> FindByIdAsync(Guid id)
@@ -32,11 +37,14 @@ public class FriendShipRepository : IFriendShipRepository
         return await _context.Friendships.FirstOrDefaultAsync(x => x.Id == id);
     }
 
-    public async Task<bool> UpdateStatus(FriendShip friendShip, string status)
+    public void Update(FriendShip friendShip)
     {
-        friendShip.Status = status;
-        _context.Friendships.Update(friendShip);
-        return await _context.SaveChangesAsync() > 0;
+        _context.Entry(friendShip).State = EntityState.Modified;
+    }
+
+    public void Delete(FriendShip friendShip)
+    {
+        _context.Friendships.Remove(friendShip);
     }
 
     public async Task<List<FriendshipRawData>> GetListFriend(Guid userId)
@@ -82,5 +90,24 @@ public class FriendShipRepository : IFriendShipRepository
             .ToListAsync();
 
         return result;
+    }
+
+    public async Task<bool> IsFriend(Guid userId, Guid friendId)
+    {
+        var (userLeftNormalize, userRightNormalize) = NormalizeRelationShip(userId, friendId);
+        return await _context.Friendships
+            .AnyAsync(x =>
+                x.UserLeftId == userLeftNormalize && x.UserRightId == userRightNormalize &&
+                x.Status == FriendShipStatus.Accept);
+    }
+    
+    //helper
+    private (Guid, Guid) NormalizeRelationShip(Guid userA, Guid userB)
+    {
+        var isALessThanB = userA.CompareTo(userB) < 0;
+
+        var userLeft = isALessThanB ? userA : userB;
+        var userRight = isALessThanB ? userB : userA;
+        return (userLeft, userRight);
     }
 }
