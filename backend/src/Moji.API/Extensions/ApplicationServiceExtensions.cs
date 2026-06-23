@@ -1,4 +1,8 @@
 using Moji.BusinessLogic.Services.Auth;
+using Moji.BusinessLogic.Services.Conversations;
+using Moji.BusinessLogic.Services.Friends;
+using Moji.BusinessLogic.Services.Messages;
+using Moji.DataAccess.Commons.DbTransactionManagers;
 using Moji.DataAccess.Repositories;
 using Moji.DataAccess.Repositories.Impl;
 
@@ -28,10 +32,16 @@ public static class ApplicationServiceExtensions
     {
         services.AddSingleton(TimeProvider.System);
         
+        //add db manager transaction service
+        services.AddScoped<IDbTransactionManager, DbTransactionManager>();
+        
+        
         //config services
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IFriendShipService, FriendShipService>();
+        services.AddScoped<IMessageService, MessageService>();
         return services;
     }
 
@@ -40,6 +50,9 @@ public static class ApplicationServiceExtensions
         //config repositories
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IUserTokenRepository, UserTokenRepository>();
+        services.AddScoped<IFriendShipRepository, FriendShipRepository>();
+        services.AddScoped<IConversationRepository, ConversationRepository>();
+        services.AddScoped<IMessageRepository, MessageRepository>();
         return services;
     }
 }

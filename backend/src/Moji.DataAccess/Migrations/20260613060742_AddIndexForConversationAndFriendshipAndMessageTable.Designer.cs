@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Moji.DataAccess.Configurations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Moji.DataAccess.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260613060742_AddIndexForConversationAndFriendshipAndMessageTable")]
+    partial class AddIndexForConversationAndFriendshipAndMessageTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -146,37 +149,33 @@ namespace Moji.DataAccess.Migrations
                         .HasMaxLength(250)
                         .HasColumnType("character varying(250)");
 
+                    b.Property<Guid>("ReceiverId")
+                        .HasColumnType("uuid");
+
                     b.Property<Guid>("RequesterId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Status")
                         .IsRequired()
+                        .ValueGeneratedOnAdd()
                         .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                        .HasColumnType("character varying(50)")
+                        .HasDefaultValue("Pending");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-                    b.Property<Guid>("UserLeftId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("UserRightId")
-                        .HasColumnType("uuid");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("UserLeftId", "UserRightId")
-                        .IsUnique();
+                    b.HasIndex("ReceiverId", "Status", "UpdatedAt")
+                        .IsDescending(false, false, true)
+                        .HasDatabaseName("IX_FriendShips_ReceiverId_Status_UpdatedAt_Desc");
 
                     b.HasIndex("RequesterId", "Status", "UpdatedAt")
                         .IsDescending(false, false, true)
                         .HasDatabaseName("IX_FriendShips_RequesterId_Status_UpdatedAt_Desc");
-
-                    b.HasIndex("UserRightId", "Status", "UpdatedAt")
-                        .IsDescending(false, false, true)
-                        .HasDatabaseName("IX_FriendShips_UserRightId_Status_UpdatedAt_Desc");
 
                     b.ToTable("Friendships");
                 });
@@ -370,29 +369,21 @@ namespace Moji.DataAccess.Migrations
 
             modelBuilder.Entity("Moji.DataAccess.Entities.FriendShip", b =>
                 {
+                    b.HasOne("Moji.DataAccess.Entities.User", "Receiver")
+                        .WithMany("ReceivedFriendRequests")
+                        .HasForeignKey("ReceiverId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Moji.DataAccess.Entities.User", "Requester")
-                        .WithMany()
+                        .WithMany("SentFriendRequests")
                         .HasForeignKey("RequesterId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Moji.DataAccess.Entities.User", "UserLeft")
-                        .WithMany()
-                        .HasForeignKey("UserLeftId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Moji.DataAccess.Entities.User", "UserRight")
-                        .WithMany()
-                        .HasForeignKey("UserRightId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                    b.Navigation("Receiver");
 
                     b.Navigation("Requester");
-
-                    b.Navigation("UserLeft");
-
-                    b.Navigation("UserRight");
                 });
 
             modelBuilder.Entity("Moji.DataAccess.Entities.Message", b =>
@@ -435,6 +426,10 @@ namespace Moji.DataAccess.Migrations
             modelBuilder.Entity("Moji.DataAccess.Entities.User", b =>
                 {
                     b.Navigation("Conversations");
+
+                    b.Navigation("ReceivedFriendRequests");
+
+                    b.Navigation("SentFriendRequests");
                 });
 #pragma warning restore 612, 618
         }

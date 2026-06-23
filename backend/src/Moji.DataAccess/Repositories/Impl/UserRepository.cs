@@ -12,10 +12,9 @@ public class UserRepository : IUserRepository
     {
         _context = context;
     }
-    public async Task AddAsync(User user)
+    public void Add(User user)
     {
-        await _context.Users.AddAsync(user);
-        await _context.SaveChangesAsync();
+         _context.Users.Add(user);
     }
 
     public async Task<User?> FindByUserNameAsync(string userName)
