@@ -4,7 +4,7 @@ namespace Moji.BusinessLogic.Services.Friends;
 
 public interface IFriendShipService
 {
-    Task AddFriend(Guid currentUserId, Guid receiverId, string message);
+    Task AddFriend(Guid currentUserId, FriendRequestModel request);
 
     Task ProcessFriendRequest(Guid currentUserId, Guid friendRequestId, bool isAccepted);
     

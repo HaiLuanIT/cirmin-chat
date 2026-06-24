@@ -1,6 +1,7 @@
 ﻿using System.Net.Mime;
 using System.Text.Json;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Moji.BusinessLogic.Exceptions;
 
@@ -14,49 +15,56 @@ public static class ErrorHandlingExtensions
         {
             exeptionHandlerApp.Run(async context =>
             {
-                context.Response.ContentType = MediaTypeNames.Application.Json;
+                context.Response.ContentType = MediaTypeNames.Application.ProblemJson;
                 // Trích xuất lỗi thô từ bộ nhớ RAM của hệ thống
                 var exceptionFeature = context.Features.Get<IExceptionHandlerPathFeature>();
+                var exception = exceptionFeature.Error;
                 var statusCode = StatusCodes.Status500InternalServerError;
                 var message = "Đã có lỗi hệ thống xảy ra. Vui lòng thử lại sau!";
                 var title = "Internal Server Error";
+                IDictionary<string, string[]>? validationErrors = null;          
                 string? stackTrace = null;
-                
-                if (exceptionFeature?.Error != null)
+
+                switch (exception)
                 {
-                    var exception = exceptionFeature.Error;
-                    if (exceptionFeature?.Error is MojiBadRequestException badEx)
-                    {
+                    case MojiBadRequestException badEx:
                         statusCode = StatusCodes.Status400BadRequest;
                         title = "Business Logic Error";
                         message = badEx.Message;
-                    }
-                    else if (exception is MojiUnauthorizedException unAuthEx)
-                    {
+                        break;
+                    
+                    case MojiValidationException validationEx:
+                        statusCode = StatusCodes.Status400BadRequest;
+                        title = "Validation Error";
+                        message = validationEx.Message;
+                        validationErrors = validationEx.Errors;
+                        break;
+                    
+                    case MojiUnauthorizedException unAuthEx:
                         statusCode = StatusCodes.Status401Unauthorized;
                         title = "Unauthorized";
                         message = unAuthEx.Message;
-                    }
-                    else if (exception is MojiForbiddenException forbiddenEx)
-                    {
+                        break;
+                    
+                    case MojiForbiddenException forbiddenEx:
                         statusCode = StatusCodes.Status403Forbidden;
                         title = "Forbidden";
                         message = forbiddenEx.Message;
-                    }
-                    else if (exception is MojiConflictException conflictEx)
-                    {
+                        break;
+                    
+                    case MojiConflictException conflictEx:
                         statusCode = StatusCodes.Status409Conflict;
                         title = "Data Conflict";
                         message = conflictEx.Message;
-                    }
-                    else if (exception is MojiNotFoundException notFoundEx)
-                    {
+                        break;
+                    
+                    case MojiNotFoundException notFoundEx:
                         statusCode = StatusCodes.Status404NotFound;
                         title = "Not Found";
                         message = notFoundEx.Message;
-                    }
-                    else
-                    {
+                        break;
+                    
+                    default:
                         if (app.Environment.IsDevelopment())
                         {
                             message = exception
@@ -66,23 +74,34 @@ public static class ErrorHandlingExtensions
 
                         // Luôn luôn in lỗi thật ra màn hình Console/Terminal của Server để tiện giám sát
                         Console.WriteLine($"[CRITICAL ERROR]: {exception.ToString()}");
-                    }
-
-                    context.Response.StatusCode = statusCode;
-                    var problemDetail = new Dictionary<string, object?>
-                    {
-                        { "statusCode", statusCode },
-                        { "title", title },
-                        { "detail", message },
-                        { "instance", exceptionFeature?.Path }
-                    };
-                    if (app.Environment.IsDevelopment() && stackTrace != null)
-                    {
-                        problemDetail.Add("stackTrace", stackTrace);
-                    }
-
-                    await context.Response.WriteAsync(JsonSerializer.Serialize(problemDetail));
+                        break;
                 }
+                
+                context.Response.StatusCode = statusCode;
+                var problemDetails = new ProblemDetails
+                {
+                    Status = statusCode,
+                    Title = title,
+                    Detail = message,
+                    Instance = exceptionFeature.Path
+                };
+
+                if (validationErrors != null)
+                {
+                    problemDetails.Extensions.Add("errors", validationErrors);
+                }
+                
+                if (app.Environment.IsDevelopment() && stackTrace != null)
+                {
+                    problemDetails.Extensions.Add("stackTrace", stackTrace);
+                }
+
+                var jsonOptions = new JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                    WriteIndented = true
+                };
+                await context.Response.WriteAsync(JsonSerializer.Serialize(problemDetails, jsonOptions));
             });
         });
     }

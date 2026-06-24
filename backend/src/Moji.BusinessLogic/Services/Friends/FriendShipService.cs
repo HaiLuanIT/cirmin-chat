@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using FluentValidation;
 using Moji.BusinessLogic.Exceptions;
 using Moji.BusinessLogic.Models.FriendShips;
 using Moji.DataAccess.Commons.Constants;
@@ -15,25 +16,33 @@ public class FriendShipService : IFriendShipService
     private readonly IUserRepository _userRepository;
     private readonly IConversationRepository _conversationRepository;
     private readonly IDbTransactionManager _dbTransactionManager;
+    private readonly IValidator<FriendRequestModel> _friendRequestValidator;
 
     public FriendShipService(IFriendShipRepository friendShipRepository, IUserRepository userRepository,
-        IConversationRepository conversationRepository, IDbTransactionManager dbTransactionManager)
+        IConversationRepository conversationRepository, IDbTransactionManager dbTransactionManager, IValidator<FriendRequestModel> friendRequestValidator)
     {
+        _friendRequestValidator = friendRequestValidator;
         _friendShipRepository = friendShipRepository;
         _userRepository = userRepository;
         _conversationRepository = conversationRepository;
         _dbTransactionManager = dbTransactionManager;
     }
 
-    public async Task AddFriend(Guid currentUserId, Guid receiverId, string message)
+    public async Task AddFriend(Guid currentUserId, FriendRequestModel request)
     {
-        if (currentUserId == receiverId) throw new MojiBadRequestException("Không thể kết bạn với bản thân");
+        var validationResult = await _friendRequestValidator.ValidateAsync(request);
+        if (!validationResult.IsValid)
+        {
+            throw new MojiValidationException(validationResult.Errors);
+        }
+        
+        if (currentUserId == request.ReceiverId) throw new MojiBadRequestException("Không thể kết bạn với bản thân");
         //check receiver exist
-        var receiver = await _userRepository.FindByIdAsync(receiverId);
+        var receiver = await _userRepository.FindByIdAsync(request.ReceiverId);
         if (receiver == null) throw new MojiNotFoundException("Người dùng nhận lời mời không tồn tại!");
 
         //check friend request is exist or not
-        var friendRequest = await _friendShipRepository.FindRequestAsync(currentUserId, receiverId);
+        var friendRequest = await _friendShipRepository.FindRequestAsync(currentUserId, request.ReceiverId);
         if (friendRequest != null)
         {
             throw new MojiConflictException("Lời mời kết bạn hoặc mối quan hệ giữa hai người đã tồn tại!");
@@ -43,8 +52,8 @@ public class FriendShipService : IFriendShipService
         var newRequest = new FriendShip()
         {
             UserLeftId = currentUserId,
-            UserRightId = receiverId,
-            Message = message,
+            UserRightId = request.ReceiverId,
+            Message = request.Message,
             RequesterId = currentUserId
         };
         _friendShipRepository.Add(newRequest);
