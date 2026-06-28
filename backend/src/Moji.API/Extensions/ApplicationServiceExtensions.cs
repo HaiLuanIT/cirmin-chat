@@ -52,6 +52,7 @@ public static class ApplicationServiceExtensions
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IFriendShipService, FriendShipService>();
         services.AddScoped<IMessageService, MessageService>();
+        services.AddScoped<IConversationService, ConversationService>();
         return services;
     }
 
