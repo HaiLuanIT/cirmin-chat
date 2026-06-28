@@ -1,4 +1,5 @@
 ﻿using Moji.DataAccess.Entities;
+using Moji.DataAccess.Repositories.Models;
 
 namespace Moji.DataAccess.Repositories;
 
@@ -9,4 +10,6 @@ public interface IConversationRepository
     void Update(Conversation conversation);
 
     Task<Conversation?> FindByIdAsync(Guid id);
+
+    Task<List<ConversationRawData>> GetConversations(Guid userId);
 }

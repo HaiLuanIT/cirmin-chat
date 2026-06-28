@@ -1,3 +1,7 @@
+using System.Reflection;
+using FluentValidation;
+using Microsoft.AspNetCore.Mvc;
+using Moji.BusinessLogic.Models.Auth;
 using Moji.BusinessLogic.Services.Auth;
 using Moji.BusinessLogic.Services.Conversations;
 using Moji.BusinessLogic.Services.Friends;
@@ -35,13 +39,20 @@ public static class ApplicationServiceExtensions
         //add db manager transaction service
         services.AddScoped<IDbTransactionManager, DbTransactionManager>();
         
-        
+        //add fluent validation
+        services.AddValidatorsFromAssembly(typeof(RegisterRequest).Assembly);
+
+        services.Configure<ApiBehaviorOptions>(options =>
+        {
+            options.SuppressModelStateInvalidFilter = true;
+        });
         //config services
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IFriendShipService, FriendShipService>();
         services.AddScoped<IMessageService, MessageService>();
+        services.AddScoped<IConversationService, ConversationService>();
         return services;
     }
 

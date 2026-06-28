@@ -1,3 +1,4 @@
+using FluentValidation;
 using Microsoft.Extensions.Configuration;
 using Moji.BusinessLogic.Exceptions;
 using Moji.BusinessLogic.Models.Auth;
@@ -15,10 +16,15 @@ public class AuthService : IAuthService
     private readonly ITokenService _tokenService;
     private readonly IConfiguration _configuration;
     private readonly IDbTransactionManager _txManager;
+    private readonly IValidator<RegisterRequest> _registerValidator;
+    private readonly IValidator<LoginRequest> _loginValidator;
 
     public AuthService(IUserRepository userRepository, IPasswordHasher passwordHasher, ITokenService tokenService,
-        IConfiguration configuration, IUserTokenRepository userTokenRepository, IDbTransactionManager txManager)
+        IConfiguration configuration, IUserTokenRepository userTokenRepository, IDbTransactionManager txManager,
+        IValidator<RegisterRequest> registerValidator, IValidator<LoginRequest> loginValidator)
     {
+        _registerValidator = registerValidator;
+        _loginValidator = loginValidator;
         _userRepository = userRepository;
         _passwordHasher = passwordHasher;
         _tokenService = tokenService;
@@ -29,6 +35,13 @@ public class AuthService : IAuthService
 
     public async Task SignUp(RegisterRequest request)
     {
+        //validation request
+        var validationResult = await _registerValidator.ValidateAsync(request);
+        if (!validationResult.IsValid)
+        {
+            throw new MojiValidationException(validationResult.Errors);
+        }
+
         var existedUser = await _userRepository.FindByUserNameAsync(request.UserName);
         if (existedUser != null)
         {
@@ -50,12 +63,18 @@ public class AuthService : IAuthService
             Email = request.Email,
             FullName = request.FirstName + " " + request.LastName
         };
-         _userRepository.Add(user);
-         await _txManager.SaveChangesAsync();
+        _userRepository.Add(user);
+        await _txManager.SaveChangesAsync();
     }
 
     public async Task<AuthResponse> SignIn(LoginRequest request)
     {
+        var validationResult = await _loginValidator.ValidateAsync(request);
+        if (!validationResult.IsValid)
+        {
+            throw new MojiValidationException(validationResult.Errors);
+        }
+        
         var user = await _userRepository.FindByUserNameAsync(request.Username);
 
         if (user == null)
@@ -79,7 +98,7 @@ public class AuthService : IAuthService
             Token = refreshToken,
             UserId = user.Id,
             ExpiresAt = DateTimeOffset.UtcNow.AddDays(double.Parse(_configuration["Jwt:RefreshTokenExpirationInDays"] ??
-                                                             "15"))
+                                                                   "15"))
         };
         _userTokenRepository.Add(userToken);
         await _txManager.SaveChangesAsync();
@@ -110,7 +129,7 @@ public class AuthService : IAuthService
         {
             return;
         }
-        
+
         userToken.IsRevoked = true;
         _userTokenRepository.RevokeToken(userToken);
         await _txManager.SaveChangesAsync();
@@ -159,7 +178,7 @@ public class AuthService : IAuthService
         {
             throw new MojiNotFoundException("User not found or disabled");
         }
-        
+
         //3. Generate new access token and refresh token
         var newAccessToken = _tokenService.GenerateAccessToken(user);
         var newRefreshToken = _tokenService.GenerateRefreshToken();
@@ -172,10 +191,10 @@ public class AuthService : IAuthService
             Token = newRefreshToken,
             UserId = user.Id,
             ExpiresAt = DateTimeOffset.UtcNow.AddDays(double.Parse(_configuration["Jwt:RefreshTokenExpirationInDays"] ??
-                                                             "15"))
+                                                                   "15"))
         };
-         _userTokenRepository.Add(userToken);
-         await _txManager.SaveChangesAsync();
+        _userTokenRepository.Add(userToken);
+        await _txManager.SaveChangesAsync();
         //6. Create res
 
         var authResponse = new AuthResponse

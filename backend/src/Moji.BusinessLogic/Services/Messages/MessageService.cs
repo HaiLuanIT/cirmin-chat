@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using FluentValidation;
+using Microsoft.EntityFrameworkCore;
 using Moji.BusinessLogic.Exceptions;
 using Moji.BusinessLogic.Models;
 using Moji.BusinessLogic.Services.Friends;
@@ -15,10 +16,12 @@ public class MessageService : IMessageService
     private readonly IFriendShipService _friendShipService;
     private readonly IConversationRepository _conversationRepository;
     private readonly IDbTransactionManager _txManager;
+    private readonly IValidator<SendMessageRequest> _sendMessageValidator;
 
     public MessageService(IFriendShipService friendShipService, IDbTransactionManager txManager,
-        IMessageRepository messageRepository, IConversationRepository conversationRepository)
+        IMessageRepository messageRepository, IConversationRepository conversationRepository, IValidator<SendMessageRequest> sendMessageValidator)
     {
+        _sendMessageValidator = sendMessageValidator;
         _friendShipService = friendShipService;
         _txManager = txManager;
         _messageRepository = messageRepository;
@@ -27,6 +30,13 @@ public class MessageService : IMessageService
 
     public async Task<SendMessageResponse> SendMessage(Guid senderId, SendMessageRequest request)
     {
+        //validate request
+        var validationResult = await _sendMessageValidator.ValidateAsync(request);
+        if (!validationResult.IsValid)
+        {
+            throw new MojiValidationException(validationResult.Errors);
+        }
+
         //check conversation and sender is member
         var conversation = await _conversationRepository.FindByIdAsync(request.ConversationId);
         if (conversation == null) throw new MojiNotFoundException("Không tìm thấy đoạn hội thoại");
