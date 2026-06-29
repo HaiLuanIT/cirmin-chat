@@ -17,8 +17,9 @@ public class MessageConfiguration : IEntityTypeConfiguration<Message>
         builder.Property(x => x.ImageUrl).HasMaxLength(500);
 
         //use composite inex to group message by conversation and sort from newest to oldest
-        builder.HasIndex(x => new { x.ConversationId, x.CreatedAt })
-            .HasDatabaseName("IX_Messages_ConversationId_CreatedAt").IsDescending(false, true);
+        //add id to support filter message duplicate time
+        builder.HasIndex(x => new { x.ConversationId, x.CreatedAt, x.Id })
+            .HasDatabaseName("IX_Messages_ConversationId_CreatedAt_Id").IsDescending(false, true, true);
         
         builder.HasOne(x => x.Conversation)
             .WithMany(x => x.Messages)

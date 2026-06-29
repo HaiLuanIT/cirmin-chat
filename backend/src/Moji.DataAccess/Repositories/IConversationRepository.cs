@@ -12,4 +12,6 @@ public interface IConversationRepository
     Task<Conversation?> FindByIdAsync(Guid id);
 
     Task<List<ConversationRawData>> GetConversations(Guid userId);
+
+    Task<bool> IsMember(Guid userId, Guid conversationId);
 }

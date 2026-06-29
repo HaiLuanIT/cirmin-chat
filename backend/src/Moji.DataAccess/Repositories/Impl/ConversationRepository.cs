@@ -60,4 +60,10 @@ public class ConversationRepository : IConversationRepository
             })
             .ToListAsync();
     }
+
+    public async Task<bool> IsMember(Guid userId, Guid conversationId)
+    {
+        return await _context.Conversations
+            .AnyAsync(x => x.Id == conversationId && x.Members.Any(m => m.UserId == userId));
+    }
 }
