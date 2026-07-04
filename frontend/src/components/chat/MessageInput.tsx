@@ -1,0 +1,85 @@
+import { useAuthStore } from "@/stores/useAuthStore";
+import type { Conversation } from "@/types/chat";
+import React, { useState } from "react";
+import { Button } from "../ui/button";
+import { ImagePlus, Send } from "lucide-react";
+import { Input } from "../ui/input";
+import EmojiPicker from "./EmojiPicker";
+import { useChatStore } from "@/stores/useChatStore";
+import { toast } from "sonner";
+
+const MessageInput = ({ selectedConvo }: { selectedConvo: Conversation }) => {
+  const { user } = useAuthStore();
+
+  const [value, setVallue] = useState("");
+
+  const { sendMessage } = useChatStore();
+
+  if (!user) return;
+
+  const onSendMessage = async () => {
+    if (!value.trim()) return;
+
+    try {
+      if (!selectedConvo.isGroup) {
+        const participants = selectedConvo.members;
+        const otherUser = participants.filter((p) => p.userId !== user.id)[0];
+        await sendMessage(value, otherUser.userId);
+      } else {
+        await sendMessage(value);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Lỗi xảy ra, hãy thử lại");
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      onSendMessage();
+    }
+  };
+  return (
+    <div className="flex items-center gap-2 p-3 min-h[56px] bg-background">
+      <Button
+        variant="ghost"
+        size="icon"
+        className="hover:bg-primary/10 transition-smooth"
+      >
+        <ImagePlus className="size-4" />
+      </Button>
+      <div className="flex-1 relative">
+        <Input
+          onKeyDown={handleKeyPress}
+          value={value}
+          onChange={(e) => setVallue(e.target.value)}
+          placeholder="Soạn tin nhắn"
+          className="pr-20 bg-white h-9 border-border/50 focus:border-primary/50 transition-smooth resize-none"
+        ></Input>
+        <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
+          <Button
+            asChild
+            variant="ghost"
+            size="icon"
+            className="size-8 hover:bg-primary/10 transition-smooth"
+          >
+            <div>
+              <EmojiPicker
+                onChange={(emoji: string) => setVallue(`${value}${emoji}`)}
+              />
+            </div>
+          </Button>
+        </div>
+      </div>
+      <Button
+        className="bg-gradient-chat hover:shadow-glow transition-smooth hover:scale-105"
+        disabled={!value.trim() === true}
+      >
+        <Send className="size-4 text-white" />
+      </Button>
+    </div>
+  );
+};
+
+export default MessageInput;
