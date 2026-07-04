@@ -46,9 +46,5 @@ export interface ChatState {
   setActiveConversation: (id: string | null) => void;
   fetchConversations: () => Promise<void>;
   fetchMessages: (conversationId?: string) => Promise<void>;
-  sendMessage: (
-    content: string,
-    receiverId?: string,
-    imgUrl?: string,
-  ) => Promise<void>;
+  sendMessage: (content: string, imgUrl?: string) => Promise<void>;
 }

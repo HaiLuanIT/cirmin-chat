@@ -20,7 +20,8 @@ const GroupChatCard = ({ convo }: { convo: Conversation }) => {
   const name = convo.name ?? "";
   const handleSelectConversation = async (id: string) => {
     setActiveConversation(id);
-    if (!messages) {
+    console.log("I'm here", messages);
+    if (!messages[id]) {
       await fetchMessages();
     }
   };

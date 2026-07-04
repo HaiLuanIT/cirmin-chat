@@ -1,5 +1,4 @@
 import { useAuthStore } from "@/stores/useAuthStore";
-import type { Conversation } from "@/types/chat";
 import React, { useState } from "react";
 import { Button } from "../ui/button";
 import { ImagePlus, Send } from "lucide-react";
@@ -8,7 +7,7 @@ import EmojiPicker from "./EmojiPicker";
 import { useChatStore } from "@/stores/useChatStore";
 import { toast } from "sonner";
 
-const MessageInput = ({ selectedConvo }: { selectedConvo: Conversation }) => {
+const MessageInput = () => {
   const { user } = useAuthStore();
 
   const [value, setVallue] = useState("");
@@ -19,15 +18,11 @@ const MessageInput = ({ selectedConvo }: { selectedConvo: Conversation }) => {
 
   const onSendMessage = async () => {
     if (!value.trim()) return;
+    const currentValue = value;
+    setVallue("");
 
     try {
-      if (!selectedConvo.isGroup) {
-        const participants = selectedConvo.members;
-        const otherUser = participants.filter((p) => p.userId !== user.id)[0];
-        await sendMessage(value, otherUser.userId);
-      } else {
-        await sendMessage(value);
-      }
+      await sendMessage(currentValue);
     } catch (error) {
       console.error(error);
       toast.error("Lỗi xảy ra, hãy thử lại");
