@@ -9,6 +9,7 @@ namespace Moji.API.Controllers;
 public class MessageController : BaseApiController
 {
     private readonly IMessageService _messageService;
+
     public MessageController(IMessageService messageService)
     {
         _messageService = messageService;

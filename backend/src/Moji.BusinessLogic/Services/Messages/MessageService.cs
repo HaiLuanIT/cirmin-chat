@@ -1,7 +1,9 @@
 ﻿using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Moji.BusinessLogic.Exceptions;
+using Moji.BusinessLogic.Helpers;
 using Moji.BusinessLogic.Models;
+using Moji.BusinessLogic.Models.CursorPagination;
 using Moji.BusinessLogic.Services.Friends;
 using Moji.DataAccess.Commons.DbTransactionManagers;
 using Moji.DataAccess.Configurations;
@@ -19,7 +21,8 @@ public class MessageService : IMessageService
     private readonly IValidator<SendMessageRequest> _sendMessageValidator;
 
     public MessageService(IFriendShipService friendShipService, IDbTransactionManager txManager,
-        IMessageRepository messageRepository, IConversationRepository conversationRepository, IValidator<SendMessageRequest> sendMessageValidator)
+        IMessageRepository messageRepository, IConversationRepository conversationRepository,
+        IValidator<SendMessageRequest> sendMessageValidator)
     {
         _sendMessageValidator = sendMessageValidator;
         _friendShipService = friendShipService;
@@ -90,4 +93,47 @@ public class MessageService : IMessageService
             message.CreatedAt);
     }
 
+    public async Task<CursorResponse<MessageResponse>> GetConversationMessages(Guid currentUserId, Guid conversationId,
+        int limit, string? cursor)
+    {
+        //check user is member of conversation
+        var isMember = await _conversationRepository.IsMember(currentUserId, conversationId);
+
+        if (!isMember) throw new MojiBadRequestException("Bạn không có quyền truy cập đoạn hội thoại này");
+        
+        var (lastId, lastDate) = CursorPaginationHelper.Decode(cursor);
+        var messages = await _messageRepository.GetPagedMessagesAsync(conversationId, lastId, lastDate, limit, m =>
+            new MessageResponse
+            {
+                Id = m.Id,
+                ConversationId = m.ConversationId,
+                Content = m.Content,
+                Sender = new SenderResponse
+                {
+                    SenderId = m.SenderId,
+                    DisplayName = m.Sender.FullName,
+                    AvatarUrl = m.Sender.AvatarUrl
+                },
+                SentAt = m.CreatedAt
+            });
+
+        var hasMore = messages.Count > limit;
+        DateTimeOffset? nextDate = hasMore ? messages[^1].SentAt : null;
+        long? nextId = hasMore ? messages[^1].Id : null;
+
+        string? nextCursor = null;
+        if (nextDate != null && nextId != null)
+        {
+            nextCursor = CursorPaginationHelper.Encode(nextId, nextDate);
+        }
+
+        if (hasMore) messages.RemoveAt(limit);
+
+        return new CursorResponse<MessageResponse>()
+        {
+            Items = messages,
+            NextCursor = nextCursor,
+            HasMore = hasMore
+        };
+    }
 }

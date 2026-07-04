@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Moji.BusinessLogic.Models.Conversations;
 using Moji.BusinessLogic.Services.Conversations;
+using Moji.BusinessLogic.Services.Messages;
 
 namespace Moji.API.Controllers;
 
@@ -9,10 +10,12 @@ namespace Moji.API.Controllers;
 public class ConversationsController : BaseApiController
 {
     private readonly IConversationService _conversationService;
+    private readonly IMessageService _messageService;
 
-    public ConversationsController(IConversationService conversationService)
+    public ConversationsController(IConversationService conversationService, IMessageService messageService)
     {
         _conversationService = conversationService;
+        _messageService = messageService;
     }
 
     [HttpPost]
@@ -27,6 +30,17 @@ public class ConversationsController : BaseApiController
     {
         var conversations = await _conversationService.GetConversations(CurrentUserId);
         return Ok(conversations);
+    }
+    
+    [HttpGet("{id:guid}/messages")]
+    public async Task<IActionResult> GetConversationMessages(
+        [FromRoute] Guid id,
+        [FromQuery] int limit = 20,
+        [FromQuery] string cursor = null)
+
+    {
+        var result = await _messageService.GetConversationMessages(CurrentUserId, id, limit, cursor);
+        return Ok(result);
     }
     
 }
