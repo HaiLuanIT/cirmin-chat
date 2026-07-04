@@ -9,7 +9,6 @@ const GroupChatList = () => {
   const groupConversation = conversations.filter(
     (convo) => convo.isGroup === true,
   );
-  console.log("Group:", conversations);
   return (
     <div className="flex-1 overflow-auto p-2 space-y-2">
       {groupConversation.map((convo) => (

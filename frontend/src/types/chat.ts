@@ -21,10 +21,15 @@ export interface Conversation {
 
 export interface Message {
   id: string;
-  senderId: string;
+  sender: {
+    senderId: string;
+    displayName: string;
+    avatarUrl: string;
+  };
   conversationId: string;
-  message: string;
+  content: string;
   sentAt: string;
+  isOwn: boolean;
 }
 
 export interface ConversationResponse {

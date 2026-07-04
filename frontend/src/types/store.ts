@@ -39,9 +39,16 @@ export interface ChatState {
     }
   >;
   activeConversationId: string | null; //lưu hội thoại đang click vào
-  loading: boolean; //kiểm tra request đã load chưa
+  convoLoading: boolean; //kiểm tra request đã load chưa
+  messageLoading: boolean;
   reset: () => void; //reset state
 
   setActiveConversation: (id: string | null) => void;
   fetchConversations: () => Promise<void>;
+  fetchMessages: (conversationId?: string) => Promise<void>;
+  sendMessage: (
+    content: string,
+    receiverId?: string,
+    imgUrl?: string,
+  ) => Promise<void>;
 }

@@ -1,6 +1,6 @@
 import type { Config } from "tailwindcss";
 import tailwindcssAnimate from "tailwindcss-animate";
-
+import tailwindScrollbar from "tailwind-scrollbar";
 export default {
   content: [
     "./pages/**/*.{ts,tsx}",
@@ -115,5 +115,5 @@ export default {
       },
     },
   },
-  plugins: [tailwindcssAnimate],
+  plugins: [tailwindcssAnimate, tailwindScrollbar],
 } satisfies Config;
