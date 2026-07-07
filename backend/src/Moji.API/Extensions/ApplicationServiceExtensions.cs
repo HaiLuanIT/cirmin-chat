@@ -6,6 +6,7 @@ using Moji.BusinessLogic.Services.Auth;
 using Moji.BusinessLogic.Services.Conversations;
 using Moji.BusinessLogic.Services.Friends;
 using Moji.BusinessLogic.Services.Messages;
+using Moji.BusinessLogic.Services.Users;
 using Moji.DataAccess.Commons.DbTransactionManagers;
 using Moji.DataAccess.Repositories;
 using Moji.DataAccess.Repositories.Impl;
@@ -53,6 +54,7 @@ public static class ApplicationServiceExtensions
         services.AddScoped<IFriendShipService, FriendShipService>();
         services.AddScoped<IMessageService, MessageService>();
         services.AddScoped<IConversationService, ConversationService>();
+        services.AddScoped<IPresenceService, PresenceService>();
         return services;
     }
 

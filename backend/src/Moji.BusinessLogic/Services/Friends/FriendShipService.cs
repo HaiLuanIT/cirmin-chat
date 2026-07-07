@@ -143,6 +143,12 @@ public class FriendShipService : IFriendShipService
         return await _friendShipRepository.IsFriend(userId, friendId);
     }
 
+    public async Task<List<string>> GetFriendIds(Guid currentUserId)
+    {
+        var result = await _friendShipRepository.GetFriendIds(currentUserId);
+        return result.Select(x => x.ToString()).ToList();
+    }
+
     //helper
     private FriendRequestResponse MapToFriendRequestResponse(FriendshipRawData rawData)
     {

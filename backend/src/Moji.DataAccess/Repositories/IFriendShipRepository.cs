@@ -22,4 +22,6 @@ public interface IFriendShipRepository
     Task<List<FriendshipRawData>> GetOutboundRequestsAsync(Guid userId);
     
     Task<bool> IsFriend(Guid userId, Guid friendId);
+
+    Task<List<Guid>> GetFriendIds(Guid userId);
 }

@@ -13,4 +13,6 @@ public interface IFriendShipService
     Task<FriendRequestListResponse> GetFriendRequestList(Guid userId);
     
     Task<bool> IsFriend(Guid userId, Guid friendId);
+
+    Task<List<string>> GetFriendIds(Guid currentUserId);
 }

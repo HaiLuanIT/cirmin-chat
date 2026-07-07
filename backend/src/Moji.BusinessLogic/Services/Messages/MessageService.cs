@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Moji.BusinessLogic.Exceptions;
 using Moji.BusinessLogic.Helpers;
@@ -50,18 +51,6 @@ public class MessageService : IMessageService
             throw new MojiBadRequestException("Bạn không có quyền gửi tin vào đoạn hội thoại này!");
         }
 
-        //check if send direct
-        if (conversation.IsGroup == false)
-        {
-            var recipient = conversation.Members.FirstOrDefault(x => x.UserId == request.ReceiverId);
-            if (recipient != null)
-            {
-                var isFriend = await _friendShipService.IsFriend(senderId, request.ReceiverId);
-                if (!isFriend) throw new MojiBadRequestException("Không thể gửi tin nhắn cho người lạ");
-            }
-        }
-
-        //create message entity
         var message = new Message()
         {
             Content = request.Content,

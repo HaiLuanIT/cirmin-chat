@@ -92,4 +92,22 @@ public class ConversationService : IConversationService
         ).ToList());
         return conversations;
     }
+
+    public async Task<bool> IsMember(Guid currentUserId, Guid conversationId)
+    {
+        return await _conversationRepository.IsMember(currentUserId, conversationId);
+    }
+
+    public async Task<List<string>> GetJoinedConversationId(Guid currentUserId)
+    {
+        return await _conversationRepository.GetJoinerConversationIdsAsync(currentUserId);
+    }
+
+    public async Task<List<string>> GetConversationMemberIds(Guid conversationId)
+    {
+        var conversation = await _conversationRepository.FindByIdAsync(conversationId);
+        if (conversation == null) throw new MojiNotFoundException("Không tìm thấy đoạn hội thoại");
+
+        return conversation.Members.Select(x => x.UserId.ToString()).ToList();
+    }
 }

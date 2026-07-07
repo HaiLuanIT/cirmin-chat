@@ -66,4 +66,11 @@ public class ConversationRepository : IConversationRepository
         return await _context.Conversations
             .AnyAsync(x => x.Id == conversationId && x.Members.Any(m => m.UserId == userId));
     }
+
+    public async Task<List<string>> GetJoinerConversationIdsAsync(Guid userId)
+    {
+        var result = await _context.ConversationMembers.Where(x => x.UserId == userId)
+            .Select(x => x.ConversationId.ToString()).ToListAsync();
+        return result;
+    }
 }
