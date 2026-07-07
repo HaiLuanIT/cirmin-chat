@@ -6,6 +6,7 @@ import { Toaster } from "sonner";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import { useThemeStore } from "./stores/useThemeStore";
 import { useEffect } from "react";
+import { useSignalR } from "./hooks/useSignalR";
 function App() {
   const { isDark, setTheme } = useThemeStore();
 
@@ -13,6 +14,7 @@ function App() {
     setTheme(isDark);
   }, [isDark]);
 
+  useSignalR();
   return (
     <>
       <Toaster />

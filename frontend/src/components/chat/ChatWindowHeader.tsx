@@ -1,16 +1,18 @@
 import { useChatStore } from "@/stores/useChatStore";
 import type { Conversation } from "@/types/chat";
-import React from "react";
 import { SidebarTrigger } from "../ui/sidebar";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { Separator } from "../ui/separator";
 import UserAvatar from "./UserAvatar";
 import StatusBadge from "./StatusBadge";
 import GroupChatAvatar from "./GroupChatAvatar";
+import { usePresenceStore } from "@/stores/usePresenceStore";
 
 const ChatWindowHeader = ({ chat }: { chat?: Conversation }) => {
   const { conversations, activeConversationId } = useChatStore();
   const { user } = useAuthStore();
+  const { isOnline } = usePresenceStore();
+
   let otherUser;
   chat = chat ?? conversations.find((c) => c.id === activeConversationId);
 
@@ -28,6 +30,7 @@ const ChatWindowHeader = ({ chat }: { chat?: Conversation }) => {
 
     if (!user || !otherUser) return;
   }
+
   return (
     <header className="sticky top-0 z-10 px-3 py-2 flex items-center bg-background">
       <div className="flex items-center gap-2 w-full">
@@ -37,7 +40,6 @@ const ChatWindowHeader = ({ chat }: { chat?: Conversation }) => {
           className="mr-2 data-[orientation=vertical]:h-4"
         />
         <div className="p-2 w-full flex items-center gap-3">
-          {/* avatar */}
           <div className="relative">
             {!chat.isGroup ? (
               <>
@@ -46,15 +48,15 @@ const ChatWindowHeader = ({ chat }: { chat?: Conversation }) => {
                   name={otherUser?.displayName}
                   avatarUrl={otherUser?.avatarUrl || undefined}
                 />
-                {/* todo:socket */}
-                <StatusBadge status="offline" />
+                <StatusBadge
+                  status={isOnline(otherUser.userId) ? "online" : "offline"}
+                />
               </>
             ) : (
               <GroupChatAvatar participants={chat.members} type="sidebar" />
             )}
           </div>
 
-          {/* name */}
           <h2 className="font-semibold text-foreground">
             {!chat.isGroup ? otherUser?.displayName : chat.name}
           </h2>
