@@ -1,5 +1,6 @@
 import type { Conversation, Message } from "./chat";
 import type { User } from "./user";
+import * as signalR from "@microsoft/signalr";
 
 export interface AuthState {
   accessToken: string | null;
@@ -46,9 +47,13 @@ export interface ChatState {
   setActiveConversation: (id: string | null) => void;
   fetchConversations: () => Promise<void>;
   fetchMessages: (conversationId?: string) => Promise<void>;
-  sendMessage: (
-    content: string,
-    receiverId?: string,
-    imgUrl?: string,
-  ) => Promise<void>;
+  sendMessage: (content: string, imgUrl?: string) => Promise<void>;
+}
+
+export interface PresenceState {
+  onlineUsers: Set<string>;
+  setOnlineUsers: (userIds: string[]) => void;
+  setStatusUser: (userId: string, isOnline: boolean) => void;
+  isOnline: (userId: string) => boolean;
+  clearState: () => void;
 }

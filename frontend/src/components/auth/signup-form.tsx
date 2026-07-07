@@ -35,7 +35,6 @@ export function SignupForm({
   });
   const onSubmit = async (data: SignUpFormValues) => {
     const { firstName, lastName, username, password, email } = data;
-    //gọi backend
     await signUp(username, password, email, firstName, lastName);
     navigate("/signin");
   };
@@ -79,7 +78,6 @@ export function SignupForm({
                     Tên
                   </Label>
                   <Input type="text" id="lastName" {...register("lastName")} />
-                  {/* todo:error message */}
                   {errors.lastName && (
                     <p className="text-destructive text-sm">
                       {errors.lastName.message}
