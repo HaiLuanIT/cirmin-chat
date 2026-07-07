@@ -83,11 +83,10 @@ export const useChatStore = create<ChatState>()(
         }
       },
 
-      sendMessage: async (content, receiveId, imgUrl) => {
+      sendMessage: async (content, imgUrl) => {
         try {
           const { activeConversationId } = get();
           await chatService.sendMessage(
-            receiveId,
             content,
             imgUrl,
             activeConversationId || undefined,
