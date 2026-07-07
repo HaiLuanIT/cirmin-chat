@@ -7,7 +7,11 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+    <ItemGroup>
       <PackageReference Include="BCrypt.Net-Next" Version="4.2.0" />
+      <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="9.5.4" />
       <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.18.0" />
     </ItemGroup>
 

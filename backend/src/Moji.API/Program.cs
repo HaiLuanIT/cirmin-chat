@@ -1,4 +1,5 @@
 using Moji.API.Extensions;
+using Moji.API.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,7 +17,8 @@ builder.Services.AddServiceServices();
 builder.Services.AddRepositoryServices();
 
 //add signalR
-
+// builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
+builder.Services.AddSignalR();
 //add db
 builder.Services.AddDatabaseServices(builder.Configuration);
 
@@ -30,6 +32,7 @@ builder.Services.AddSwaggerServices();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+app.UseApplicationExceptionHandler();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger(); //create file swagger.json
@@ -43,6 +46,9 @@ app.UseCors("CorsPolicy");
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+//add signalR middleware
+app.MapHub<ChatHub>("/hubs/chat");
 
 app.MapControllers();
 

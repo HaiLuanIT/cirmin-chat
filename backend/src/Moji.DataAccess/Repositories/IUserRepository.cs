@@ -4,7 +4,7 @@ namespace Moji.DataAccess.Repositories;
 
 public interface IUserRepository
 {
-    Task AddAsync(User user);
+    void Add(User user);
     
     Task<User?> FindByUserNameAsync(string userName);
     

@@ -21,8 +21,5 @@ public class User : BaseEntity
     public string? Bio { get; set; }
     
     //navigation
-    public virtual ICollection<FriendShip> SentFriendRequests { get; set; } = new List<FriendShip>();
-    
-    public virtual ICollection<FriendShip> ReceivedFriendRequests { get; set; } = new List<FriendShip>();
     public virtual ICollection<ConversationMember> Conversations { get; set; } = new List<ConversationMember>();
 }

@@ -1,4 +1,13 @@
+using System.Reflection;
+using FluentValidation;
+using Microsoft.AspNetCore.Mvc;
+using Moji.BusinessLogic.Models.Auth;
 using Moji.BusinessLogic.Services.Auth;
+using Moji.BusinessLogic.Services.Conversations;
+using Moji.BusinessLogic.Services.Friends;
+using Moji.BusinessLogic.Services.Messages;
+using Moji.BusinessLogic.Services.Users;
+using Moji.DataAccess.Commons.DbTransactionManagers;
 using Moji.DataAccess.Repositories;
 using Moji.DataAccess.Repositories.Impl;
 
@@ -28,10 +37,24 @@ public static class ApplicationServiceExtensions
     {
         services.AddSingleton(TimeProvider.System);
         
+        //add db manager transaction service
+        services.AddScoped<IDbTransactionManager, DbTransactionManager>();
+        
+        //add fluent validation
+        services.AddValidatorsFromAssembly(typeof(RegisterRequest).Assembly);
+
+        services.Configure<ApiBehaviorOptions>(options =>
+        {
+            options.SuppressModelStateInvalidFilter = true;
+        });
         //config services
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IFriendShipService, FriendShipService>();
+        services.AddScoped<IMessageService, MessageService>();
+        services.AddScoped<IConversationService, ConversationService>();
+        services.AddScoped<IPresenceService, PresenceService>();
         return services;
     }
 
@@ -40,6 +63,9 @@ public static class ApplicationServiceExtensions
         //config repositories
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IUserTokenRepository, UserTokenRepository>();
+        services.AddScoped<IFriendShipRepository, FriendShipRepository>();
+        services.AddScoped<IConversationRepository, ConversationRepository>();
+        services.AddScoped<IMessageRepository, MessageRepository>();
         return services;
     }
 }
