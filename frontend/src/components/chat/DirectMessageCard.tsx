@@ -7,9 +7,11 @@ import { cn } from "@/lib/utils";
 import UserAvatar from "./UserAvatar";
 import StatusBadge from "./StatusBadge";
 import UnreadCountBadge from "./UnreadCountBadge";
+import { usePresenceStore } from "@/stores/usePresenceStore";
 
 const DirectMessageCard = ({ convo }: { convo: Conversation }) => {
   const { user } = useAuthStore();
+  const { isOnline } = usePresenceStore();
   const {
     activeConversationId,
     setActiveConversation,
@@ -53,7 +55,9 @@ const DirectMessageCard = ({ convo }: { convo: Conversation }) => {
           />
           {/* todo: status badge */}
           {/* todo: socket.io */}
-          <StatusBadge status="offline" />
+          <StatusBadge
+            status={isOnline(otherUser.userId) ? "online" : "offline"}
+          />
           {/* todo: unread count */}
           {unreadCount > 0 && <UnreadCountBadge unreadCount={unreadCount} />}
         </>

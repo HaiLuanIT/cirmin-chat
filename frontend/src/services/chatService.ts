@@ -1,5 +1,5 @@
 import api from "@/lib/axios";
-import type { Conversation, ConversationResponse, Message } from "@/types/chat";
+import type { ConversationResponse, Message } from "@/types/chat";
 
 const pageLimit = 50;
 interface FetchMessageProps {
@@ -26,15 +26,14 @@ export const chatService = {
   },
 
   async sendMessage(
-    receiverId?: string,
     content: string = "",
     imgUrl?: string,
     conversationId?: string,
   ) {
     const res = await api.post("/message/send", {
-      receiverId,
       content,
       conversationId,
+      imgUrl,
     });
     return res.data;
   },
