@@ -11,7 +11,6 @@ export const useSignalR = () => {
 
   useEffect(() => {
     if (!token) {
-      console.warn("Không có access token");
       return;
     }
     const connection = signalRService.initConnection(
