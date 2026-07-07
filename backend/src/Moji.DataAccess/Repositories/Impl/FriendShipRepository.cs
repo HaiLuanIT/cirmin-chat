@@ -100,7 +100,24 @@ public class FriendShipRepository : IFriendShipRepository
                 x.UserLeftId == userLeftNormalize && x.UserRightId == userRightNormalize &&
                 x.Status == FriendShipStatus.Accept);
     }
-    
+
+    public async Task<List<Guid>> GetFriendIds(Guid userId)
+    {
+        //if is a request, get receiver
+        var asRequest = await _context.Friendships
+            .Where(x => x.UserLeftId == userId && x.Status == FriendShipStatus.Accept)
+            .Select(x =>
+                x.UserRightId)
+            .ToListAsync();
+
+        //if is a receiver, get requester
+        var asReceive = await _context.Friendships
+            .Where(x => x.UserRightId == userId && x.Status == FriendShipStatus.Accept)
+            .Select(x => x.UserLeftId)
+            .ToListAsync();
+        return asRequest.Concat(asReceive).ToList();
+    }
+
     //helper
     private (Guid, Guid) NormalizeRelationShip(Guid userA, Guid userB)
     {
