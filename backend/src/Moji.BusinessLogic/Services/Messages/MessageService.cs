@@ -1,13 +1,11 @@
 ﻿using FluentValidation;
-using Microsoft.AspNetCore.SignalR;
-using Microsoft.EntityFrameworkCore;
 using Moji.BusinessLogic.Exceptions;
 using Moji.BusinessLogic.Helpers;
 using Moji.BusinessLogic.Models;
+using Moji.BusinessLogic.Models.Conversations;
 using Moji.BusinessLogic.Models.CursorPagination;
 using Moji.BusinessLogic.Services.Friends;
 using Moji.DataAccess.Commons.DbTransactionManagers;
-using Moji.DataAccess.Configurations;
 using Moji.DataAccess.Entities;
 using Moji.DataAccess.Repositories;
 
@@ -20,19 +18,22 @@ public class MessageService : IMessageService
     private readonly IConversationRepository _conversationRepository;
     private readonly IDbTransactionManager _txManager;
     private readonly IValidator<SendMessageRequest> _sendMessageValidator;
+    private readonly IMessageNotificationService _messageNotificationService;
 
     public MessageService(IFriendShipService friendShipService, IDbTransactionManager txManager,
         IMessageRepository messageRepository, IConversationRepository conversationRepository,
-        IValidator<SendMessageRequest> sendMessageValidator)
+        IValidator<SendMessageRequest> sendMessageValidator,
+        IMessageNotificationService messageNotificationService)
     {
         _sendMessageValidator = sendMessageValidator;
         _friendShipService = friendShipService;
         _txManager = txManager;
         _messageRepository = messageRepository;
         _conversationRepository = conversationRepository;
+        _messageNotificationService = messageNotificationService;
     }
 
-    public async Task<SendMessageResponse> SendMessage(Guid senderId, SendMessageRequest request)
+    public async Task SendMessage(Guid senderId, SendMessageRequest request)
     {
         //validate request
         var validationResult = await _sendMessageValidator.ValidateAsync(request);
@@ -78,8 +79,44 @@ public class MessageService : IMessageService
             throw;
         }
 
-        return new SendMessageResponse(message.Id, message.SenderId, message.ConversationId, message.Content,
-            message.CreatedAt);
+        var messageResponse = await _messageRepository.GetMessageById(message.Id, m => new MessageResponse
+        {
+            Id = m.Id,
+            ConversationId = m.ConversationId,
+            Content = m.Content,
+            Sender = new SenderResponse
+            {
+                SenderId = m.SenderId,
+                DisplayName = m.Sender.FullName,
+                AvatarUrl = m.Sender.AvatarUrl
+            },
+            SentAt = m.CreatedAt
+        });
+        var conversationResponse = new ConversationModel
+        (
+            conversation.Id,
+            conversation.Name,
+            conversation.IsGroup,
+            conversation.CreatedAt,
+            new LastMessageModel(
+                conversation.LastMessageId,
+                conversation.LastMessage,
+                conversation.LastMessageTime
+            ),
+            conversation.Members.Where(m => m.UserId == senderId).Select(m => m.UnreadCount)
+                .FirstOrDefault(),
+            conversation.Members.Select(x => new ConversationMemberModel(x.UserId, x.User.FullName, x.User.AvatarUrl))
+                .ToList()
+        );
+        try
+        {
+            await _messageNotificationService.BroadcastMessageToConversationAsync(conversation.Id.ToString(),
+                messageResponse, conversationResponse);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine("Lỗi khi thông báo tin nhắn mới cho client");
+        }
     }
 
     public async Task<CursorResponse<MessageResponse>> GetConversationMessages(Guid currentUserId, Guid conversationId,
@@ -89,7 +126,7 @@ public class MessageService : IMessageService
         var isMember = await _conversationRepository.IsMember(currentUserId, conversationId);
 
         if (!isMember) throw new MojiBadRequestException("Bạn không có quyền truy cập đoạn hội thoại này");
-        
+
         var (lastId, lastDate) = CursorPaginationHelper.Decode(cursor);
         var messages = await _messageRepository.GetPagedMessagesAsync(conversationId, lastId, lastDate, limit, m =>
             new MessageResponse
