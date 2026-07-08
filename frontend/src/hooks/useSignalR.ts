@@ -3,10 +3,13 @@ import React, { useEffect } from "react";
 import { signalRService } from "@/services/signalRService";
 import * as signalR from "@microsoft/signalr";
 import { useAuthStore } from "@/stores/useAuthStore";
+import { useChatStore } from "@/stores/useChatStore";
+import type { Conversation, Message } from "@/types/chat";
 
 export const useSignalR = () => {
   const setOnlineUsers = usePresenceStore((s) => s.setOnlineUsers);
   const setStatusUser = usePresenceStore((s) => s.setStatusUser);
+  const addMessage = useChatStore((s) => s.addMessage);
   const token = useAuthStore((s) => s.accessToken);
 
   useEffect(() => {
@@ -24,9 +27,19 @@ export const useSignalR = () => {
     const handleSetUserStatus = (userId: string, isOnline: boolean) => {
       setStatusUser(userId, isOnline);
     };
+
+    const handleAddMessage = (
+      messageResponse: Message,
+      conversationResponse: Conversation,
+    ) => {
+      addMessage(messageResponse);
+      useChatStore.getState().updateConversation(conversationResponse);
+    };
     connection.on("GetOnlineUsers", handleSetOnlineUsers);
 
     connection.on("UserStatusChanged", handleSetUserStatus);
+
+    connection.on("ReceiveMessage", handleAddMessage);
 
     if (connection.state === signalR.HubConnectionState.Disconnected) {
       connection
@@ -37,6 +50,7 @@ export const useSignalR = () => {
     return () => {
       connection.off("GetOnlineUsers", handleSetOnlineUsers);
       connection.off("UserStatusChanged", handleSetUserStatus);
+      connection.off("ReceiveMessage", handleAddMessage);
       console.log("Tắt lắng nghe sự kiện SignalR");
     };
   }, [token, setOnlineUsers, setStatusUser]);

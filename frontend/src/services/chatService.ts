@@ -10,7 +10,6 @@ interface FetchMessageProps {
 export const chatService = {
   async fetchConversations(): Promise<ConversationResponse> {
     const res = await api.get("/Conversations");
-    console.log("Group1", res.data);
     return res.data;
   },
 
