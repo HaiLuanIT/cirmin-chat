@@ -101,6 +101,46 @@ export const useChatStore = create<ChatState>()(
           console.error("Lỗi xảy ra khi gửi tin nhắn", error);
         }
       },
+      addMessage: async (message) => {
+        try {
+          const { user } = useAuthStore.getState();
+          const { fetchMessages } = get();
+          message.isOwn = message.sender.senderId === user?.id;
+          const convoId = message.conversationId;
+
+          let prevItems = get().messages[convoId]?.items ?? [];
+
+          if (prevItems.length === 0) {
+            await fetchMessages(message.conversationId);
+            prevItems = get().messages[convoId]?.items ?? [];
+          }
+
+          set((state) => {
+            if (prevItems.some((m) => m.id === message.id)) {
+              return state;
+            }
+            return {
+              messages: {
+                ...state.messages,
+                [convoId]: {
+                  items: [message, ...prevItems],
+                  hasMore: state.messages[convoId].hasMore,
+                  nextCursor: state.messages[convoId].nextCursor ?? undefined,
+                },
+              },
+            };
+          });
+        } catch (error) {
+          console.error("Lỗi xảy ra khi add mesage", error);
+        }
+      },
+      updateConversation: (conversation) => {
+        set((state) => ({
+          conversations: state.conversations.map((c) =>
+            c.id === conversation.id ? { ...c, ...conversation } : c,
+          ),
+        }));
+      },
     }),
     {
       name: "chat-storage",
