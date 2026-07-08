@@ -28,6 +28,7 @@ public class ConversationRepository : IConversationRepository
     {
         return await _context.Conversations
             .Include(x => x.Members)
+            .ThenInclude(x => x.User)
             .FirstOrDefaultAsync(x => x.Id == id);
     }
 

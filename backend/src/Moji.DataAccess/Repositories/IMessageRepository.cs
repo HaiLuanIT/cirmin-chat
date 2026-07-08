@@ -13,4 +13,6 @@ public interface IMessageRepository
         DateTimeOffset? lastDate,
         int limit,
         Expression<Func<Message, TResult>> selector);
+
+    Task<TResult> GetMessageById<TResult>(long id, Expression<Func<Message, TResult>> selector);
 }

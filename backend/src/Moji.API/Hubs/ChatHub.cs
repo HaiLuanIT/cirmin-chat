@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.SignalR;
 using Moji.BusinessLogic.Services.Conversations;
 using Moji.BusinessLogic.Services.Friends;
 using Moji.BusinessLogic.Services.Users;
-using Moji.DataAccess.Repositories;
 
 namespace Moji.API.Hubs;
 
@@ -38,6 +37,13 @@ public class ChatHub : Hub<IChatClient>
             await Clients.Users(friendIds).UserStatusChanged(userId.ToString(), true);
         }
         
+        //add user to group conversation
+        var conversationIds = await _conversationService.GetJoinedConversationId(userId);
+        foreach (var conversationId in conversationIds)
+        {
+            await Groups.AddToGroupAsync(Context.ConnectionId, conversationId);
+        }
+        
         await base.OnConnectedAsync();
     }
 
@@ -50,6 +56,12 @@ public class ChatHub : Hub<IChatClient>
         {
             var friendIds = await _friendShipService.GetFriendIds(userId);
             await Clients.Users(friendIds).UserStatusChanged(userId.ToString(), false);
+        }
+        //remove user to all group conversation
+        var conversationIds = await _conversationService.GetJoinedConversationId(userId);
+        foreach (var conversationId in conversationIds)
+        {
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, conversationId);
         }
         await base.OnDisconnectedAsync(exception);
     }
