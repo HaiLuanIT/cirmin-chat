@@ -38,4 +38,9 @@ public class MessageRepository : IMessageRepository
             .Select(selector)
             .ToListAsync();
     }
+
+    public async Task<TResult> GetMessageById<TResult>(long id, Expression<Func<Message, TResult>> selector)
+    {
+        return await _context.Messages.AsNoTracking().Where(x => x.Id == id).Select(selector).FirstOrDefaultAsync();
+    }
 }

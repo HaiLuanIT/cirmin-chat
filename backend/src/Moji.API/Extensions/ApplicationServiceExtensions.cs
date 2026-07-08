@@ -1,6 +1,7 @@
 using System.Reflection;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
+using Moji.API.RealTimes;
 using Moji.BusinessLogic.Models.Auth;
 using Moji.BusinessLogic.Services.Auth;
 using Moji.BusinessLogic.Services.Conversations;
@@ -55,6 +56,7 @@ public static class ApplicationServiceExtensions
         services.AddScoped<IMessageService, MessageService>();
         services.AddScoped<IConversationService, ConversationService>();
         services.AddScoped<IPresenceService, PresenceService>();
+        services.AddScoped<IMessageNotificationService, MessageNotificationService>();
         return services;
     }
 

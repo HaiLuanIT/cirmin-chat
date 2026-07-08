@@ -1,8 +1,11 @@
-﻿namespace Moji.API.Hubs;
+﻿using Moji.BusinessLogic.Models;
+using Moji.BusinessLogic.Models.Conversations;
+
+namespace Moji.API.Hubs;
 
 public interface IChatClient
 {
-    Task ReceiveMessage(string conversationId, string message);
+    Task ReceiveMessage(MessageResponse messageResponse, ConversationModel conversationResponse);
 
     Task UserStatusChanged(string userId, bool isOnline);
 
