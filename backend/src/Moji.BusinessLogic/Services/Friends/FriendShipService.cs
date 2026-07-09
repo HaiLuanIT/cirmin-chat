@@ -1,12 +1,12 @@
 ﻿using System.Net;
 using FluentValidation;
 using Moji.BusinessLogic.Exceptions;
-using Moji.BusinessLogic.Models.FriendShips;
+using Moji.Contracts.Models.FriendShips;
+using Moji.Contracts.Models.FriendShips.AddFriend;
 using Moji.DataAccess.Commons.Constants;
 using Moji.DataAccess.Commons.DbTransactionManagers;
 using Moji.DataAccess.Entities;
 using Moji.DataAccess.Repositories;
-using Moji.DataAccess.Repositories.Models;
 
 namespace Moji.BusinessLogic.Services.Friends;
 
@@ -16,10 +16,10 @@ public class FriendShipService : IFriendShipService
     private readonly IUserRepository _userRepository;
     private readonly IConversationRepository _conversationRepository;
     private readonly IDbTransactionManager _dbTransactionManager;
-    private readonly IValidator<FriendRequestModel> _friendRequestValidator;
+    private readonly IValidator<AddFriendRequest> _friendRequestValidator;
 
     public FriendShipService(IFriendShipRepository friendShipRepository, IUserRepository userRepository,
-        IConversationRepository conversationRepository, IDbTransactionManager dbTransactionManager, IValidator<FriendRequestModel> friendRequestValidator)
+        IConversationRepository conversationRepository, IDbTransactionManager dbTransactionManager, IValidator<AddFriendRequest> friendRequestValidator)
     {
         _friendRequestValidator = friendRequestValidator;
         _friendShipRepository = friendShipRepository;
@@ -28,7 +28,7 @@ public class FriendShipService : IFriendShipService
         _dbTransactionManager = dbTransactionManager;
     }
 
-    public async Task AddFriend(Guid currentUserId, FriendRequestModel request)
+    public async Task AddFriend(Guid currentUserId, AddFriendRequest request)
     {
         var validationResult = await _friendRequestValidator.ValidateAsync(request);
         if (!validationResult.IsValid)
@@ -118,22 +118,18 @@ public class FriendShipService : IFriendShipService
     public async Task<List<FriendResponse>> GetFriendList(Guid userId)
     {
         var friendList = await _friendShipRepository.GetListFriend(userId);
-        var result = friendList.Select(x => new FriendResponse(
-            x.FriendId, x.fullName, x.avatarUrl, x.status
-        )).ToList();
-        return result;
+        return friendList;
     }
 
     public async Task<FriendRequestListResponse> GetFriendRequestList(Guid userId)
     {
         var requestInbound = await _friendShipRepository.GetInboundRequestsAsync(userId);
         var requestOutbound = await _friendShipRepository.GetOutboundRequestsAsync(userId);
-
-        //map
-        var requestInboundResponse = requestInbound.Select(x => MapToFriendRequestResponse(x)).ToList();
-        var requestOutboundResponse = requestOutbound.Select(x => MapToFriendRequestResponse(x)).ToList();
-
-        var result = new FriendRequestListResponse(requestInboundResponse, requestOutboundResponse);
+        var result = new FriendRequestListResponse
+        {
+            Inbound = requestInbound,
+            Outbound = requestOutbound
+        };
         return result;
     }
 
@@ -147,13 +143,5 @@ public class FriendShipService : IFriendShipService
     {
         var result = await _friendShipRepository.GetFriendIds(currentUserId);
         return result.Select(x => x.ToString()).ToList();
-    }
-
-    //helper
-    private FriendRequestResponse MapToFriendRequestResponse(FriendshipRawData rawData)
-    {
-        var response = new FriendRequestResponse(rawData.RequestId, rawData.FriendId, rawData.fullName,
-            rawData.avatarUrl, rawData.status);
-        return response;
     }
 }

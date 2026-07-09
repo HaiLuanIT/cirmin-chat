@@ -1,8 +1,10 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Moji.BusinessLogic.Models.Auth;
 using Moji.BusinessLogic.Services.Auth;
+using Moji.Contracts.Models.Auth;
+using Moji.Contracts.Models.Auth.Login;
+using Moji.Contracts.Models.Auth.Register;
 
 namespace Moji.API.Controllers;
 

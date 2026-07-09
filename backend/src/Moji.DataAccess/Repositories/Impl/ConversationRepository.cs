@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Moji.Contracts.Models.Conversations;
 using Moji.DataAccess.Configurations;
 using Moji.DataAccess.Entities;
-using Moji.DataAccess.Repositories.Models;
 
 namespace Moji.DataAccess.Repositories.Impl;
 
@@ -32,32 +32,32 @@ public class ConversationRepository : IConversationRepository
             .FirstOrDefaultAsync(x => x.Id == id);
     }
 
-    public async Task<List<ConversationRawData>> GetConversations(Guid userId)
+    public async Task<List<ConversationModel>> GetConversations(Guid userId)
     {
         return await _context.Conversations
             .Where(x => x.Members.Any(m => m.UserId == userId))
             .OrderByDescending(x => x.LastMessageTime ?? x.CreatedAt)
-            .Select(c => new ConversationRawData
+            .Select(c => new ConversationModel()
             {
                 Id = c.Id,
                 Name = c.Name,
                 IsGroup = c.IsGroup,
-                LastMessage = new LastMessageRawData
+                LastMessage = new LastMessageModel()
                 {
                     Id = c.LastMessageId,
-                    LastMessage = c.LastMessage,
+                    LastMessageContent = c.LastMessage,
                     LastMessageAt = c.LastMessageTime
                 },
                 CreatedAt = c.CreatedAt,
                 UnreadCount = c.Members.Where(m => m.UserId == userId).Select(m => m.UnreadCount).FirstOrDefault(),
                 Members = c.Members.OrderBy(m => m.JoinedAt)
                     .Take(c.IsGroup ? 4 : 2)
-                    .Select(cm => new ConversationMemberRawData
+                    .Select(cm => new ConversationMemberModel
                     {
                         UserId = cm.UserId,
                         DisplayName = cm.User.FullName,
                         AvatarUrl = cm.User.AvatarUrl
-                    })
+                    }).ToList()
             })
             .ToListAsync();
     }

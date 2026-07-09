@@ -1,6 +1,6 @@
-﻿using Moji.BusinessLogic.Models;
-using Moji.BusinessLogic.Models.Conversations;
-using Moji.BusinessLogic.Models.CursorPagination;
+﻿using Moji.Contracts.Models.CursorPagination;
+using Moji.Contracts.Models.Messages;
+using Moji.Contracts.Models.Messages.SendMessage;
 
 namespace Moji.BusinessLogic.Services.Messages;
 

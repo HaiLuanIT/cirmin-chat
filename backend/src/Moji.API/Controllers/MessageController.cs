@@ -2,9 +2,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Moji.API.Hubs;
-using Moji.BusinessLogic.Models;
 using Moji.BusinessLogic.Services.Conversations;
 using Moji.BusinessLogic.Services.Messages;
+using Moji.Contracts.Models.Messages.SendMessage;
 
 namespace Moji.API.Controllers;
 

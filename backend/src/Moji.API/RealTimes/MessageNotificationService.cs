@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Moji.API.Hubs;
-using Moji.BusinessLogic.Models;
-using Moji.BusinessLogic.Models.Conversations;
 using Moji.BusinessLogic.Services.Messages;
+using Moji.Contracts.Models.Conversations;
+using Moji.Contracts.Models.Messages;
 
 namespace Moji.API.RealTimes;
 

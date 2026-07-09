@@ -2,8 +2,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Moji.BusinessLogic.Exceptions;
-using Moji.BusinessLogic.Models.FriendShips;
 using Moji.BusinessLogic.Services.Friends;
+using Moji.Contracts.Models.FriendShips.AddFriend;
 using Moji.DataAccess.Commons.Constants;
 
 namespace Moji.API.Controllers;
@@ -33,7 +33,7 @@ public class FriendsController : BaseApiController
     }
     
     [HttpPost]
-    public async Task<IActionResult> AddFriend([FromBody] FriendRequestModel request)
+    public async Task<IActionResult> AddFriend([FromBody] AddFriendRequest request)
     {
         await _friendShipService.AddFriend(CurrentUserId, request);
         return StatusCode(201,"Gửi lời mời kết bạn thành công");

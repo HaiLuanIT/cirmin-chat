@@ -1,7 +1,9 @@
 using FluentValidation;
 using Microsoft.Extensions.Configuration;
 using Moji.BusinessLogic.Exceptions;
-using Moji.BusinessLogic.Models.Auth;
+using Moji.Contracts.Models.Auth;
+using Moji.Contracts.Models.Auth.Login;
+using Moji.Contracts.Models.Auth.Register;
 using Moji.DataAccess.Commons.DbTransactionManagers;
 using Moji.DataAccess.Entities;
 using Moji.DataAccess.Repositories;
