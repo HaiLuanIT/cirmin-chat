@@ -49,7 +49,8 @@ export interface ChatState {
   fetchMessages: (conversationId?: string) => Promise<void>;
   sendMessage: (content: string, imgUrl?: string) => Promise<void>;
   addMessage: (message: Message) => Promise<void>;
-  updateConversation: (conversation: Conversation) => void;
+  updateConversation: (message: Message) => void;
+  markAsSeen: (conversationId: string) => Promise<void>;
 }
 
 export interface PresenceState {

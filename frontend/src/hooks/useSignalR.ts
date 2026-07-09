@@ -4,12 +4,13 @@ import { signalRService } from "@/services/signalRService";
 import * as signalR from "@microsoft/signalr";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { useChatStore } from "@/stores/useChatStore";
-import type { Conversation, Message } from "@/types/chat";
+import type { Message } from "@/types/chat";
 
 export const useSignalR = () => {
   const setOnlineUsers = usePresenceStore((s) => s.setOnlineUsers);
   const setStatusUser = usePresenceStore((s) => s.setStatusUser);
   const addMessage = useChatStore((s) => s.addMessage);
+  const markAsSeen = useChatStore((s) => s.markAsSeen);
   const token = useAuthStore((s) => s.accessToken);
 
   useEffect(() => {
@@ -28,13 +29,11 @@ export const useSignalR = () => {
       setStatusUser(userId, isOnline);
     };
 
-    const handleAddMessage = (
-      messageResponse: Message,
-      conversationResponse: Conversation,
-    ) => {
+    const handleAddMessage = (messageResponse: Message) => {
       addMessage(messageResponse);
-      useChatStore.getState().updateConversation(conversationResponse);
+      useChatStore.getState().updateConversation(messageResponse);
     };
+
     connection.on("GetOnlineUsers", handleSetOnlineUsers);
 
     connection.on("UserStatusChanged", handleSetUserStatus);

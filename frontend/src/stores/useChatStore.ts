@@ -134,12 +134,43 @@ export const useChatStore = create<ChatState>()(
           console.error("Lỗi xảy ra khi add mesage", error);
         }
       },
-      updateConversation: (conversation) => {
-        set((state) => ({
-          conversations: state.conversations.map((c) =>
-            c.id === conversation.id ? { ...c, ...conversation } : c,
-          ),
-        }));
+      updateConversation: (message) => {
+        const { user } = useAuthStore.getState();
+        set((state) => {
+          const updateConversations = state.conversations.map((c) => {
+            if (c.id === message.conversationId) {
+              const isCurrentChatting = c.id === get().activeConversationId;
+              return {
+                ...c,
+                lastMessage: {
+                  id: message.id,
+                  lastMessageContent: message.content,
+                  lastMessageAt: message.sentAt,
+                },
+                unreadCount:
+                  !isCurrentChatting && message.sender.senderId !== user.id
+                    ? c.unreadCount + 1
+                    : c.unreadCount,
+              };
+            }
+            return c;
+          });
+          return {
+            conversations: updateConversations,
+          };
+        });
+      },
+      markAsSeen: async (conversationId) => {
+        try {
+          await chatService.markAsSeenMessage(conversationId);
+          set((state) => ({
+            conversations: state.conversations.map((c) =>
+              c.id === conversationId ? { ...c, unreadCount: 0 } : c,
+            ),
+          }));
+        } catch (error) {
+          console.error("Lỗi xảy ra khi đánh dấu tin nhắn đã xem!", error);
+        }
       },
     }),
     {
