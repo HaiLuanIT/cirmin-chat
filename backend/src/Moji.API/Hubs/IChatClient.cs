@@ -5,9 +5,11 @@ namespace Moji.API.Hubs;
 
 public interface IChatClient
 {
-    Task ReceiveMessage(MessageResponse messageResponse, ConversationModel conversationResponse);
+    Task ReceiveMessage(MessageResponse messageResponse);
 
     Task UserStatusChanged(string userId, bool isOnline);
 
     Task GetOnlineUsers(List<string> userIds);
+
+    Task MarkAsSeen(string userId, string conversationId);
 }
