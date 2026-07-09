@@ -19,4 +19,8 @@
       <ProjectReference Include="..\Moji.DataAccess\Moji.DataAccess.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Models\" />
+    </ItemGroup>
+
 </Project>

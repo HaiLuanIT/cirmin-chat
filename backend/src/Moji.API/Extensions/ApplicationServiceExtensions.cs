@@ -2,16 +2,16 @@ using System.Reflection;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Moji.API.RealTimes;
-using Moji.BusinessLogic.Models.Auth;
 using Moji.BusinessLogic.Services.Auth;
 using Moji.BusinessLogic.Services.Conversations;
 using Moji.BusinessLogic.Services.Friends;
 using Moji.BusinessLogic.Services.Messages;
 using Moji.BusinessLogic.Services.Users;
+using Moji.Contracts.Models.Auth.Register;
 using Moji.DataAccess.Commons.DbTransactionManagers;
 using Moji.DataAccess.Repositories;
 using Moji.DataAccess.Repositories.Impl;
-
+    
 namespace Moji.API.Extensions;
 
 public static class ApplicationServiceExtensions

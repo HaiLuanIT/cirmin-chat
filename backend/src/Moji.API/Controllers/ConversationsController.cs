@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Moji.BusinessLogic.Models.Conversations;
 using Moji.BusinessLogic.Services.Conversations;
 using Moji.BusinessLogic.Services.Messages;
+using Moji.Contracts.Models.Conversations.CreateConversation;
 
 namespace Moji.API.Controllers;
 

@@ -1,4 +1,6 @@
-using Moji.BusinessLogic.Models.Auth;
+using Moji.Contracts.Models.Auth;
+using Moji.Contracts.Models.Auth.Login;
+using Moji.Contracts.Models.Auth.Register;
 
 namespace Moji.BusinessLogic.Services.Auth;
 

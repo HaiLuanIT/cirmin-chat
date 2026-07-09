@@ -1,10 +1,11 @@
 ﻿using FluentValidation;
 using Moji.BusinessLogic.Exceptions;
 using Moji.BusinessLogic.Helpers;
-using Moji.BusinessLogic.Models;
-using Moji.BusinessLogic.Models.Conversations;
-using Moji.BusinessLogic.Models.CursorPagination;
 using Moji.BusinessLogic.Services.Friends;
+using Moji.Contracts.Models.Conversations;
+using Moji.Contracts.Models.CursorPagination;
+using Moji.Contracts.Models.Messages;
+using Moji.Contracts.Models.Messages.SendMessage;
 using Moji.DataAccess.Commons.DbTransactionManagers;
 using Moji.DataAccess.Entities;
 using Moji.DataAccess.Repositories;
@@ -79,35 +80,32 @@ public class MessageService : IMessageService
             throw;
         }
 
-        var messageResponse = await _messageRepository.GetMessageById(message.Id, m => new MessageResponse
-        {
-            Id = m.Id,
-            ConversationId = m.ConversationId,
-            Content = m.Content,
-            Sender = new SenderResponse
-            {
-                SenderId = m.SenderId,
-                DisplayName = m.Sender.FullName,
-                AvatarUrl = m.Sender.AvatarUrl
-            },
-            SentAt = m.CreatedAt
-        });
+        var messageResponse = await _messageRepository.GetMessageById(message.Id);
         var conversationResponse = new ConversationModel
-        (
-            conversation.Id,
-            conversation.Name,
-            conversation.IsGroup,
-            conversation.CreatedAt,
-            new LastMessageModel(
-                conversation.LastMessageId,
-                conversation.LastMessage,
-                conversation.LastMessageTime
-            ),
-            conversation.Members.Where(m => m.UserId == senderId).Select(m => m.UnreadCount)
-                .FirstOrDefault(),
-            conversation.Members.Select(x => new ConversationMemberModel(x.UserId, x.User.FullName, x.User.AvatarUrl))
-                .ToList()
-        );
+        {
+            Id = conversation.Id,
+            Name = conversation.Name,
+            IsGroup = conversation.IsGroup,
+            CreatedAt = conversation.CreatedAt,
+            LastMessage =
+                new LastMessageModel
+                {
+                    Id = conversation.LastMessageId,
+                    LastMessageContent = conversation.LastMessage,
+                    LastMessageAt = conversation.LastMessageTime
+                },
+            UnreadCount =
+                conversation.Members.Where(m => m.UserId == senderId).Select(m => m.UnreadCount)
+                    .FirstOrDefault(),
+            Members =
+                conversation.Members.Select(x => new ConversationMemberModel
+                    {
+                        UserId = x.UserId,
+                        DisplayName = x.User.FullName,
+                        AvatarUrl = x.User.AvatarUrl
+                    })
+                    .ToList()
+        };
         try
         {
             await _messageNotificationService.BroadcastMessageToConversationAsync(conversation.Id.ToString(),
@@ -128,20 +126,8 @@ public class MessageService : IMessageService
         if (!isMember) throw new MojiBadRequestException("Bạn không có quyền truy cập đoạn hội thoại này");
 
         var (lastId, lastDate) = CursorPaginationHelper.Decode(cursor);
-        var messages = await _messageRepository.GetPagedMessagesAsync(conversationId, lastId, lastDate, limit, m =>
-            new MessageResponse
-            {
-                Id = m.Id,
-                ConversationId = m.ConversationId,
-                Content = m.Content,
-                Sender = new SenderResponse
-                {
-                    SenderId = m.SenderId,
-                    DisplayName = m.Sender.FullName,
-                    AvatarUrl = m.Sender.AvatarUrl
-                },
-                SentAt = m.CreatedAt
-            });
+        var messages = await _messageRepository.GetPagedMessagesAsync(conversationId, lastId, lastDate, limit
+        );
 
         var hasMore = messages.Count > limit;
         DateTimeOffset? nextDate = hasMore ? messages[^1].SentAt : null;

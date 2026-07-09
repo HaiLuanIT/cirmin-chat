@@ -1,5 +1,6 @@
 ﻿using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
+using Moji.Contracts.Models.Messages;
 using Moji.DataAccess.Configurations;
 using Moji.DataAccess.Entities;
 
@@ -19,8 +20,8 @@ public class MessageRepository : IMessageRepository
         _context.Messages.Add(message);
     }
 
-    public async Task<List<TResult>> GetPagedMessagesAsync<TResult>(Guid conversationId, long? lastId,
-        DateTimeOffset? lastDate, int limit, Expression<Func<Message, TResult>> selector)
+    public async Task<List<MessageResponse>> GetPagedMessagesAsync(Guid conversationId, long? lastId,
+        DateTimeOffset? lastDate, int limit)
     {
         var query = _context.Messages
             .AsNoTracking()
@@ -35,12 +36,36 @@ public class MessageRepository : IMessageRepository
             .OrderByDescending(m => m.CreatedAt)
             .ThenByDescending(m => m.Id)
             .Take(limit + 1)
-            .Select(selector)
+            .Select(m => new MessageResponse
+            {
+                Id = m.Id,
+                ConversationId = m.ConversationId,
+                Content = m.Content,
+                Sender = new SenderResponse
+                {
+                    SenderId = m.SenderId,
+                    DisplayName = m.Sender.FullName,
+                    AvatarUrl = m.Sender.AvatarUrl
+                },
+                SentAt = m.CreatedAt
+            })
             .ToListAsync();
     }
 
-    public async Task<TResult> GetMessageById<TResult>(long id, Expression<Func<Message, TResult>> selector)
+    public async Task<MessageResponse> GetMessageById(long id)
     {
-        return await _context.Messages.AsNoTracking().Where(x => x.Id == id).Select(selector).FirstOrDefaultAsync();
+        return await _context.Messages.AsNoTracking().Where(x => x.Id == id).Select(m => new MessageResponse
+        {
+            Id = m.Id,
+            ConversationId = m.ConversationId,
+            Content = m.Content,
+            Sender = new SenderResponse
+            {
+                SenderId = m.SenderId,
+                DisplayName = m.Sender.FullName,
+                AvatarUrl = m.Sender.AvatarUrl
+            },
+            SentAt = m.CreatedAt
+        }).FirstOrDefaultAsync();
     }
 }

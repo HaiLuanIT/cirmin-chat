@@ -1,5 +1,5 @@
-﻿using Moji.DataAccess.Entities;
-using Moji.DataAccess.Repositories.Models;
+﻿using Moji.Contracts.Models.FriendShips;
+using Moji.DataAccess.Entities;
 
 namespace Moji.DataAccess.Repositories;
 
@@ -15,11 +15,11 @@ public interface IFriendShipRepository
     
     void Delete(FriendShip friendShip);
 
-    Task<List<FriendshipRawData>> GetListFriend(Guid userId);
+    Task<List<FriendResponse>> GetListFriend(Guid userId);
 
-    Task<List<FriendshipRawData>> GetInboundRequestsAsync(Guid userId);
+    Task<List<FriendRequestResponse>> GetInboundRequestsAsync(Guid userId);
     
-    Task<List<FriendshipRawData>> GetOutboundRequestsAsync(Guid userId);
+    Task<List<FriendRequestResponse>> GetOutboundRequestsAsync(Guid userId);
     
     Task<bool> IsFriend(Guid userId, Guid friendId);
 
