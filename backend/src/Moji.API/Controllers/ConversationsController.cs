@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Moji.BusinessLogic.Models.Conversations;
 using Moji.BusinessLogic.Services.Conversations;
 using Moji.BusinessLogic.Services.Messages;
+using Moji.Contracts.Models.Conversations.CreateConversation;
 
 namespace Moji.API.Controllers;
 
@@ -42,5 +42,11 @@ public class ConversationsController : BaseApiController
         var result = await _messageService.GetConversationMessages(CurrentUserId, id, limit, cursor);
         return Ok(result);
     }
-    
+
+    [HttpPost("{id:guid}/mark-as-seen")]
+    public async Task<IActionResult> MarkAsSeen([FromRoute] Guid id)
+    {
+        await _messageService.MarkAsSeen(CurrentUserId, id);
+        return Ok();
+    }
 }

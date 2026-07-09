@@ -1,4 +1,5 @@
-﻿using Moji.BusinessLogic.Models.Conversations;
+﻿using Moji.Contracts.Models.Conversations;
+using Moji.Contracts.Models.Conversations.CreateConversation;
 
 namespace Moji.BusinessLogic.Services.Conversations;
 

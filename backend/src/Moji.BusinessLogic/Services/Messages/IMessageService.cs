@@ -1,6 +1,6 @@
-﻿using Moji.BusinessLogic.Models;
-using Moji.BusinessLogic.Models.Conversations;
-using Moji.BusinessLogic.Models.CursorPagination;
+﻿using Moji.Contracts.Models.CursorPagination;
+using Moji.Contracts.Models.Messages;
+using Moji.Contracts.Models.Messages.SendMessage;
 
 namespace Moji.BusinessLogic.Services.Messages;
 
@@ -10,4 +10,6 @@ public interface IMessageService
 
     Task<CursorResponse<MessageResponse>> GetConversationMessages(Guid currentUserId, Guid conversationId, int limit,
         string? cursor);
+
+    Task MarkAsSeen(Guid currentUserId, Guid conversationId);
 }

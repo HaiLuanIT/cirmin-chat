@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Moji.Contracts.Models.Conversations;
 using Moji.DataAccess.Configurations;
 using Moji.DataAccess.Entities;
-using Moji.DataAccess.Repositories.Models;
 
 namespace Moji.DataAccess.Repositories.Impl;
 
@@ -24,6 +24,11 @@ public class ConversationRepository : IConversationRepository
         _context.Entry(conversation).State = EntityState.Modified;
     }
 
+    public void Update(ConversationMember conversationMember)
+    {
+        _context.Entry(conversationMember).State = EntityState.Modified;
+    }
+
     public async Task<Conversation?> FindByIdAsync(Guid id)
     {
         return await _context.Conversations
@@ -32,32 +37,32 @@ public class ConversationRepository : IConversationRepository
             .FirstOrDefaultAsync(x => x.Id == id);
     }
 
-    public async Task<List<ConversationRawData>> GetConversations(Guid userId)
+    public async Task<List<ConversationModel>> GetConversations(Guid userId)
     {
         return await _context.Conversations
             .Where(x => x.Members.Any(m => m.UserId == userId))
             .OrderByDescending(x => x.LastMessageTime ?? x.CreatedAt)
-            .Select(c => new ConversationRawData
+            .Select(c => new ConversationModel()
             {
                 Id = c.Id,
                 Name = c.Name,
                 IsGroup = c.IsGroup,
-                LastMessage = new LastMessageRawData
+                LastMessage = new LastMessageModel()
                 {
                     Id = c.LastMessageId,
-                    LastMessage = c.LastMessage,
+                    LastMessageContent = c.LastMessage,
                     LastMessageAt = c.LastMessageTime
                 },
                 CreatedAt = c.CreatedAt,
                 UnreadCount = c.Members.Where(m => m.UserId == userId).Select(m => m.UnreadCount).FirstOrDefault(),
                 Members = c.Members.OrderBy(m => m.JoinedAt)
                     .Take(c.IsGroup ? 4 : 2)
-                    .Select(cm => new ConversationMemberRawData
+                    .Select(cm => new ConversationMemberModel
                     {
                         UserId = cm.UserId,
                         DisplayName = cm.User.FullName,
                         AvatarUrl = cm.User.AvatarUrl
-                    })
+                    }).ToList()
             })
             .ToListAsync();
     }
@@ -73,5 +78,16 @@ public class ConversationRepository : IConversationRepository
         var result = await _context.ConversationMembers.Where(x => x.UserId == userId)
             .Select(x => x.ConversationId.ToString()).ToListAsync();
         return result;
+    }
+
+    public async Task<ConversationMember> GetConversationMember(Guid userId, Guid conversationId)
+    {
+        return await _context.ConversationMembers
+            .FirstOrDefaultAsync(x => x.UserId == userId && x.ConversationId == conversationId);
+    }
+
+    public async Task<long?> GetLatestMessageId(Guid conversationId)
+    {
+        return await _context.Conversations.Where(x => x.Id == conversationId).Select(x => x.LastMessageId).FirstOrDefaultAsync();
     }
 }

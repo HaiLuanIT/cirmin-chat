@@ -1,7 +1,8 @@
 ﻿using FluentValidation;
 using Moji.BusinessLogic.Exceptions;
-using Moji.BusinessLogic.Models.Conversations;
 using Moji.BusinessLogic.Services.Friends;
+using Moji.Contracts.Models.Conversations;
+using Moji.Contracts.Models.Conversations.CreateConversation;
 using Moji.DataAccess.Commons.DbTransactionManagers;
 using Moji.DataAccess.Entities;
 using Moji.DataAccess.Repositories;
@@ -79,18 +80,9 @@ public class ConversationService : IConversationService
 
     public async Task<ListConversationResponse> GetConversations(Guid currentUserId)
     {
-        var conversationsRawData = await _conversationRepository.GetConversations(currentUserId);
-        var conversations = new ListConversationResponse(conversationsRawData.Select(x => new ConversationModel(
-                x.Id,
-                x.Name,
-                x.IsGroup,
-                x.CreatedAt,
-                new LastMessageModel(x.LastMessage.Id, x.LastMessage.LastMessage, x.LastMessage.LastMessageAt),
-                x.UnreadCount,
-                x.Members.Select(m => new ConversationMemberModel(m.UserId, m.DisplayName, m.AvatarUrl)).ToList()
-            )
-        ).ToList());
-        return conversations;
+        var conversations = await _conversationRepository.GetConversations(currentUserId);
+        var conversationsResult = new ListConversationResponse(conversations);
+        return conversationsResult;
     }
 
     public async Task<bool> IsMember(Guid currentUserId, Guid conversationId)

@@ -1,10 +1,11 @@
 ﻿using FluentValidation;
 using Moji.BusinessLogic.Exceptions;
 using Moji.BusinessLogic.Helpers;
-using Moji.BusinessLogic.Models;
-using Moji.BusinessLogic.Models.Conversations;
-using Moji.BusinessLogic.Models.CursorPagination;
 using Moji.BusinessLogic.Services.Friends;
+using Moji.Contracts.Models.Conversations;
+using Moji.Contracts.Models.CursorPagination;
+using Moji.Contracts.Models.Messages;
+using Moji.Contracts.Models.Messages.SendMessage;
 using Moji.DataAccess.Commons.DbTransactionManagers;
 using Moji.DataAccess.Entities;
 using Moji.DataAccess.Repositories;
@@ -68,6 +69,16 @@ public class MessageService : IMessageService
 
             conversation.LastMessageId = message.Id;
             conversation.LastMessage = request.Content;
+            
+            //update lastmessage and unreadcount of member in conversations, instead of sender
+            foreach (var member in conversation.Members)
+            {
+                if (member.UserId != senderId)
+                {
+                    member.LastSeenMessageId = message.Id;
+                    member.UnreadCount += 1;
+                }
+            }
 
             _conversationRepository.Update(conversation);
             await _txManager.SaveChangesAsync();
@@ -79,39 +90,11 @@ public class MessageService : IMessageService
             throw;
         }
 
-        var messageResponse = await _messageRepository.GetMessageById(message.Id, m => new MessageResponse
-        {
-            Id = m.Id,
-            ConversationId = m.ConversationId,
-            Content = m.Content,
-            Sender = new SenderResponse
-            {
-                SenderId = m.SenderId,
-                DisplayName = m.Sender.FullName,
-                AvatarUrl = m.Sender.AvatarUrl
-            },
-            SentAt = m.CreatedAt
-        });
-        var conversationResponse = new ConversationModel
-        (
-            conversation.Id,
-            conversation.Name,
-            conversation.IsGroup,
-            conversation.CreatedAt,
-            new LastMessageModel(
-                conversation.LastMessageId,
-                conversation.LastMessage,
-                conversation.LastMessageTime
-            ),
-            conversation.Members.Where(m => m.UserId == senderId).Select(m => m.UnreadCount)
-                .FirstOrDefault(),
-            conversation.Members.Select(x => new ConversationMemberModel(x.UserId, x.User.FullName, x.User.AvatarUrl))
-                .ToList()
-        );
+        var messageResponse = await _messageRepository.GetMessageById(message.Id);
         try
         {
             await _messageNotificationService.BroadcastMessageToConversationAsync(conversation.Id.ToString(),
-                messageResponse, conversationResponse);
+                messageResponse);
         }
         catch (Exception e)
         {
@@ -128,20 +111,8 @@ public class MessageService : IMessageService
         if (!isMember) throw new MojiBadRequestException("Bạn không có quyền truy cập đoạn hội thoại này");
 
         var (lastId, lastDate) = CursorPaginationHelper.Decode(cursor);
-        var messages = await _messageRepository.GetPagedMessagesAsync(conversationId, lastId, lastDate, limit, m =>
-            new MessageResponse
-            {
-                Id = m.Id,
-                ConversationId = m.ConversationId,
-                Content = m.Content,
-                Sender = new SenderResponse
-                {
-                    SenderId = m.SenderId,
-                    DisplayName = m.Sender.FullName,
-                    AvatarUrl = m.Sender.AvatarUrl
-                },
-                SentAt = m.CreatedAt
-            });
+        var messages = await _messageRepository.GetPagedMessagesAsync(conversationId, lastId, lastDate, limit
+        );
 
         var hasMore = messages.Count > limit;
         DateTimeOffset? nextDate = hasMore ? messages[^1].SentAt : null;
@@ -161,5 +132,23 @@ public class MessageService : IMessageService
             NextCursor = nextCursor,
             HasMore = hasMore
         };
+    }
+
+    public async Task MarkAsSeen(Guid currentUserId, Guid conversationId)
+    {
+        var member = await _conversationRepository.GetConversationMember(currentUserId, conversationId);
+        if (member == null)
+        {
+            throw new MojiNotFoundException("Bạn không có trong cuộc hội thoại này!");
+        }
+        
+        var latestMessage = await _conversationRepository.GetLatestMessageId(conversationId);
+        if (latestMessage == null) return;
+
+        member.LastSeenMessageId = latestMessage ?? 0;
+        member.UnreadCount = 0;
+        _conversationRepository.Update(member);
+         await _txManager.SaveChangesAsync();
+        
     }
 }

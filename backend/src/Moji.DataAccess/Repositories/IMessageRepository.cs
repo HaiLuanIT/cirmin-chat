@@ -1,4 +1,5 @@
 ﻿using System.Linq.Expressions;
+using Moji.Contracts.Models.Messages;
 using Moji.DataAccess.Entities;
 
 namespace Moji.DataAccess.Repositories;
@@ -7,12 +8,11 @@ public interface IMessageRepository
 {
     void Add(Message message);
 
-    Task<List<TResult>> GetPagedMessagesAsync<TResult>(
+    Task<List<MessageResponse>> GetPagedMessagesAsync(
         Guid conversationId,
         long? lastId,
         DateTimeOffset? lastDate,
-        int limit,
-        Expression<Func<Message, TResult>> selector);
+        int limit);
 
-    Task<TResult> GetMessageById<TResult>(long id, Expression<Func<Message, TResult>> selector);
+    Task<MessageResponse> GetMessageById(long id);
 }

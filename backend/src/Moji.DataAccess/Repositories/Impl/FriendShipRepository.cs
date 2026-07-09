@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Moji.Contracts.Models.FriendShips;
 using Moji.DataAccess.Commons.Constants;
 using Moji.DataAccess.Configurations;
 using Moji.DataAccess.Entities;
-using Moji.DataAccess.Repositories.Models;
 
 namespace Moji.DataAccess.Repositories.Impl;
 
@@ -17,12 +17,13 @@ public class FriendShipRepository : IFriendShipRepository
 
     public void Add(FriendShip friendShip)
     {
-        var (userLeftNormalize, userRightNormalize) = NormalizeRelationShip(friendShip.UserLeftId, friendShip.UserRightId);
-        
+        var (userLeftNormalize, userRightNormalize) =
+            NormalizeRelationShip(friendShip.UserLeftId, friendShip.UserRightId);
+
         friendShip.UserLeftId = userLeftNormalize;
         friendShip.UserRightId = userRightNormalize;
-        
-         _context.Friendships.Add(friendShip);
+
+        _context.Friendships.Add(friendShip);
     }
 
     public async Task<FriendShip> FindRequestAsync(Guid userLeftId, Guid userRightId)
@@ -47,24 +48,36 @@ public class FriendShipRepository : IFriendShipRepository
         _context.Friendships.Remove(friendShip);
     }
 
-    public async Task<List<FriendshipRawData>> GetListFriend(Guid userId)
+    public async Task<List<FriendResponse>> GetListFriend(Guid userId)
     {
-        //if is a request, get receiver
+        //if is a left, get right
         var asRequest = await _context.Friendships
             .Where(x => x.UserLeftId == userId && x.Status == FriendShipStatus.Accept)
             .Select(x =>
-                new FriendshipRawData(x.UserRightId, x.UserRight.FullName, x.UserRight.AvatarUrl, x.Status, x.Id))
+                new FriendResponse
+                {
+                    UserId = x.UserRightId,
+                    DisplayName = x.UserRight.FullName,
+                    AvatarUrl = x.UserRight.AvatarUrl,
+                    Status = x.Status
+                })
             .ToListAsync();
 
-        //if is a receiver, get requester
+        //if is a right, get left
         var asReceive = await _context.Friendships
             .Where(x => x.UserRightId == userId && x.Status == FriendShipStatus.Accept)
-            .Select(x => new FriendshipRawData(x.UserLeftId, x.UserLeft.FullName, x.UserLeft.AvatarUrl, x.Status, x.Id))
+            .Select(x => new FriendResponse
+            {
+                UserId = x.UserLeftId,
+                DisplayName = x.UserLeft.FullName,
+                AvatarUrl = x.UserLeft.AvatarUrl,
+                Status = x.Status
+            })
             .ToListAsync();
         return asRequest.Concat(asReceive).ToList();
     }
 
-    public async Task<List<FriendshipRawData>> GetInboundRequestsAsync(Guid userId)
+    public async Task<List<FriendRequestResponse>> GetInboundRequestsAsync(Guid userId)
     {
         //ds lời mời đã nhận
         var result = await _context.Friendships.AsNoTracking()
@@ -72,21 +85,50 @@ public class FriendShipRepository : IFriendShipRepository
                         && x.RequesterId != userId
                         && x.Status == FriendShipStatus.Pending)
             .OrderByDescending(x => x.UpdatedAt)
-            .Select(x => x.UserLeftId == userId 
-                ? new FriendshipRawData(x.UserRightId, x.UserRight.FullName, x.UserRight.AvatarUrl, x.Status, x.Id)
-                : new FriendshipRawData(x.UserLeftId, x.UserLeft.FullName, x.UserLeft.AvatarUrl, x.Status, x.Id))
+            .Select(x => x.UserLeftId == userId
+                ? new FriendRequestResponse
+                {
+                    Id = x.Id,
+                    UserId = x.UserRightId,
+                    DisplayName = x.UserRight.FullName,
+                    AvatarUrl = x.UserRight.AvatarUrl,
+                    Status = x.Status
+                }
+                : new FriendRequestResponse
+                {
+                    Id = x.Id,
+                    UserId = x.UserLeftId,
+                    DisplayName = x.UserLeft.FullName,
+                    AvatarUrl = x.UserLeft.AvatarUrl,
+                    Status = x.Status
+                }
+            )
             .ToListAsync();
         return result;
     }
 
-    public async Task<List<FriendshipRawData>> GetOutboundRequestsAsync(Guid userId)
+    public async Task<List<FriendRequestResponse>> GetOutboundRequestsAsync(Guid userId)
     {
         var result = await _context.Friendships.AsNoTracking()
             .Where(x => x.RequesterId == userId && x.Status == FriendShipStatus.Pending)
             .OrderByDescending(x => x.UpdatedAt)
-            .Select(x => x.UserLeftId == userId 
-                ? new FriendshipRawData(x.UserRightId, x.UserRight.FullName, x.UserRight.AvatarUrl, x.Status, x.Id)
-                : new FriendshipRawData(x.UserLeftId, x.UserLeft.FullName, x.UserLeft.AvatarUrl, x.Status, x.Id))
+            .Select(x => x.UserLeftId == userId
+                ? new FriendRequestResponse
+                {
+                    Id = x.Id,
+                    UserId = x.UserRightId,
+                    DisplayName = x.UserRight.FullName,
+                    AvatarUrl = x.UserRight.AvatarUrl,
+                    Status = x.Status
+                }
+                : new FriendRequestResponse
+                {
+                    Id = x.Id,
+                    UserId = x.UserLeftId,
+                    DisplayName = x.UserLeft.FullName,
+                    AvatarUrl = x.UserLeft.AvatarUrl,
+                    Status = x.Status
+                })
             .ToListAsync();
 
         return result;

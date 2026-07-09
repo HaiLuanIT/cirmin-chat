@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Moji.API.Hubs;
-using Moji.BusinessLogic.Models;
-using Moji.BusinessLogic.Models.Conversations;
 using Moji.BusinessLogic.Services.Messages;
+using Moji.Contracts.Models.Conversations;
+using Moji.Contracts.Models.Messages;
 
 namespace Moji.API.RealTimes;
 
@@ -15,9 +15,13 @@ public class MessageNotificationService : IMessageNotificationService
         _chatHubContext = chatHubContext;
     }
 
-    public async Task BroadcastMessageToConversationAsync(string conversationId, MessageResponse messageResponse,
-        ConversationModel conversationResponse)
+    public async Task BroadcastMessageToConversationAsync(string conversationId, MessageResponse messageResponse)
     {
-        await _chatHubContext.Clients.Group(conversationId).ReceiveMessage(messageResponse, conversationResponse);
+        await _chatHubContext.Clients.Group(conversationId).ReceiveMessage(messageResponse);
+    }
+
+    public async Task BroadcastMarkAsSeenToConversationAsync(string userId, string conversationId)
+    {
+        await _chatHubContext.Clients.User(userId).MarkAsSeen(userId, conversationId);
     }
 }
