@@ -5,6 +5,7 @@ namespace Moji.BusinessLogic.Services.Messages;
 
 public interface IMessageNotificationService
 {
-    Task BroadcastMessageToConversationAsync(string conversationId, MessageResponse messageResponse,
-        ConversationModel conversationResponse);
+    Task BroadcastMessageToConversationAsync(string conversationId, MessageResponse messageResponse);
+
+    Task BroadcastMarkAsSeenToConversationAsync(string userId, string conversationId);
 }

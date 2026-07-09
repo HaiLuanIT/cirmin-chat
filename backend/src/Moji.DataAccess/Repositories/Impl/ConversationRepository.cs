@@ -24,6 +24,11 @@ public class ConversationRepository : IConversationRepository
         _context.Entry(conversation).State = EntityState.Modified;
     }
 
+    public void Update(ConversationMember conversationMember)
+    {
+        _context.Entry(conversationMember).State = EntityState.Modified;
+    }
+
     public async Task<Conversation?> FindByIdAsync(Guid id)
     {
         return await _context.Conversations
@@ -73,5 +78,16 @@ public class ConversationRepository : IConversationRepository
         var result = await _context.ConversationMembers.Where(x => x.UserId == userId)
             .Select(x => x.ConversationId.ToString()).ToListAsync();
         return result;
+    }
+
+    public async Task<ConversationMember> GetConversationMember(Guid userId, Guid conversationId)
+    {
+        return await _context.ConversationMembers
+            .FirstOrDefaultAsync(x => x.UserId == userId && x.ConversationId == conversationId);
+    }
+
+    public async Task<long?> GetLatestMessageId(Guid conversationId)
+    {
+        return await _context.Conversations.Where(x => x.Id == conversationId).Select(x => x.LastMessageId).FirstOrDefaultAsync();
     }
 }

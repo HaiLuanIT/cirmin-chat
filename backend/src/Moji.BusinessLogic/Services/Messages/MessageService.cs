@@ -69,6 +69,16 @@ public class MessageService : IMessageService
 
             conversation.LastMessageId = message.Id;
             conversation.LastMessage = request.Content;
+            
+            //update lastmessage and unreadcount of member in conversations, instead of sender
+            foreach (var member in conversation.Members)
+            {
+                if (member.UserId != senderId)
+                {
+                    member.LastSeenMessageId = message.Id;
+                    member.UnreadCount += 1;
+                }
+            }
 
             _conversationRepository.Update(conversation);
             await _txManager.SaveChangesAsync();
@@ -81,35 +91,10 @@ public class MessageService : IMessageService
         }
 
         var messageResponse = await _messageRepository.GetMessageById(message.Id);
-        var conversationResponse = new ConversationModel
-        {
-            Id = conversation.Id,
-            Name = conversation.Name,
-            IsGroup = conversation.IsGroup,
-            CreatedAt = conversation.CreatedAt,
-            LastMessage =
-                new LastMessageModel
-                {
-                    Id = conversation.LastMessageId,
-                    LastMessageContent = conversation.LastMessage,
-                    LastMessageAt = conversation.LastMessageTime
-                },
-            UnreadCount =
-                conversation.Members.Where(m => m.UserId == senderId).Select(m => m.UnreadCount)
-                    .FirstOrDefault(),
-            Members =
-                conversation.Members.Select(x => new ConversationMemberModel
-                    {
-                        UserId = x.UserId,
-                        DisplayName = x.User.FullName,
-                        AvatarUrl = x.User.AvatarUrl
-                    })
-                    .ToList()
-        };
         try
         {
             await _messageNotificationService.BroadcastMessageToConversationAsync(conversation.Id.ToString(),
-                messageResponse, conversationResponse);
+                messageResponse);
         }
         catch (Exception e)
         {
@@ -147,5 +132,23 @@ public class MessageService : IMessageService
             NextCursor = nextCursor,
             HasMore = hasMore
         };
+    }
+
+    public async Task MarkAsSeen(Guid currentUserId, Guid conversationId)
+    {
+        var member = await _conversationRepository.GetConversationMember(currentUserId, conversationId);
+        if (member == null)
+        {
+            throw new MojiNotFoundException("Bạn không có trong cuộc hội thoại này!");
+        }
+        
+        var latestMessage = await _conversationRepository.GetLatestMessageId(conversationId);
+        if (latestMessage == null) return;
+
+        member.LastSeenMessageId = latestMessage ?? 0;
+        member.UnreadCount = 0;
+        _conversationRepository.Update(member);
+         await _txManager.SaveChangesAsync();
+        
     }
 }

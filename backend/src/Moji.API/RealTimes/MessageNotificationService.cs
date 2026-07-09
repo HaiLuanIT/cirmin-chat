@@ -15,9 +15,13 @@ public class MessageNotificationService : IMessageNotificationService
         _chatHubContext = chatHubContext;
     }
 
-    public async Task BroadcastMessageToConversationAsync(string conversationId, MessageResponse messageResponse,
-        ConversationModel conversationResponse)
+    public async Task BroadcastMessageToConversationAsync(string conversationId, MessageResponse messageResponse)
     {
-        await _chatHubContext.Clients.Group(conversationId).ReceiveMessage(messageResponse, conversationResponse);
+        await _chatHubContext.Clients.Group(conversationId).ReceiveMessage(messageResponse);
+    }
+
+    public async Task BroadcastMarkAsSeenToConversationAsync(string userId, string conversationId)
+    {
+        await _chatHubContext.Clients.User(userId).MarkAsSeen(userId, conversationId);
     }
 }

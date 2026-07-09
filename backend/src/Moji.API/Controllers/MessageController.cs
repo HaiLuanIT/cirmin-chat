@@ -24,4 +24,5 @@ public class MessageController : BaseApiController
         await _messageService.SendMessage(CurrentUserId, request);
         return Ok();
     }
+    
 }
