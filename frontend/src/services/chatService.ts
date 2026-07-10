@@ -10,6 +10,7 @@ interface FetchMessageProps {
 export const chatService = {
   async fetchConversations(): Promise<ConversationResponse> {
     const res = await api.get("/Conversations");
+    console.log(res.data);
     return res.data;
   },
 
@@ -34,6 +35,14 @@ export const chatService = {
       conversationId,
       imgUrl,
     });
+    return res.data;
+  },
+
+  async markAsSeenMessage(conversationId: string) {
+    const res = await api.post(
+      `/conversations/${conversationId}/mark-as-seen`,
+      {},
+    );
     return res.data;
   },
 };

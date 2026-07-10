@@ -13,6 +13,7 @@ const GroupChatCard = ({ convo }: { convo: Conversation }) => {
     setActiveConversation,
     messages,
     fetchMessages,
+    markAsSeen,
   } = useChatStore();
   if (!user) return null;
 
@@ -20,7 +21,7 @@ const GroupChatCard = ({ convo }: { convo: Conversation }) => {
   const name = convo.name ?? "";
   const handleSelectConversation = async (id: string) => {
     setActiveConversation(id);
-    console.log("I'm here", messages);
+    await markAsSeen(id);
     if (!messages[id]) {
       await fetchMessages();
     }
