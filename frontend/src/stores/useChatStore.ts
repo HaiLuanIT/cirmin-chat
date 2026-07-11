@@ -134,12 +134,10 @@ export const useChatStore = create<ChatState>()(
           console.error("Lỗi xảy ra khi add mesage", error);
         }
       },
-      updateConversation: (message) => {
-        const { user } = useAuthStore.getState();
+      updateLastMessage: (message) => {
         set((state) => {
           const updateConversations = state.conversations.map((c) => {
             if (c.id === message.conversationId) {
-              const isCurrentChatting = c.id === get().activeConversationId;
               return {
                 ...c,
                 lastMessage: {
@@ -147,10 +145,6 @@ export const useChatStore = create<ChatState>()(
                   lastMessageContent: message.content,
                   lastMessageAt: message.sentAt,
                 },
-                unreadCount:
-                  !isCurrentChatting && message.sender.senderId !== user.id
-                    ? c.unreadCount + 1
-                    : c.unreadCount,
               };
             }
             return c;
@@ -171,6 +165,22 @@ export const useChatStore = create<ChatState>()(
         } catch (error) {
           console.error("Lỗi xảy ra khi đánh dấu tin nhắn đã xem!", error);
         }
+      },
+      incrementUnreadCount: (conversationId) => {
+        set((state) => ({
+          conversations: state.conversations.map((c) =>
+            c.id === conversationId
+              ? { ...c, unreadCount: (c?.unreadCount || 0) + 1 }
+              : c,
+          ),
+        }));
+      },
+      clearUnreadCount: (conversationId) => {
+        set((state) => ({
+          conversations: state.conversations.map((c) =>
+            c.id === conversationId ? { ...c, unreadCount: 0 } : c,
+          ),
+        }));
       },
     }),
     {

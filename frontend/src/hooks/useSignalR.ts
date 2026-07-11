@@ -10,8 +10,10 @@ export const useSignalR = () => {
   const setOnlineUsers = usePresenceStore((s) => s.setOnlineUsers);
   const setStatusUser = usePresenceStore((s) => s.setStatusUser);
   const addMessage = useChatStore((s) => s.addMessage);
-  const markAsSeen = useChatStore((s) => s.markAsSeen);
+  const updateLastMessage = useChatStore((s) => s.updateLastMessage);
   const token = useAuthStore((s) => s.accessToken);
+  const { user } = useAuthStore();
+  const { incrementUnreadCount, clearUnreadCount } = useChatStore();
 
   useEffect(() => {
     if (!token) {
@@ -30,8 +32,22 @@ export const useSignalR = () => {
     };
 
     const handleAddMessage = (messageResponse: Message) => {
+      const currentActiveId = useChatStore.getState().activeConversationId;
       addMessage(messageResponse);
-      useChatStore.getState().updateConversation(messageResponse);
+      updateLastMessage(messageResponse);
+
+      if (messageResponse?.sender?.senderId !== user.id) {
+        if (currentActiveId === messageResponse?.conversationId) {
+          connection
+            .invoke("MarkConversationAsRead", messageResponse?.conversationId)
+            .catch((err) =>
+              console.error("Lỗi khi cập nhật trạng thái đã xem", err),
+            );
+          clearUnreadCount(messageResponse.conversationId);
+        } else {
+          incrementUnreadCount(messageResponse.conversationId);
+        }
+      }
     };
 
     connection.on("GetOnlineUsers", handleSetOnlineUsers);
@@ -52,5 +68,5 @@ export const useSignalR = () => {
       connection.off("ReceiveMessage", handleAddMessage);
       console.log("Tắt lắng nghe sự kiện SignalR");
     };
-  }, [token, setOnlineUsers, setStatusUser]);
+  }, [token, user?.id, setOnlineUsers, setStatusUser]);
 };
