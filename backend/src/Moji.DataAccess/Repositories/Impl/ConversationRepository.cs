@@ -61,7 +61,8 @@ public class ConversationRepository : IConversationRepository
                     {
                         UserId = cm.UserId,
                         DisplayName = cm.User.FullName,
-                        AvatarUrl = cm.User.AvatarUrl
+                        AvatarUrl = cm.User.AvatarUrl,
+                        LastMessageId = cm.LastSeenMessageId
                     }).ToList()
             })
             .ToListAsync();

@@ -73,9 +73,9 @@ public class MessageService : IMessageService
             //update lastmessage and unreadcount of member in conversations, instead of sender
             foreach (var member in conversation.Members)
             {
+                member.LastSeenMessageId = message.Id;
                 if (member.UserId != senderId)
                 {
-                    member.LastSeenMessageId = message.Id;
                     member.UnreadCount += 1;
                 }
             }
@@ -134,7 +134,7 @@ public class MessageService : IMessageService
         };
     }
 
-    public async Task MarkAsSeen(Guid currentUserId, Guid conversationId)
+    public async Task<long?> MarkAsSeen(Guid currentUserId, Guid conversationId)
     {
         var member = await _conversationRepository.GetConversationMember(currentUserId, conversationId);
         if (member == null)
@@ -143,12 +143,12 @@ public class MessageService : IMessageService
         }
         
         var latestMessage = await _conversationRepository.GetLatestMessageId(conversationId);
-        if (latestMessage == null) return;
+        if (latestMessage == null) return null;
 
         member.LastSeenMessageId = latestMessage ?? 0;
         member.UnreadCount = 0;
         _conversationRepository.Update(member);
          await _txManager.SaveChangesAsync();
-        
+         return latestMessage;
     }
 }
