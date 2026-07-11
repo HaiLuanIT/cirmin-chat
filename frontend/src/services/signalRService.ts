@@ -18,6 +18,14 @@ class SignalRService {
     return this.connection;
   }
 
+  public getConnection(): signalR.HubConnection | null {
+    return this.connection;
+  }
+
+  public isConnected(): boolean {
+    return this.connection?.state == signalR.HubConnectionState.Connected;
+  }
+
   public async stopConnection(): Promise<void> {
     if (this.connection) {
       await this.connection.stop();

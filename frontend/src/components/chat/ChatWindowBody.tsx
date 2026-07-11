@@ -2,12 +2,14 @@ import { useChatStore } from "@/stores/useChatStore";
 import React from "react";
 import ChatWelcomeScreen from "./ChatWelcomeScreen";
 import MessageItem from "./MessageItem";
+import { useChatRoom } from "@/hooks/useChatRoom";
 
 const ChatWindowBody = () => {
   const {
     activeConversationId,
     conversations,
     messages: allMessages,
+    messageLoading: loading,
   } = useChatStore();
 
   const messages = allMessages[activeConversationId!]?.items ?? [];
@@ -19,7 +21,7 @@ const ChatWindowBody = () => {
   if (!selectedConversation) {
     return <ChatWelcomeScreen />;
   }
-
+  useChatRoom(selectedConversation?.id ?? "", loading);
   if (!messages?.length) {
     return (
       <div className="flex h-full items-center justify-center text-muted-foreground">
