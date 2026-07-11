@@ -53,6 +53,11 @@ export interface ChatState {
   markAsSeen: (conversationId: string) => Promise<void>;
   incrementUnreadCount: (conversationId: string) => void;
   clearUnreadCount: (conversationId: string) => void;
+  updateMemberSeenConcurrently: (
+    userId: string,
+    conversationId: string,
+    lastMessageId: string,
+  ) => void;
 }
 
 export interface PresenceState {

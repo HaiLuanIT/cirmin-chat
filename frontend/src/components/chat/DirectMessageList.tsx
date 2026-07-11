@@ -7,7 +7,7 @@ const DirectMessageList = () => {
   if (!conversations) return;
 
   const directConversations = conversations.filter(
-    (convo) => convo.isGroup === false,
+    (convo) => convo?.isGroup === false,
   );
   return (
     <div className="flex-1 overflow-auto p-2 space-y-2">

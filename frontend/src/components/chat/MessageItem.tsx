@@ -4,6 +4,8 @@ import React from "react";
 import UserAvatar from "./UserAvatar";
 import { Card } from "../ui/card";
 import { Badge } from "../ui/badge";
+import { useAuthStore } from "@/stores/useAuthStore";
+import { sendMessage } from "@microsoft/signalr/dist/esm/Utils";
 
 interface MessageItemProps {
   message: Message;
@@ -19,6 +21,7 @@ const MessageItem = ({
   selectedConvo,
   lastMessageStatus,
 }: MessageItemProps) => {
+  const { user } = useAuthStore();
   const prev = messages[index - 1];
   const isGroupBreak =
     index === 0 ||
@@ -30,6 +33,14 @@ const MessageItem = ({
     (p: ConversationMember) =>
       p.userId.toString() === message.sender.senderId.toString(),
   );
+
+  const seenByUsers = selectedConvo.members.filter(
+    (member) =>
+      member.userId !== user.id &&
+      member.lastMessageId.toString() === message.id.toString(),
+  );
+
+  lastMessageStatus = seenByUsers.length > 0 ? "seen" : "delivered";
   return (
     <div
       className={cn(
@@ -81,19 +92,45 @@ const MessageItem = ({
           )}
         </Card>
         {/* seen/deliverd */}
-        {message.isOwn && message.id === selectedConvo.lastMessage?.id && (
-          <Badge
-            variant="outline"
-            className={cn(
-              "text-xs px-1.5 py-0.5 h-4 border-0",
-              lastMessageStatus === "seen"
-                ? "bg-primary/20 text-primary"
-                : "bg-muted text-muted-foreground",
-            )}
-          >
-            {lastMessageStatus}
-          </Badge>
-        )}
+        {!selectedConvo.isGroup
+          ? message.isOwn &&
+            message.id === selectedConvo.lastMessage?.id && (
+              <Badge
+                variant="outline"
+                className={cn(
+                  "text-xs px-1.5 py-0.5 h-4 border-0",
+                  lastMessageStatus === "seen"
+                    ? "bg-primary/20 text-primary"
+                    : "bg-muted text-muted-foreground",
+                )}
+              >
+                {lastMessageStatus}
+              </Badge>
+            )
+          : message.isOwn &&
+            (seenByUsers.length > 0 ? (
+              <div className="flex items-center gap-1 mt-1 px-1">
+                {seenByUsers.map((user) => (
+                  <div key={user.userId} title={`${user.displayName} đã xem`}>
+                    <UserAvatar
+                      type="chat"
+                      name={user.displayName ?? "Moji"}
+                      avatarUrl={user?.avatarUrl ?? undefined}
+                    />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              message.id.toString() ===
+                selectedConvo.lastMessage.id.toString() && (
+                <Badge
+                  variant="outline"
+                  className="text-xs px-1.5 py-0.5 h-4 border-0 select-none bg-muted text-muted-foreground transition-all duration-200"
+                >
+                  delivered
+                </Badge>
+              )
+            ))}
       </div>
     </div>
   );
