@@ -16,7 +16,7 @@ const ChatWindowLayout = () => {
   } = useChatStore();
 
   const selectedConvo =
-    conversations.find((c) => c.id === activeConversationId) ?? null;
+    conversations.find((c) => c?.id === activeConversationId) ?? null;
   if (!selectedConvo) return <ChatWelcomeScreen />;
 
   if (loading) {

@@ -135,6 +135,7 @@ export const useChatStore = create<ChatState>()(
         }
       },
       updateLastMessage: (message) => {
+        const { user } = useAuthStore.getState();
         set((state) => {
           const updateConversations = state.conversations.map((c) => {
             if (c.id === message.conversationId) {
@@ -145,6 +146,11 @@ export const useChatStore = create<ChatState>()(
                   lastMessageContent: message.content,
                   lastMessageAt: message.sentAt,
                 },
+                members: c.members.map((m) =>
+                  m.userId === message.sender.senderId
+                    ? { ...m, lastMessageId: message.id }
+                    : m,
+                ),
               };
             }
             return c;
@@ -176,11 +182,51 @@ export const useChatStore = create<ChatState>()(
         }));
       },
       clearUnreadCount: (conversationId) => {
-        set((state) => ({
-          conversations: state.conversations.map((c) =>
-            c.id === conversationId ? { ...c, unreadCount: 0 } : c,
-          ),
-        }));
+        const { user } = useAuthStore.getState();
+        set((state) => {
+          const roomMessages = state.messages[conversationId]?.items ?? [];
+          const latestMessage = roomMessages[0];
+          const updatedConversations = state.conversations.map((c) => {
+            if (c.id !== conversationId) return c;
+
+            return {
+              ...c,
+              unreadCount: 0,
+              members: c.members.map((member) =>
+                member.userId === user.id
+                  ? {
+                      ...member,
+                      lastMessageId: latestMessage?.id ?? member?.lastMessageId,
+                    }
+                  : member,
+              ),
+            };
+          });
+
+          return {
+            conversations: updatedConversations,
+          };
+        });
+      },
+      updateMemberSeenConcurrently: (userId, conversationId, lastMessageId) => {
+        set((state) => {
+          const updatedConversations = state.conversations.map((c) => {
+            if (c.id !== conversationId) return c;
+
+            return {
+              ...c,
+              members: c.members.map((member) =>
+                member.userId === userId
+                  ? { ...member, lastMessageId: lastMessageId }
+                  : member,
+              ),
+            };
+          });
+
+          return {
+            conversations: updatedConversations,
+          };
+        });
       },
     }),
     {
