@@ -19,9 +19,4 @@ public class MessageNotificationService : IMessageNotificationService
     {
         await _chatHubContext.Clients.Group(conversationId).ReceiveMessage(messageResponse);
     }
-
-    public async Task BroadcastMarkAsSeenToConversationAsync(string userId, string conversationId)
-    {
-        await _chatHubContext.Clients.User(userId).MarkAsSeen(userId, conversationId);
-    }
 }

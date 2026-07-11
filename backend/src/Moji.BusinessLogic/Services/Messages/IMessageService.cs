@@ -11,5 +11,5 @@ public interface IMessageService
     Task<CursorResponse<MessageResponse>> GetConversationMessages(Guid currentUserId, Guid conversationId, int limit,
         string? cursor);
 
-    Task MarkAsSeen(Guid currentUserId, Guid conversationId);
+    Task<long?> MarkAsSeen(Guid currentUserId, Guid conversationId);
 }

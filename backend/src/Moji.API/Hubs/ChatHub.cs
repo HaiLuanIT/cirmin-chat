@@ -16,7 +16,8 @@ public class ChatHub : Hub<IChatClient>
     private readonly IFriendShipService _friendShipService;
     private readonly IMessageService _messageService;
 
-    public ChatHub(IConversationService conversationService, IPresenceService presenceService, IFriendShipService friendShipService, IMessageService messageService)
+    public ChatHub(IConversationService conversationService, IPresenceService presenceService,
+        IFriendShipService friendShipService, IMessageService messageService)
     {
         _conversationService = conversationService;
         _presenceService = presenceService;
@@ -27,11 +28,11 @@ public class ChatHub : Hub<IChatClient>
     public override async Task OnConnectedAsync()
     {
         var userId = GetUserId();
-        
+
         var isFirstConnection = _presenceService.AddConnection(userId, Context.ConnectionId);
 
         var currentUsersOnline = _presenceService.GetOnlineUserIds();
-        
+
         await Clients.Caller.GetOnlineUsers(currentUsersOnline);
 
         if (isFirstConnection)
@@ -39,14 +40,14 @@ public class ChatHub : Hub<IChatClient>
             var friendIds = await _friendShipService.GetFriendIds(userId);
             await Clients.Users(friendIds).UserStatusChanged(userId.ToString(), true);
         }
-        
+
         //add user to group conversation
         var conversationIds = await _conversationService.GetJoinedConversationId(userId);
         foreach (var conversationId in conversationIds)
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, conversationId);
         }
-        
+
         await base.OnConnectedAsync();
     }
 
@@ -60,12 +61,14 @@ public class ChatHub : Hub<IChatClient>
             var friendIds = await _friendShipService.GetFriendIds(userId);
             await Clients.Users(friendIds).UserStatusChanged(userId.ToString(), false);
         }
+
         //remove user to all group conversation
         var conversationIds = await _conversationService.GetJoinedConversationId(userId);
         foreach (var conversationId in conversationIds)
         {
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, conversationId);
         }
+
         await base.OnDisconnectedAsync(exception);
     }
 
@@ -73,7 +76,13 @@ public class ChatHub : Hub<IChatClient>
     {
         var userId = GetUserId();
 
-        await _messageService.MarkAsSeen(userId, Guid.Parse(conversationId));
+        var lastMessageId = await _messageService.MarkAsSeen(userId, Guid.Parse(conversationId));
+
+        if (lastMessageId != null)
+        {
+            await Clients.Group(conversationId)
+                .UserSeenMessage(userId.ToString(), conversationId, lastMessageId.ToString());
+        }
     }
 
 
