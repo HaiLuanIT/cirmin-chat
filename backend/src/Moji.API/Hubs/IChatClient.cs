@@ -11,5 +11,5 @@ public interface IChatClient
 
     Task GetOnlineUsers(List<string> userIds);
 
-    Task MarkAsSeen(string userId, string conversationId);
+    Task UserSeenMessage(string userId, string conversationId, string lastMessageId);
 }

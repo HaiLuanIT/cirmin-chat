@@ -23,4 +23,6 @@ public record ConversationMemberModel
     public Guid UserId { get; init; }
     public string DisplayName { get; init; }
     public string? AvatarUrl { get; init; }
+    
+    public long? LastMessageId { get; set; }
 }
