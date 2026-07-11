@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Moji.BusinessLogic.Services.Conversations;
 using Moji.BusinessLogic.Services.Friends;
+using Moji.BusinessLogic.Services.Messages;
 using Moji.BusinessLogic.Services.Users;
 
 namespace Moji.API.Hubs;
@@ -13,12 +14,14 @@ public class ChatHub : Hub<IChatClient>
     private readonly IConversationService _conversationService;
     private readonly IPresenceService _presenceService;
     private readonly IFriendShipService _friendShipService;
+    private readonly IMessageService _messageService;
 
-    public ChatHub(IConversationService conversationService, IPresenceService presenceService, IFriendShipService friendShipService)
+    public ChatHub(IConversationService conversationService, IPresenceService presenceService, IFriendShipService friendShipService, IMessageService messageService)
     {
         _conversationService = conversationService;
         _presenceService = presenceService;
         _friendShipService = friendShipService;
+        _messageService = messageService;
     }
 
     public override async Task OnConnectedAsync()
@@ -64,6 +67,13 @@ public class ChatHub : Hub<IChatClient>
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, conversationId);
         }
         await base.OnDisconnectedAsync(exception);
+    }
+
+    public async Task MarkConversationAsRead(string conversationId)
+    {
+        var userId = GetUserId();
+
+        await _messageService.MarkAsSeen(userId, Guid.Parse(conversationId));
     }
 
 
