@@ -13,7 +13,11 @@ export const useSignalR = () => {
   const updateLastMessage = useChatStore((s) => s.updateLastMessage);
   const token = useAuthStore((s) => s.accessToken);
   const { user } = useAuthStore();
-  const { incrementUnreadCount, clearUnreadCount } = useChatStore();
+  const {
+    incrementUnreadCount,
+    clearUnreadCount,
+    updateMemberSeenConcurrently,
+  } = useChatStore();
 
   useEffect(() => {
     if (!token) {
@@ -50,11 +54,21 @@ export const useSignalR = () => {
       }
     };
 
+    const handleUserSeenMessage = (
+      userId: string,
+      conversationId: string,
+      lastMessageId: string,
+    ) => {
+      updateMemberSeenConcurrently(userId, conversationId, lastMessageId);
+    };
+
     connection.on("GetOnlineUsers", handleSetOnlineUsers);
 
     connection.on("UserStatusChanged", handleSetUserStatus);
 
     connection.on("ReceiveMessage", handleAddMessage);
+
+    connection.on("UserSeenMessage", handleUserSeenMessage);
 
     if (connection.state === signalR.HubConnectionState.Disconnected) {
       connection
@@ -66,7 +80,14 @@ export const useSignalR = () => {
       connection.off("GetOnlineUsers", handleSetOnlineUsers);
       connection.off("UserStatusChanged", handleSetUserStatus);
       connection.off("ReceiveMessage", handleAddMessage);
+      connection.off("UserSeenMessage", handleUserSeenMessage);
       console.log("Tắt lắng nghe sự kiện SignalR");
     };
-  }, [token, user?.id, setOnlineUsers, setStatusUser]);
+  }, [
+    token,
+    user?.id,
+    setOnlineUsers,
+    setStatusUser,
+    updateMemberSeenConcurrently,
+  ]);
 };

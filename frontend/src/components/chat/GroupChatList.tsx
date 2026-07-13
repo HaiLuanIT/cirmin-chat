@@ -7,7 +7,7 @@ const GroupChatList = () => {
 
   if (!conversations) return;
   const groupConversation = conversations.filter(
-    (convo) => convo.isGroup === true,
+    (convo) => convo?.isGroup === true,
   );
   return (
     <div className="flex-1 overflow-auto p-2 space-y-2">

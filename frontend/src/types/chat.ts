@@ -2,6 +2,7 @@ export interface ConversationMember {
   userId: string;
   displayName: string;
   avatarUrl?: string | null;
+  lastMessageId: string;
 }
 
 export interface LastMessage {
