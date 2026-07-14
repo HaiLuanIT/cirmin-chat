@@ -22,12 +22,14 @@ const MessageItem = ({
   lastMessageStatus,
 }: MessageItemProps) => {
   const { user } = useAuthStore();
-  const prev = messages[index - 1];
-  const isGroupBreak =
+  const prev = index + 1 < messages.length ? messages[index + 1] : undefined;
+  const isShowTime =
     index === 0 ||
-    message.sender.senderId !== prev?.sender.senderId ||
     new Date(message.sentAt).getTime() - new Date(prev?.sentAt || 0).getTime() >
       300000; //5 phut
+
+  const isGroupBreak =
+    isShowTime || message.sender.senderId !== prev?.sender.senderId;
 
   const participant = selectedConvo.members.find(
     (p: ConversationMember) =>
@@ -42,97 +44,96 @@ const MessageItem = ({
 
   lastMessageStatus = seenByUsers.length > 0 ? "seen" : "delivered";
   return (
-    <div
-      className={cn(
-        "flex gap-2 message-bounce mt-1",
-        message.isOwn ? "justify-end" : "justify-start",
-      )}
-    >
-      {/* avatar */}
-      {!message.isOwn && (
-        <div className="w-8">
-          {isGroupBreak && (
-            <UserAvatar
-              type="chat"
-              name={participant.displayName ?? "Moji"}
-              avatarUrl={participant?.avatarUrl ?? undefined}
-            />
-          )}
+    <>
+      {/* time */}
+      {isShowTime && (
+        <div className="flex justify-center w-full my-3">
+          <span className="text-xs px-1 text-muted-foreground">
+            {formatMessageTime(new Date(message.sentAt))}
+          </span>
         </div>
       )}
-      {/* message */}
+
       <div
         className={cn(
-          "max-w-xs lg:max-w-md space-y-1 flex flex-col",
-          message.isOwn ? "items-end" : "items-start",
+          "flex gap-2 message-bounce mt-1",
+          message.isOwn ? "justify-end" : "justify-start",
         )}
       >
-        <Card
+        {/* avatar */}
+        {!message.isOwn && (
+          <div className="w-8">
+            {isGroupBreak && (
+              <UserAvatar
+                type="chat"
+                name={participant.displayName ?? "Moji"}
+                avatarUrl={participant?.avatarUrl ?? undefined}
+              />
+            )}
+          </div>
+        )}
+        {/* message */}
+        <div
           className={cn(
-            "p-3",
-            message.isOwn
-              ? "chat-bubble-sent border-0"
-              : "bg-chat-bubble-received",
+            "max-w-xs lg:max-w-md space-y-1 flex flex-col",
+            message.isOwn ? "items-end" : "items-start",
           )}
         >
-          <p className="text-sm leading-relaxed break-words">
-            {message.content}
-          </p>
-
-          {/* time */}
-          {isGroupBreak && (
-            <span
-              className={cn(
-                "text-xs px-1",
-                message.isOwn ? "text-muted" : "text-muted-foreground",
-              )}
-            >
-              {formatMessageTime(new Date(message.sentAt))}
-            </span>
-          )}
-        </Card>
-        {/* seen/deliverd */}
-        {!selectedConvo.isGroup
-          ? message.isOwn &&
-            message.id === selectedConvo.lastMessage?.id && (
-              <Badge
-                variant="outline"
-                className={cn(
-                  "text-xs px-1.5 py-0.5 h-4 border-0",
-                  lastMessageStatus === "seen"
-                    ? "bg-primary/20 text-primary"
-                    : "bg-muted text-muted-foreground",
-                )}
-              >
-                {lastMessageStatus}
-              </Badge>
-            )
-          : message.isOwn &&
-            (seenByUsers.length > 0 ? (
-              <div className="flex items-center gap-1 mt-1 px-1">
-                {seenByUsers.map((user) => (
-                  <div key={user.userId} title={`${user.displayName} đã xem`}>
-                    <UserAvatar
-                      type="chat"
-                      name={user.displayName ?? "Moji"}
-                      avatarUrl={user?.avatarUrl ?? undefined}
-                    />
-                  </div>
-                ))}
-              </div>
-            ) : (
-              message.id.toString() ===
-                selectedConvo.lastMessage.id.toString() && (
+          <Card
+            className={cn(
+              "p-3",
+              message.isOwn
+                ? "chat-bubble-sent border-0"
+                : "chat-bubble-received",
+            )}
+          >
+            <p className="text-sm leading-relaxed break-words">
+              {message.content}
+            </p>
+          </Card>
+          {/* seen/deliverd */}
+          {!selectedConvo.isGroup
+            ? message.isOwn &&
+              message.id === selectedConvo.lastMessage?.id && (
                 <Badge
                   variant="outline"
-                  className="text-xs px-1.5 py-0.5 h-4 border-0 select-none bg-muted text-muted-foreground transition-all duration-200"
+                  className={cn(
+                    "text-xs px-1.5 py-0.5 h-4 border-0",
+                    lastMessageStatus === "seen"
+                      ? "bg-primary/20 text-primary"
+                      : "bg-muted text-muted-foreground",
+                  )}
                 >
-                  delivered
+                  {lastMessageStatus}
                 </Badge>
               )
-            ))}
+            : message.isOwn &&
+              (seenByUsers.length > 0 ? (
+                <div className="flex items-center gap-1 mt-1 px-1">
+                  {seenByUsers.map((user) => (
+                    <div key={user.userId} title={`${user.displayName} đã xem`}>
+                      <UserAvatar
+                        type="chat"
+                        name={user.displayName ?? "Moji"}
+                        avatarUrl={user?.avatarUrl ?? undefined}
+                      />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                message.id.toString() ===
+                  selectedConvo.lastMessage.id.toString() && (
+                  <Badge
+                    variant="outline"
+                    className="text-xs px-1.5 py-0.5 h-4 border-0 select-none bg-muted text-muted-foreground transition-all duration-200"
+                  >
+                    delivered
+                  </Badge>
+                )
+              ))}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

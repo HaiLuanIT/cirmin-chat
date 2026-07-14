@@ -62,7 +62,7 @@ export const useChatStore = create<ChatState>()(
             const prev = state.messages[convoId]?.items ?? [];
 
             const merged =
-              prev.length > 0 ? [...processed, ...prev] : processed;
+              processed.length > 0 ? [...prev, ...processed] : prev;
 
             console.log("message:", merged);
             return {
