@@ -17,9 +17,9 @@ public class UserRepository : IUserRepository
          _context.Users.Add(user);
     }
 
-    public async Task<User?> FindByUserNameAsync(string userName)
+    public async Task<User?> FindByUsernameAsync(string username)
     {
-        return await _context.Users.AsNoTracking().FirstOrDefaultAsync(x => x.UserName == userName);
+        return await _context.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Username == username);
     }
 
     public async Task<User?> FindByIdAsync(Guid id)

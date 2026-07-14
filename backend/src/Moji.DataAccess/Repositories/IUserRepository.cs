@@ -6,7 +6,7 @@ public interface IUserRepository
 {
     void Add(User user);
     
-    Task<User?> FindByUserNameAsync(string userName);
+    Task<User?> FindByUsernameAsync(string username);
     
     Task<User?> FindByIdAsync(Guid id);
     

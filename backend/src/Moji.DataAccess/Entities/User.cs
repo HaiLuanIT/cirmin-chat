@@ -6,7 +6,7 @@ public class User : BaseEntity
 {
     public Guid Id { get; set; }
     
-    public string UserName { get; set; }
+    public string Username { get; set; }
     
     public string HashedPassword { get; set; }
     
