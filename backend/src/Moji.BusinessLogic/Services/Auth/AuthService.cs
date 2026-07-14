@@ -44,7 +44,7 @@ public class AuthService : IAuthService
             throw new MojiValidationException(validationResult.Errors);
         }
 
-        var existedUser = await _userRepository.FindByUserNameAsync(request.UserName);
+        var existedUser = await _userRepository.FindByUsernameAsync(request.Username);
         if (existedUser != null)
         {
             throw new MojiConflictException("Tên tài khoản này đã tồn tại trong hệ thống!");
@@ -58,9 +58,10 @@ public class AuthService : IAuthService
 
         var hashedPassword = _passwordHasher.HashPassword(request.Password);
 
+        var noromalizeUsername = request.Username.Trim().ToLower();
         var user = new User()
         {
-            UserName = request.UserName,
+            Username = noromalizeUsername,
             HashedPassword = hashedPassword,
             Email = request.Email,
             FullName = request.FirstName + " " + request.LastName
@@ -77,7 +78,7 @@ public class AuthService : IAuthService
             throw new MojiValidationException(validationResult.Errors);
         }
         
-        var user = await _userRepository.FindByUserNameAsync(request.Username);
+        var user = await _userRepository.FindByUsernameAsync(request.Username);
 
         if (user == null)
         {
@@ -110,7 +111,7 @@ public class AuthService : IAuthService
             new UserResponse
             (
                 user.Id,
-                user.UserName,
+                user.Username,
                 user.Email,
                 user.FullName,
                 user.AvatarUrl,
@@ -148,7 +149,7 @@ public class AuthService : IAuthService
         var userModel = new UserModel
         {
             Id = user.Id,
-            UserName = user.UserName,
+            Username = user.Username,
             Email = user.Email,
             DisplayName = user.FullName,
             AvatarUrl = user.AvatarUrl,
@@ -201,7 +202,7 @@ public class AuthService : IAuthService
 
         var authResponse = new AuthResponse
         (
-            new UserResponse(user.Id, user.UserName, user.Email, user.FullName, user.AvatarUrl, user.Bio,
+            new UserResponse(user.Id, user.Username, user.Email, user.FullName, user.AvatarUrl, user.Bio,
                 user.CreatedAt, user.UpdatedAt),
             newAccessToken,
             newRefreshToken

@@ -12,7 +12,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.Property(x => x.Id).HasDefaultValueSql("gen_random_uuid()");
         
-        builder.Property(x => x.UserName).HasMaxLength(50).IsRequired();
+        builder.Property(x => x.Username).HasMaxLength(50).IsRequired();
 
         builder.Property(x => x.HashedPassword).IsRequired();
 
@@ -25,11 +25,12 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(x => x.AvatarUrl).HasMaxLength(1028);
         
         builder.Property(x => x.Bio).HasMaxLength(500);
+
+        builder.HasIndex(x => x.Username).IsUnique()
+            .HasDatabaseName("IX_Users_Username_Unique");
         
-        builder.HasIndex(x => x.UserName).IsUnique();
-        
-        builder.HasIndex(x => x.Email).IsUnique();
-        
+        builder.HasIndex(x => x.Email).IsUnique()
+            .HasDatabaseName("IX_Users_Email_Unique");
         
     }
 }
