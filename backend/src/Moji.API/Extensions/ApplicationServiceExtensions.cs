@@ -1,4 +1,3 @@
-using System.Reflection;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Moji.API.RealTimes;
@@ -11,43 +10,40 @@ using Moji.Contracts.Models.Auth.Register;
 using Moji.DataAccess.Commons.DbTransactionManagers;
 using Moji.DataAccess.Repositories;
 using Moji.DataAccess.Repositories.Impl;
-    
+
 namespace Moji.API.Extensions;
 
 public static class ApplicationServiceExtensions
 {
     public static IServiceCollection AddCorsServices(this IServiceCollection services)
     {
-       // config CORS
-       var corsPolicyName = "CorsPolicy";
-       services.AddCors(options =>
-       {
-           options.AddPolicy(name: corsPolicyName, policy =>
-           {
-               policy.WithOrigins("http://localhost:5173")
-                   .AllowAnyHeader()
-                   .AllowAnyMethod()
-                   .AllowCredentials();
-           });
-       });
-        
+        // config CORS
+        var corsPolicyName = "CorsPolicy";
+        services.AddCors(options =>
+        {
+            options.AddPolicy(corsPolicyName, policy =>
+            {
+                policy.WithOrigins("http://localhost:5173")
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowCredentials();
+            });
+        });
+
         return services;
     }
 
     public static IServiceCollection AddServiceServices(this IServiceCollection services)
     {
         services.AddSingleton(TimeProvider.System);
-        
+
         //add db manager transaction service
         services.AddScoped<IDbTransactionManager, DbTransactionManager>();
-        
+
         //add fluent validation
         services.AddValidatorsFromAssembly(typeof(RegisterRequest).Assembly);
 
-        services.Configure<ApiBehaviorOptions>(options =>
-        {
-            options.SuppressModelStateInvalidFilter = true;
-        });
+        services.Configure<ApiBehaviorOptions>(options => { options.SuppressModelStateInvalidFilter = true; });
         //config services
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<ITokenService, TokenService>();
@@ -57,6 +53,7 @@ public static class ApplicationServiceExtensions
         services.AddScoped<IConversationService, ConversationService>();
         services.AddScoped<IPresenceService, PresenceService>();
         services.AddScoped<IMessageNotificationService, MessageNotificationService>();
+        services.AddScoped<IUserService, UserService>();
         return services;
     }
 

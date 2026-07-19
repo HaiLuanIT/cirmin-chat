@@ -3,6 +3,7 @@ using FluentValidation;
 using Moji.BusinessLogic.Exceptions;
 using Moji.Contracts.Models.FriendShips;
 using Moji.Contracts.Models.FriendShips.AddFriend;
+using Moji.Contracts.Models.Users.SearchUser;
 using Moji.DataAccess.Commons.Constants;
 using Moji.DataAccess.Commons.DbTransactionManagers;
 using Moji.DataAccess.Entities;
@@ -72,7 +73,7 @@ public class FriendShipService : IFriendShipService
             throw new MojiForbiddenException("Bạn không có quyền thực hiện hành động này!");
         }
 
-        if (friendRequest.Status != FriendShipStatus.Pending)
+        if (friendRequest.Status != FriendShipStatus.PendingOutbound)
             throw new MojiBadRequestException("Lời mời kết bạn này đã được xử lý");
 
         //normalize status in request must be match in enum

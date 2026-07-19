@@ -12,16 +12,18 @@ public interface IFriendShipRepository
     Task<FriendShip> FindByIdAsync(Guid id);
 
     void Update(FriendShip friendShip);
-    
+
     void Delete(FriendShip friendShip);
 
     Task<List<FriendResponse>> GetListFriend(Guid userId);
 
     Task<List<FriendRequestResponse>> GetInboundRequestsAsync(Guid userId);
-    
+
     Task<List<FriendRequestResponse>> GetOutboundRequestsAsync(Guid userId);
-    
+
     Task<bool> IsFriend(Guid userId, Guid friendId);
 
     Task<List<Guid>> GetFriendIds(Guid userId);
+
+    Task<Dictionary<Guid, string>> GetUsersRelationStatus(Guid currentUserId, List<Guid> userIds);
 }
