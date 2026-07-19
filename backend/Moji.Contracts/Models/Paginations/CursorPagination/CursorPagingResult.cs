@@ -1,6 +1,6 @@
-﻿namespace Moji.Contracts.Models.CursorPagination;
+﻿namespace Moji.Contracts.Models.Paginations.CursorPagination;
 
-public record CursorResponse<T>
+public record CursorPagingResult<T>
 {
     public List<T> Items { get; init; } = new();
     

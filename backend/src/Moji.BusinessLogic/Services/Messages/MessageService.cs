@@ -2,10 +2,9 @@
 using Moji.BusinessLogic.Exceptions;
 using Moji.BusinessLogic.Helpers;
 using Moji.BusinessLogic.Services.Friends;
-using Moji.Contracts.Models.Conversations;
-using Moji.Contracts.Models.CursorPagination;
 using Moji.Contracts.Models.Messages;
 using Moji.Contracts.Models.Messages.SendMessage;
+using Moji.Contracts.Models.Paginations.CursorPagination;
 using Moji.DataAccess.Commons.DbTransactionManagers;
 using Moji.DataAccess.Entities;
 using Moji.DataAccess.Repositories;
@@ -102,7 +101,7 @@ public class MessageService : IMessageService
         }
     }
 
-    public async Task<CursorResponse<MessageResponse>> GetConversationMessages(Guid currentUserId, Guid conversationId,
+    public async Task<CursorPagingResult<MessageResponse>> GetConversationMessages(Guid currentUserId, Guid conversationId,
         int limit, string? cursor)
     {
         //check user is member of conversation
@@ -126,7 +125,7 @@ public class MessageService : IMessageService
 
         if (hasMore) messages.RemoveAt(limit);
 
-        return new CursorResponse<MessageResponse>()
+        return new CursorPagingResult<MessageResponse>()
         {
             Items = messages,
             NextCursor = nextCursor,

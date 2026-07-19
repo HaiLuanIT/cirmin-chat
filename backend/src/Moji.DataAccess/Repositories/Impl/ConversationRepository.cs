@@ -42,12 +42,12 @@ public class ConversationRepository : IConversationRepository
         return await _context.Conversations
             .Where(x => x.Members.Any(m => m.UserId == userId))
             .OrderByDescending(x => x.LastMessageTime ?? x.CreatedAt)
-            .Select(c => new ConversationModel()
+            .Select(c => new ConversationModel
             {
                 Id = c.Id,
                 Name = c.Name,
                 IsGroup = c.IsGroup,
-                LastMessage = new LastMessageModel()
+                LastMessage = new LastMessageModel
                 {
                     Id = c.LastMessageId,
                     LastMessageContent = c.LastMessage,
@@ -89,6 +89,33 @@ public class ConversationRepository : IConversationRepository
 
     public async Task<long?> GetLatestMessageId(Guid conversationId)
     {
-        return await _context.Conversations.Where(x => x.Id == conversationId).Select(x => x.LastMessageId).FirstOrDefaultAsync();
+        return await _context.Conversations.Where(x => x.Id == conversationId).Select(x => x.LastMessageId)
+            .FirstOrDefaultAsync();
+    }
+
+    public async Task<Dictionary<Guid, Guid>> GetDirectConversationIdsByParticipantIds(List<Guid> userIds,
+        List<Guid> currentDirectConversationIds)
+    {
+        var result = await _context.Conversations
+            .Where(conversation => !conversation.IsGroup 
+            && conversation.Members.Any(member => userIds.Contains(member.UserId)))
+            .SelectMany(conversation => conversation.Members
+                .Where(member => userIds.Contains(member.UserId))
+                .Select(member => new
+                {
+                    member.UserId,
+                        ConversationId = conversation.Id
+                }))
+            .ToDictionaryAsync(item => item.UserId, item => item.ConversationId);
+        return result;
+    }
+
+    public async Task<List<Guid>> GetDirectConversationIdsByUserId(Guid userId)
+    {
+        var result = await _context.Conversations.AsNoTracking()
+            .Where(conversation => !conversation.IsGroup && conversation.Members.Any(member => member.UserId == userId))
+            .Select(x => x.Id)
+            .ToListAsync();
+        return result;
     }
 }

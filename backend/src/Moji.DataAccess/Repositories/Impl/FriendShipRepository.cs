@@ -83,7 +83,7 @@ public class FriendShipRepository : IFriendShipRepository
         var result = await _context.Friendships.AsNoTracking()
             .Where(x => (x.UserLeftId == userId || x.UserRightId == userId)
                         && x.RequesterId != userId
-                        && x.Status == FriendShipStatus.Pending)
+                        && x.Status == FriendShipStatus.PendingOutbound)
             .OrderByDescending(x => x.UpdatedAt)
             .Select(x => x.UserLeftId == userId
                 ? new FriendRequestResponse
@@ -110,7 +110,7 @@ public class FriendShipRepository : IFriendShipRepository
     public async Task<List<FriendRequestResponse>> GetOutboundRequestsAsync(Guid userId)
     {
         var result = await _context.Friendships.AsNoTracking()
-            .Where(x => x.RequesterId == userId && x.Status == FriendShipStatus.Pending)
+            .Where(x => x.RequesterId == userId && x.Status == FriendShipStatus.PendingOutbound)
             .OrderByDescending(x => x.UpdatedAt)
             .Select(x => x.UserLeftId == userId
                 ? new FriendRequestResponse
@@ -158,6 +158,17 @@ public class FriendShipRepository : IFriendShipRepository
             .Select(x => x.UserLeftId)
             .ToListAsync();
         return asRequest.Concat(asReceive).ToList();
+    }
+
+    public async Task<Dictionary<Guid, string>> GetUsersRelationStatus(Guid currentUserId, List<Guid> userIds)
+    {
+        var result = await _context.Friendships.AsNoTracking().Where(x =>
+                (x.UserLeftId == currentUserId && userIds.Contains(x.UserRightId)) ||
+                (x.UserRightId == currentUserId && userIds.Contains(x.UserLeftId))
+            )
+            .ToDictionaryAsync(x => currentUserId == x.UserLeftId ? x.UserRightId : x.UserLeftId, x => x.Status);
+
+        return result;
     }
 
     //helper
