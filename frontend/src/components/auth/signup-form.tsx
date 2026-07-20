@@ -68,9 +68,7 @@ export function SignupForm({
                     {...register("firstName")}
                   />
                   {errors.firstName && (
-                    <p className="text-destructive text-sm">
-                      {errors.firstName.message}
-                    </p>
+                    <p className="error-message">{errors.firstName.message}</p>
                   )}
                 </div>
                 <div className="space-y-2">
@@ -79,9 +77,7 @@ export function SignupForm({
                   </Label>
                   <Input type="text" id="lastName" {...register("lastName")} />
                   {errors.lastName && (
-                    <p className="text-destructive text-sm">
-                      {errors.lastName.message}
-                    </p>
+                    <p className="error-message">{errors.lastName.message}</p>
                   )}
                 </div>
               </div>
@@ -97,9 +93,7 @@ export function SignupForm({
                   {...register("username")}
                 />
                 {errors.username && (
-                  <p className="text-destructive text-sm">
-                    {errors.username.message}
-                  </p>
+                  <p className="error-message">{errors.username.message}</p>
                 )}
               </div>
               {/* email */}
@@ -114,9 +108,7 @@ export function SignupForm({
                   {...register("email")}
                 />
                 {errors.email && (
-                  <p className="text-destructive text-sm">
-                    {errors.email.message}
-                  </p>
+                  <p className="error-message">{errors.email.message}</p>
                 )}
               </div>
               {/* password */}
@@ -130,9 +122,7 @@ export function SignupForm({
                   {...register("password")}
                 />
                 {errors.password && (
-                  <p className="text-destructive text-sm">
-                    {errors.password.message}
-                  </p>
+                  <p className="error-message">{errors.password.message}</p>
                 )}
               </div>
               {/* nút đăng ký */}
