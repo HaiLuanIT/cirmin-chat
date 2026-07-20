@@ -246,6 +246,13 @@
     @apply bg-[hsl(var(--offline))];
   }
 
+  .error-message {
+    @apply text-sm text-destructive;
+  }
+  .success-message {
+    @apply text-sm  text-emerald-500;
+  }
+
   /* Gradient backgrounds */
   .bg-gradient-primary {
     background: var(--gradient-primary);
