@@ -1,9 +1,7 @@
-﻿using System.Net;
-using FluentValidation;
+﻿using FluentValidation;
 using Moji.BusinessLogic.Exceptions;
 using Moji.Contracts.Models.FriendShips;
 using Moji.Contracts.Models.FriendShips.AddFriend;
-using Moji.Contracts.Models.Users.SearchUser;
 using Moji.DataAccess.Commons.Constants;
 using Moji.DataAccess.Commons.DbTransactionManagers;
 using Moji.DataAccess.Entities;
@@ -13,14 +11,15 @@ namespace Moji.BusinessLogic.Services.Friends;
 
 public class FriendShipService : IFriendShipService
 {
-    private readonly IFriendShipRepository _friendShipRepository;
-    private readonly IUserRepository _userRepository;
     private readonly IConversationRepository _conversationRepository;
     private readonly IDbTransactionManager _dbTransactionManager;
     private readonly IValidator<AddFriendRequest> _friendRequestValidator;
+    private readonly IFriendShipRepository _friendShipRepository;
+    private readonly IUserRepository _userRepository;
 
     public FriendShipService(IFriendShipRepository friendShipRepository, IUserRepository userRepository,
-        IConversationRepository conversationRepository, IDbTransactionManager dbTransactionManager, IValidator<AddFriendRequest> friendRequestValidator)
+        IConversationRepository conversationRepository, IDbTransactionManager dbTransactionManager,
+        IValidator<AddFriendRequest> friendRequestValidator)
     {
         _friendRequestValidator = friendRequestValidator;
         _friendShipRepository = friendShipRepository;
@@ -32,11 +31,8 @@ public class FriendShipService : IFriendShipService
     public async Task AddFriend(Guid currentUserId, AddFriendRequest request)
     {
         var validationResult = await _friendRequestValidator.ValidateAsync(request);
-        if (!validationResult.IsValid)
-        {
-            throw new MojiValidationException(validationResult.Errors);
-        }
-        
+        if (!validationResult.IsValid) throw new MojiValidationException(validationResult.Errors);
+
         if (currentUserId == request.ReceiverId) throw new MojiBadRequestException("Không thể kết bạn với bản thân");
         //check receiver exist
         var receiver = await _userRepository.FindByIdAsync(request.ReceiverId);
@@ -45,17 +41,16 @@ public class FriendShipService : IFriendShipService
         //check friend request is exist or not
         var friendRequest = await _friendShipRepository.FindRequestAsync(currentUserId, request.ReceiverId);
         if (friendRequest != null)
-        {
             throw new MojiConflictException("Lời mời kết bạn hoặc mối quan hệ giữa hai người đã tồn tại!");
-        }
 
         //add to db
-        var newRequest = new FriendShip()
+        var newRequest = new FriendShip
         {
             UserLeftId = currentUserId,
             UserRightId = request.ReceiverId,
             Message = request.Message,
-            RequesterId = currentUserId
+            RequesterId = currentUserId,
+            Status = FriendShipStatus.Pending
         };
         _friendShipRepository.Add(newRequest);
         await _dbTransactionManager.SaveChangesAsync();
@@ -69,11 +64,9 @@ public class FriendShipService : IFriendShipService
 
         //check permission with friend request
         if (friendRequest.RequesterId == currentUserId)
-        {
             throw new MojiForbiddenException("Bạn không có quyền thực hiện hành động này!");
-        }
 
-        if (friendRequest.Status != FriendShipStatus.PendingOutbound)
+        if (friendRequest.Status != FriendShipStatus.Pending)
             throw new MojiBadRequestException("Lời mời kết bạn này đã được xử lý");
 
         //normalize status in request must be match in enum
@@ -95,8 +88,8 @@ public class FriendShipService : IFriendShipService
         try
         {
             _friendShipRepository.Update(friendRequest);
-            
-            var conversation = new Conversation()
+
+            var conversation = new Conversation
             {
                 Name = null,
                 IsGroup = false
@@ -104,7 +97,7 @@ public class FriendShipService : IFriendShipService
             conversation.AddMember(friendRequest.UserLeftId);
             conversation.AddMember(friendRequest.UserRightId);
             _conversationRepository.Add(conversation);
-            
+
             await _dbTransactionManager.SaveChangesAsync();
             await _dbTransactionManager.CommitAsync();
         }
@@ -113,7 +106,6 @@ public class FriendShipService : IFriendShipService
             await _dbTransactionManager.RollbackAsync();
             throw;
         }
-        
     }
 
     public async Task<List<FriendResponse>> GetFriendList(Guid userId)

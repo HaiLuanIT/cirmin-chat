@@ -1,10 +1,7 @@
-﻿using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Moji.BusinessLogic.Exceptions;
 using Moji.BusinessLogic.Services.Friends;
 using Moji.Contracts.Models.FriendShips.AddFriend;
-using Moji.DataAccess.Commons.Constants;
 
 namespace Moji.API.Controllers;
 
@@ -17,35 +14,35 @@ public class FriendsController : BaseApiController
     {
         _friendShipService = friendShipService;
     }
-    
+
     [HttpGet]
     public async Task<IActionResult> GetFriends()
     {
         var friendList = await _friendShipService.GetFriendList(CurrentUserId);
         return Ok(friendList);
     }
-    
+
     [HttpGet("requests")]
     public async Task<IActionResult> GetFriendRequests()
     {
         var friendList = await _friendShipService.GetFriendRequestList(CurrentUserId);
         return Ok(friendList);
     }
-    
-    [HttpPost]
+
+    [HttpPost("requests")]
     public async Task<IActionResult> AddFriend([FromBody] AddFriendRequest request)
     {
         await _friendShipService.AddFriend(CurrentUserId, request);
-        return StatusCode(201,"Gửi lời mời kết bạn thành công");
+        return StatusCode(201, "Gửi lời mời kết bạn thành công");
     }
-    
+
     [HttpPost("requests/{requestId:Guid}/accept")]
     public async Task<IActionResult> AcceptFriendRequest([FromRoute] Guid requestId)
     {
         await _friendShipService.ProcessFriendRequest(CurrentUserId, requestId, true);
         return Ok(new { message = "Đã chấp nhận lời mời kết bạn!" });
     }
-    
+
     [HttpPost("requests/{requestId:Guid}/reject")]
     public async Task<IActionResult> RejectFriendRequest([FromRoute] Guid requestId)
     {
