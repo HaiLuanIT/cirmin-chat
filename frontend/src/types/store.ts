@@ -1,5 +1,5 @@
 import type { Conversation, Message } from "./chat";
-import type { User } from "./user";
+import type { SearchUserResponse, User } from "./user";
 import * as signalR from "@microsoft/signalr";
 
 export interface AuthState {
@@ -66,4 +66,14 @@ export interface PresenceState {
   setStatusUser: (userId: string, isOnline: boolean) => void;
   isOnline: (userId: string) => boolean;
   clearState: () => void;
+}
+
+export interface FriendState {
+  loading: boolean;
+  searchByUsername: (
+    username: string,
+    limit?: number,
+    pageNumber?: number,
+  ) => Promise<SearchUserResponse>;
+  addFriend: (to: string, message?: string) => Promise<string>;
 }
