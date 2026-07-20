@@ -83,7 +83,7 @@ public class FriendShipRepository : IFriendShipRepository
         var result = await _context.Friendships.AsNoTracking()
             .Where(x => (x.UserLeftId == userId || x.UserRightId == userId)
                         && x.RequesterId != userId
-                        && x.Status == FriendShipStatus.PendingOutbound)
+                        && x.Status == FriendShipStatus.Pending)
             .OrderByDescending(x => x.UpdatedAt)
             .Select(x => x.UserLeftId == userId
                 ? new FriendRequestResponse
@@ -110,7 +110,7 @@ public class FriendShipRepository : IFriendShipRepository
     public async Task<List<FriendRequestResponse>> GetOutboundRequestsAsync(Guid userId)
     {
         var result = await _context.Friendships.AsNoTracking()
-            .Where(x => x.RequesterId == userId && x.Status == FriendShipStatus.PendingOutbound)
+            .Where(x => x.RequesterId == userId && x.Status == FriendShipStatus.Pending)
             .OrderByDescending(x => x.UpdatedAt)
             .Select(x => x.UserLeftId == userId
                 ? new FriendRequestResponse
