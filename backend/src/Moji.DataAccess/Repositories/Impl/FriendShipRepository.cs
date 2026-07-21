@@ -3,6 +3,7 @@ using Moji.Contracts.Models.FriendShips;
 using Moji.DataAccess.Commons.Constants;
 using Moji.DataAccess.Configurations;
 using Moji.DataAccess.Entities;
+using Moji.DataAccess.Models;
 
 namespace Moji.DataAccess.Repositories.Impl;
 
@@ -83,7 +84,7 @@ public class FriendShipRepository : IFriendShipRepository
         var result = await _context.Friendships.AsNoTracking()
             .Where(x => (x.UserLeftId == userId || x.UserRightId == userId)
                         && x.RequesterId != userId
-                        && x.Status == FriendShipStatus.PendingOutbound)
+                        && x.Status == FriendShipStatus.Pending)
             .OrderByDescending(x => x.UpdatedAt)
             .Select(x => x.UserLeftId == userId
                 ? new FriendRequestResponse
@@ -110,7 +111,7 @@ public class FriendShipRepository : IFriendShipRepository
     public async Task<List<FriendRequestResponse>> GetOutboundRequestsAsync(Guid userId)
     {
         var result = await _context.Friendships.AsNoTracking()
-            .Where(x => x.RequesterId == userId && x.Status == FriendShipStatus.PendingOutbound)
+            .Where(x => x.RequesterId == userId && x.Status == FriendShipStatus.Pending)
             .OrderByDescending(x => x.UpdatedAt)
             .Select(x => x.UserLeftId == userId
                 ? new FriendRequestResponse
@@ -160,13 +161,20 @@ public class FriendShipRepository : IFriendShipRepository
         return asRequest.Concat(asReceive).ToList();
     }
 
-    public async Task<Dictionary<Guid, string>> GetUsersRelationStatus(Guid currentUserId, List<Guid> userIds)
+    public async Task<Dictionary<Guid, UserRelationShipProjection>> GetUsersRelationStatus(Guid currentUserId,
+        List<Guid> userIds)
     {
         var result = await _context.Friendships.AsNoTracking().Where(x =>
                 (x.UserLeftId == currentUserId && userIds.Contains(x.UserRightId)) ||
                 (x.UserRightId == currentUserId && userIds.Contains(x.UserLeftId))
             )
-            .ToDictionaryAsync(x => currentUserId == x.UserLeftId ? x.UserRightId : x.UserLeftId, x => x.Status);
+            .Select(friendship => new UserRelationShipProjection
+            {
+                UserId = friendship.UserLeftId == currentUserId ? friendship.UserRightId : friendship.UserLeftId,
+                RequesterId = friendship.RequesterId,
+                Status = friendship.Status
+            })
+            .ToDictionaryAsync(x => x.UserId);
 
         return result;
     }
