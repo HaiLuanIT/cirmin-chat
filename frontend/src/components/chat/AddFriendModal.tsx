@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -7,7 +7,7 @@ import {
   DialogTrigger,
 } from "../ui/dialog";
 import { UserPlus } from "lucide-react";
-import type { SearchUser, SearchUserResponse, User } from "@/types/user";
+import type { SearchUser, SearchUserResponse } from "@/types/user";
 import { useFriendStore } from "@/stores/useFriendStore";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -35,6 +35,7 @@ const AddFriendModal = () => {
     handleSubmit,
     watch,
     reset,
+    setValue,
     formState: { errors },
   } = useForm<IFromValues>({
     defaultValues: { username: "", message: "" },
@@ -42,7 +43,8 @@ const AddFriendModal = () => {
 
   const usernameValue = watch("username");
 
-  const isFound = searchResult === null ? null : searchResult.items.length > 0;
+  const isFound =
+    searchResult === null ? null : searchResult?.items?.length > 0;
 
   const search = async (username: string, pageNumber: number) => {
     try {
@@ -66,7 +68,7 @@ const AddFriendModal = () => {
   });
 
   const handleChangePage = async (pageNumber: number) => {
-    if (!searchedUsername && pageNumber < 1) return;
+    if (!searchedUsername || pageNumber < 1) return;
 
     await search(searchedUsername, pageNumber);
   };
@@ -84,7 +86,12 @@ const AddFriendModal = () => {
 
       handleCancel();
     } catch (error) {
-      console.error("Lỗi xảy ra khi gửi request từ form", error);
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Không thể gửi lời mời kết bạn.";
+
+      toast.error(message);
     }
   });
 
@@ -106,7 +113,7 @@ const AddFriendModal = () => {
           <span className="sr-only">Kết bạn</span>
         </div>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] border-none">
+      <DialogContent className="sm:max-w-106.25 border-none">
         <DialogHeader>
           <DialogTitle>Kết bạn</DialogTitle>
         </DialogHeader>
@@ -115,6 +122,7 @@ const AddFriendModal = () => {
           <>
             <SearchForm
               register={register}
+              setValue={setValue}
               errors={errors}
               usernameValue={usernameValue}
               loading={loading}
@@ -137,8 +145,11 @@ const AddFriendModal = () => {
         {selectedUser && (
           <SendFriendRequestForm
             register={register}
+            setValue={setValue}
             loading={loading}
             searchedUsername={selectedUser.username}
+            searchedDisplayName={selectedUser.displayName}
+            searchedAvataUrl={selectedUser.avatarUrl}
             onSubmit={handleSend}
             onBack={handleBackToResults}
           />

@@ -1,8 +1,9 @@
+import { getApiErrorMessage } from "@/lib/api-error";
 import { friendService } from "@/services/friendService";
 import type { FriendState } from "@/types/store";
 import { create } from "zustand";
 
-export const useFriendStore = create<FriendState>((set, get) => ({
+export const useFriendStore = create<FriendState>((set) => ({
   loading: false,
   searchByUsername: async (username, limit = 10, pageNumber = 1) => {
     try {
@@ -27,7 +28,9 @@ export const useFriendStore = create<FriendState>((set, get) => ({
       return resultMessage;
     } catch (error) {
       console.error("Lỗi xảy ra khi gửi kết bạn", error);
-      return "Lỗi xảy ra khi gửi kết bạn. Hãy thử lại.";
+      throw new Error(
+        getApiErrorMessage(error, "Không thể gửi lời mời kết bạn."),
+      );
     } finally {
       set({ loading: false });
     }
