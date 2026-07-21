@@ -1,5 +1,6 @@
 ﻿using Moji.Contracts.Models.FriendShips;
 using Moji.DataAccess.Entities;
+using Moji.DataAccess.Models;
 
 namespace Moji.DataAccess.Repositories;
 
@@ -25,5 +26,5 @@ public interface IFriendShipRepository
 
     Task<List<Guid>> GetFriendIds(Guid userId);
 
-    Task<Dictionary<Guid, string>> GetUsersRelationStatus(Guid currentUserId, List<Guid> userIds);
+    Task<Dictionary<Guid, UserRelationShipProjection>> GetUsersRelationStatus(Guid currentUserId, List<Guid> userIds);
 }

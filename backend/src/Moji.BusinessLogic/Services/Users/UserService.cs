@@ -1,8 +1,10 @@
 ﻿using FluentValidation;
+using Moji.BusinessLogic.Constants;
 using Moji.BusinessLogic.Exceptions;
 using Moji.Contracts.Models.Paginations.OffsetPagination;
 using Moji.Contracts.Models.Users.SearchUser;
 using Moji.DataAccess.Commons.Constants;
+using Moji.DataAccess.Models;
 using Moji.DataAccess.Repositories;
 
 namespace Moji.BusinessLogic.Services.Users;
@@ -49,7 +51,7 @@ public class UserService : IUserService
 
         var relationLookup = await _friendShipRepository.GetUsersRelationStatus(currentUserId, userIds);
 
-        var relationIds = relationLookup.Where(x => x.Value == FriendShipStatus.Accept).Select(x => x.Key)
+        var relationIds = relationLookup.Where(x => x.Value.Status == FriendShipStatus.Accept).Select(x => x.Key)
             .ToList();
 
         var directConversationOfUser = await _convoRepository.GetDirectConversationIdsByUserId(currentUserId);
@@ -60,6 +62,9 @@ public class UserService : IUserService
         var response = usersInfo.Items.Select(x =>
             {
                 relationLookup.TryGetValue(x.Id, out var relationStatus);
+
+                var userRelationStatus = ResolveUserRelationStatus(currentUserId, relationStatus);
+
                 peerConversationOfParticipant.TryGetValue(x.Id, out var conversationId);
 
                 return new SearchUserResponse
@@ -68,7 +73,7 @@ public class UserService : IUserService
                     Username = x.Username,
                     DisplayName = x.DisplayName,
                     AvatarUrl = x.AvatarUrl,
-                    RelationStatus = relationStatus,
+                    RelationStatus = userRelationStatus,
                     ConversationId = conversationId
                 };
             })
@@ -80,5 +85,42 @@ public class UserService : IUserService
             TotalCount = usersInfo.TotalCount,
             Items = response
         };
+    }
+
+    //helper
+    private static string? ResolveUserRelationStatus(Guid currentUserId, UserRelationShipProjection? relationStatus)
+    {
+        string userRelationStatus = null;
+        switch (relationStatus.Status)
+        {
+            case "accept":
+            {
+                userRelationStatus = UserRelationStatus.Friend;
+                break;
+            }
+            case "pending":
+            {
+                if (relationStatus.RequesterId == currentUserId)
+                {
+                    userRelationStatus = UserRelationStatus.RequestSent;
+                    break;
+                }
+
+                userRelationStatus = UserRelationStatus.RequestReceived;
+                break;
+            }
+            case "reject":
+            {
+                userRelationStatus = UserRelationStatus.Reject;
+                break;
+            }
+            case "block":
+            {
+                userRelationStatus = UserRelationStatus.Block;
+                break;
+            }
+        }
+
+        return userRelationStatus;
     }
 }
