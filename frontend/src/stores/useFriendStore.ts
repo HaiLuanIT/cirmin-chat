@@ -1,9 +1,13 @@
+import { getApiErrorMessage } from "@/lib/api-error";
 import { friendService } from "@/services/friendService";
 import type { FriendState } from "@/types/store";
 import { create } from "zustand";
 
-export const useFriendStore = create<FriendState>((set, get) => ({
+export const useFriendStore = create<FriendState>((set) => ({
   loading: false,
+  receivedList: [],
+  sentList: [],
+  friends: [],
   searchByUsername: async (username, limit = 10, pageNumber = 1) => {
     try {
       set({ loading: true });
@@ -27,7 +31,67 @@ export const useFriendStore = create<FriendState>((set, get) => ({
       return resultMessage;
     } catch (error) {
       console.error("Lỗi xảy ra khi gửi kết bạn", error);
-      return "Lỗi xảy ra khi gửi kết bạn. Hãy thử lại.";
+      throw new Error(
+        getApiErrorMessage(error, "Không thể gửi lời mời kết bạn."),
+      );
+    } finally {
+      set({ loading: false });
+    }
+  },
+  getAllFriendRequests: async () => {
+    try {
+      set({ loading: true });
+
+      const result = await friendService.getAllFriendRequests();
+      if (!result) return;
+
+      const { inbound, outbound } = result;
+      set({ receivedList: inbound, sentList: outbound });
+    } catch (error) {
+      console.error("Lỗi xảy ra khi getAllFriendRequests", error);
+    } finally {
+      set({ loading: false });
+    }
+  },
+  acceptFriendRequest: async (requestId) => {
+    try {
+      set({ loading: true });
+
+      await friendService.acceptFriendRequest(requestId);
+
+      set((state) => ({
+        receivedList: state.receivedList.filter((r) => r.id !== requestId),
+      }));
+    } catch (error) {
+      console.error("Lỗi xảy ra khi acceptFriendRequest", error);
+    } finally {
+      set({ loading: false });
+    }
+  },
+
+  rejectFriendRequest: async (requestId) => {
+    try {
+      set({ loading: true });
+
+      await friendService.rejectFriendRequest(requestId);
+
+      set((state) => ({
+        receivedList: state.receivedList.filter((r) => r.id !== requestId),
+      }));
+    } catch (error) {
+      console.error("Lỗi xảy ra khi rejectFriendRequest", error);
+    } finally {
+      set({ loading: false });
+    }
+  },
+  getFriends: async () => {
+    try {
+      set({ loading: true });
+      const friendList = await friendService.getAllFriend();
+      set({ friends: friendList });
+    } catch (error) {
+      console.error("Lỗi xảy ra khi getAllFriends", error);
+      set({ friends: [] });
     } finally {
       set({ loading: false });
     }

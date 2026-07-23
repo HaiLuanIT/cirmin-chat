@@ -1,14 +1,15 @@
 import React from "react";
-import type { FieldErrors, UseFormRegister } from "react-hook-form";
+import type { FieldErrors, UseFormRegister, UseFormSetValue } from "react-hook-form";
 import type { IFromValues } from "../chat/AddFriendModal";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { DialogClose, DialogFooter } from "../ui/dialog";
 import { Button } from "../ui/button";
-import { Search } from "lucide-react";
+import { Search, SearchX, AlertCircle, Loader2, X } from "lucide-react";
 
 interface SearchFormProps {
   register: UseFormRegister<IFromValues>;
+  setValue?: UseFormSetValue<IFromValues>;
   errors: FieldErrors<IFromValues>;
   loading: boolean;
   usernameValue: string;
@@ -17,8 +18,10 @@ interface SearchFormProps {
   onSubmit?: (e?: React.FormEvent<HTMLFormElement>) => void;
   onCancel: () => void;
 }
+
 const SearchForm = ({
   register,
+  setValue,
   errors,
   loading,
   usernameValue,
@@ -27,55 +30,95 @@ const SearchForm = ({
   onSubmit,
   onCancel,
 }: SearchFormProps) => {
+  const handleClear = () => {
+    if (setValue) {
+      setValue("username", "", { shouldValidate: true });
+    }
+  };
+
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="username" className="text-sm font-semibold">
-          Tìm bằng username
+        <Label htmlFor="username" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <Search className="size-3.5 text-primary" />
+          Tìm kiếm theo username
         </Label>
-        <Input
-          id="username"
-          placeholder="Gõ tên username"
-          className="glass border-border/50 focus:border-primary/50 transition-smooth"
-          {...register("username", {
-            required: "Username không được bỏ trống",
-          })}
-        ></Input>
+        
+        <div className="relative flex items-center">
+          <Search className="absolute left-3.5 size-4 text-muted-foreground/70 pointer-events-none transition-colors" />
+          
+          <Input
+            id="username"
+            placeholder="Nhập tên tài khoản (ví dụ: alex_moji)..."
+            className="pl-10 pr-9 h-11 rounded-xl glass border-border/60 focus-visible:border-primary/60 focus-visible:ring-2 focus-visible:ring-primary/20 transition-all text-sm shadow-xs"
+            {...register("username", {
+              required: "Username không được bỏ trống",
+            })}
+          />
+
+          {usernameValue && (
+            <button
+              type="button"
+              onClick={handleClear}
+              className="absolute right-3 p-1 rounded-full text-muted-foreground/60 hover:text-foreground hover:bg-muted/60 transition-colors"
+              title="Xóa tìm kiếm"
+            >
+              <X className="size-3.5" />
+            </button>
+          )}
+        </div>
+
         {errors.username && (
-          <p className="error-message">{errors.username.message}</p>
+          <div className="flex items-center gap-2 p-2.5 text-xs font-medium text-destructive bg-destructive/10 border border-destructive/20 rounded-xl animate-in fade-in slide-in-from-top-1">
+            <AlertCircle className="size-3.5 shrink-0" />
+            <span>{errors.username.message}</span>
+          </div>
         )}
 
         {isFound === false && (
-          <span className="error-message">
-            Không tìm thấy
-            <span className="font-semibold">@{searchedUsername}</span>
-          </span>
+          <div className="flex items-start gap-3 p-3 bg-destructive/10 border border-destructive/20 rounded-xl text-foreground/90 animate-in fade-in zoom-in-95">
+            <div className="p-2 bg-destructive/15 rounded-lg text-destructive shrink-0 mt-0.5">
+              <SearchX className="size-4" />
+            </div>
+            <div className="space-y-0.5">
+              <p className="font-semibold text-xs text-destructive uppercase tracking-wide">
+                Không tìm thấy tài khoản
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Rất tiếc, không tìm thấy kết quả nào cho <span className="font-semibold text-foreground">@{searchedUsername}</span>. Vui lòng kiểm tra lại chính tả.
+              </p>
+            </div>
+          </div>
         )}
       </div>
 
-      <DialogFooter>
+      <DialogFooter className="gap-2 sm:gap-2 sm:flex-row border-t-0 bg-transparent p-0 mx-0 mb-0">
         <DialogClose asChild>
           <Button
             type="button"
             variant="outline"
-            className="flex-1 glass hover:text-destructive"
+            className="flex-1 rounded-xl h-10 border-border/60 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 transition-all duration-200"
             onClick={onCancel}
           >
-            Cancel
+            Hủy
           </Button>
         </DialogClose>
 
         <Button
           type="submit"
           disabled={loading || !usernameValue?.trim()}
-          className="flex-1 bg-gradient-chat text-white hover:opacity-90 transition-smooth"
+          className="flex-1 rounded-xl h-10 bg-gradient-chat text-white font-medium shadow-sm hover:shadow-glow hover:scale-[1.01] active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:hover:scale-100 disabled:hover:shadow-none"
         >
           {loading ? (
-            <span>Đang tìm ...</span>
+            <div className="flex items-center justify-center gap-2">
+              <Loader2 className="size-4 animate-spin" />
+              <span>Đang tìm...</span>
+            </div>
           ) : (
-            <>
-              <Search className="size-4 mr-2" />
-            </>
+            <div className="flex items-center justify-center gap-2">
+              <Search className="size-4" />
+              <span>Tìm kiếm</span>
+            </div>
           )}
         </Button>
       </DialogFooter>

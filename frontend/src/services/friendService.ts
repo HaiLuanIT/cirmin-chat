@@ -18,4 +18,39 @@ export const friendService = {
     const res = await api.post("/friends/requests", { receiverId, message });
     return res.data;
   },
+
+  async getAllFriendRequests() {
+    try {
+      const res = await api.get("/friends/requests");
+      const { inbound, outbound } = res.data;
+      return { inbound, outbound };
+    } catch (error) {
+      console.error("Lỗi khi gửi get all friend request", error);
+    }
+  },
+
+  async acceptFriendRequest(requestId: string) {
+    try {
+      const res = await api.post(`/friends/requests/${requestId}/accept`);
+      return res.data;
+    } catch (error) {
+      console.error("Lỗi khi gửi accept request", error);
+    }
+  },
+  async rejectFriendRequest(requestId: string) {
+    try {
+      await api.post(`/friends/requests/${requestId}/reject`);
+    } catch (error) {
+      console.error("Lỗi khi gửi reject request", error);
+    }
+  },
+
+  async getAllFriend() {
+    try {
+      const res = await api.get("/friends");
+      return res.data;
+    } catch (error) {
+      console.error("Lỗi khi getAllFriend", error);
+    }
+  },
 };

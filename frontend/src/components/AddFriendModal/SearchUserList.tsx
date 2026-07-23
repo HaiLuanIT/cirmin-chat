@@ -16,12 +16,12 @@ const SearchUserList = ({
   onSelectUser,
   onChangePage,
 }: SearchUserListProps) => {
-  if (result.items.length === 0) return null;
+  if (result?.items?.length === 0) return null;
 
   return (
     <div className="space-y-3">
       <div className="space-y-2 max-h-72 overflow-y-auto">
-        {result.items.map((user) => (
+        {result?.items?.map((user) => (
           <Button
             key={user.id}
             type="button"
