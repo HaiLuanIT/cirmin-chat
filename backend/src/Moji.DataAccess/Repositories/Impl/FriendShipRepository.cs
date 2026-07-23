@@ -60,7 +60,8 @@ public class FriendShipRepository : IFriendShipRepository
                     UserId = x.UserRightId,
                     DisplayName = x.UserRight.FullName,
                     AvatarUrl = x.UserRight.AvatarUrl,
-                    Status = x.Status
+                    Status = x.Status,
+                    Username = x.UserRight.Username
                 })
             .ToListAsync();
 
@@ -72,7 +73,8 @@ public class FriendShipRepository : IFriendShipRepository
                 UserId = x.UserLeftId,
                 DisplayName = x.UserLeft.FullName,
                 AvatarUrl = x.UserLeft.AvatarUrl,
-                Status = x.Status
+                Status = x.Status,
+                Username = x.UserLeft.Username
             })
             .ToListAsync();
         return asRequest.Concat(asReceive).ToList();
@@ -93,6 +95,7 @@ public class FriendShipRepository : IFriendShipRepository
                     UserId = x.UserRightId,
                     DisplayName = x.UserRight.FullName,
                     AvatarUrl = x.UserRight.AvatarUrl,
+                    Username = x.UserRight.Username,
                     Status = x.Status
                 }
                 : new FriendRequestResponse
@@ -101,6 +104,7 @@ public class FriendShipRepository : IFriendShipRepository
                     UserId = x.UserLeftId,
                     DisplayName = x.UserLeft.FullName,
                     AvatarUrl = x.UserLeft.AvatarUrl,
+                    Username = x.UserLeft.Username,
                     Status = x.Status
                 }
             )
@@ -120,6 +124,7 @@ public class FriendShipRepository : IFriendShipRepository
                     UserId = x.UserRightId,
                     DisplayName = x.UserRight.FullName,
                     AvatarUrl = x.UserRight.AvatarUrl,
+                    Username = x.UserRight.Username,
                     Status = x.Status
                 }
                 : new FriendRequestResponse
@@ -128,6 +133,7 @@ public class FriendShipRepository : IFriendShipRepository
                     UserId = x.UserLeftId,
                     DisplayName = x.UserLeft.FullName,
                     AvatarUrl = x.UserLeft.AvatarUrl,
+                    Username = x.UserLeft.Username,
                     Status = x.Status
                 })
             .ToListAsync();
