@@ -13,10 +13,7 @@ const DirectMessageCard = ({ convo }: { convo: Conversation }) => {
   const { isOnline } = usePresenceStore();
   const {
     activeConversationId,
-    setActiveConversation,
-    messages,
-    fetchMessages,
-    markAsSeen,
+    openConversation,
   } = useChatStore();
 
   if (!user) return null;
@@ -28,11 +25,7 @@ const DirectMessageCard = ({ convo }: { convo: Conversation }) => {
   const lastMessage = convo.lastMessage?.lastMessageContent ?? "";
 
   const handleSelectConversation = async (id: string) => {
-    setActiveConversation(id);
-    await markAsSeen(id);
-    if (!messages[id]) {
-      await fetchMessages();
-    }
+    await openConversation(id);
   };
   return (
     <ChatCard

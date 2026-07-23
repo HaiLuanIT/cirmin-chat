@@ -11,9 +11,9 @@ import type { SearchUser, SearchUserResponse } from "@/types/user";
 import { useFriendStore } from "@/stores/useFriendStore";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import SearchForm from "../AddFriendModal/SearchForm";
-import SendFriendRequestForm from "../AddFriendModal/SendFriendRequestForm";
-import SearchUserList from "../AddFriendModal/SearchUserList";
+import SearchForm from "../addFriendModal/SearchForm";
+import SendFriendRequestForm from "../addFriendModal/SendFriendRequestForm";
+import SearchUserList from "../addFriendModal/SearchUserList";
 
 export interface IFromValues {
   username: string;

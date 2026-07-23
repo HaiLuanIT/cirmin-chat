@@ -14,6 +14,16 @@ export const useChatStore = create<ChatState>()(
       messageLoading: false,
 
       setActiveConversation: (id) => set({ activeConversationId: id }),
+      openConversation: async (id) => {
+        const { messages, markAsSeen, fetchMessages } = get();
+
+        set({ activeConversationId: id });
+        await markAsSeen(id);
+
+        if (!messages[id]) {
+          await fetchMessages(id);
+        }
+      },
       reset: () => {
         set({
           conversations: [],
@@ -135,7 +145,6 @@ export const useChatStore = create<ChatState>()(
         }
       },
       updateLastMessage: (message) => {
-        const { user } = useAuthStore.getState();
         set((state) => {
           const updateConversations = state.conversations.map((c) => {
             if (c.id === message.conversationId) {
