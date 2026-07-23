@@ -1,5 +1,5 @@
 import type { Conversation, Message } from "./chat";
-import type { SearchUserResponse, User } from "./user";
+import type { Friend, FriendRequest, SearchUserResponse, User } from "./user";
 
 export interface AuthState {
   accessToken: string | null;
@@ -44,6 +44,7 @@ export interface ChatState {
   reset: () => void; //reset state
 
   setActiveConversation: (id: string | null) => void;
+  openConversation: (id: string) => Promise<void>;
   fetchConversations: () => Promise<void>;
   fetchMessages: (conversationId?: string) => Promise<void>;
   sendMessage: (content: string, imgUrl?: string) => Promise<void>;
@@ -69,10 +70,17 @@ export interface PresenceState {
 
 export interface FriendState {
   loading: boolean;
+  friends: Friend[];
+  receivedList: FriendRequest[];
+  sentList: FriendRequest[];
   searchByUsername: (
     username: string,
     limit?: number,
     pageNumber?: number,
   ) => Promise<SearchUserResponse>;
   addFriend: (to: string, message?: string) => Promise<string>;
+  getAllFriendRequests: () => Promise<void>;
+  acceptFriendRequest: (requestId: string) => Promise<void>;
+  rejectFriendRequest: (requestId: string) => Promise<void>;
+  getFriends: () => Promise<void>;
 }

@@ -11,13 +11,16 @@ export interface User {
 export interface Friend {
   userId: string;
   displayName: string;
-  AvatarUrl?: string;
+  username: string;
+  avatarUrl?: string;
+  status: string;
 }
 
 export interface FriendRequest {
   id: string;
   userId: string;
   displayName: string;
+  username: string;
   avatarUrl?: string | null;
   status: string;
 }
