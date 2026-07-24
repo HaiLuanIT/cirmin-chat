@@ -41,6 +41,7 @@ export interface ChatState {
   activeConversationId: string | null; //lưu hội thoại đang click vào
   convoLoading: boolean; //kiểm tra request đã load chưa
   messageLoading: boolean;
+  loading: boolean;
   reset: () => void; //reset state
 
   setActiveConversation: (id: string | null) => void;
@@ -58,6 +59,8 @@ export interface ChatState {
     conversationId: string,
     lastMessageId: string,
   ) => void;
+  addConversation: (conversation: Conversation) => void;
+  createConversation: (name: string, userIds: string[]) => Promise<void>;
 }
 
 export interface PresenceState {

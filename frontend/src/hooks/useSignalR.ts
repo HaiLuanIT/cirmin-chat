@@ -4,13 +4,14 @@ import { signalRService } from "@/services/signalRService";
 import * as signalR from "@microsoft/signalr";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { useChatStore } from "@/stores/useChatStore";
-import type { Message } from "@/types/chat";
+import type { Conversation, Message } from "@/types/chat";
 
 export const useSignalR = () => {
   const setOnlineUsers = usePresenceStore((s) => s.setOnlineUsers);
   const setStatusUser = usePresenceStore((s) => s.setStatusUser);
   const addMessage = useChatStore((s) => s.addMessage);
   const updateLastMessage = useChatStore((s) => s.updateLastMessage);
+  const addConversation = useChatStore((s) => s.addConversation);
   const token = useAuthStore((s) => s.accessToken);
   const { user } = useAuthStore();
   const {
@@ -62,6 +63,14 @@ export const useSignalR = () => {
       updateMemberSeenConcurrently(userId, conversationId, lastMessageId);
     };
 
+    const handleGroupCreated = (conversation: Conversation) => {
+      addConversation(conversation);
+
+      connection
+        .invoke("JoinConversation", conversation.id)
+        .catch((err) => console.error("Lỗi khi tham gia hội thoại mới", err));
+    };
+
     connection.on("GetOnlineUsers", handleSetOnlineUsers);
 
     connection.on("UserStatusChanged", handleSetUserStatus);
@@ -70,6 +79,7 @@ export const useSignalR = () => {
 
     connection.on("UserSeenMessage", handleUserSeenMessage);
 
+    connection.on("GroupConversationCreated", handleGroupCreated);
     if (connection.state === signalR.HubConnectionState.Disconnected) {
       connection
         .start()
@@ -81,6 +91,7 @@ export const useSignalR = () => {
       connection.off("UserStatusChanged", handleSetUserStatus);
       connection.off("ReceiveMessage", handleAddMessage);
       connection.off("UserSeenMessage", handleUserSeenMessage);
+      connection.off("GroupConversationCreated", handleGroupCreated);
       console.log("Tắt lắng nghe sự kiện SignalR");
     };
   }, [
