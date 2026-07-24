@@ -97,14 +97,14 @@ public class ConversationRepository : IConversationRepository
         List<Guid> currentDirectConversationIds)
     {
         var result = await _context.Conversations
-            .Where(conversation => !conversation.IsGroup 
-            && conversation.Members.Any(member => userIds.Contains(member.UserId)))
+            .Where(conversation => !conversation.IsGroup
+                                   && conversation.Members.Any(member => userIds.Contains(member.UserId)))
             .SelectMany(conversation => conversation.Members
                 .Where(member => userIds.Contains(member.UserId))
                 .Select(member => new
                 {
                     member.UserId,
-                        ConversationId = conversation.Id
+                    ConversationId = conversation.Id
                 }))
             .ToDictionaryAsync(item => item.UserId, item => item.ConversationId);
         return result;
@@ -116,6 +116,35 @@ public class ConversationRepository : IConversationRepository
             .Where(conversation => !conversation.IsGroup && conversation.Members.Any(member => member.UserId == userId))
             .Select(x => x.Id)
             .ToListAsync();
+        return result;
+    }
+
+    public async Task<ConversationModel> GetConversationById(Guid userId, Guid conversationId)
+    {
+        var result = await _context.Conversations.AsNoTracking()
+            .Where(conversation => conversation.Id == conversationId)
+            .Select(x => new ConversationModel
+            {
+                Id = x.Id,
+                IsGroup = x.IsGroup,
+                Name = x.Name,
+                CreatedAt = x.CreatedAt,
+                Members = x.Members.Select(member => new ConversationMemberModel
+                {
+                    UserId = member.UserId,
+                    DisplayName = member.User.FullName,
+                    AvatarUrl = member.User.AvatarUrl,
+                    LastMessageId = member.LastSeenMessageId
+                }).ToList(),
+                LastMessage = new LastMessageModel
+                {
+                    Id = x.LastMessageId,
+                    LastMessageContent = x.LastMessage,
+                    LastMessageAt = x.LastMessageTime
+                },
+                UnreadCount = x.Members.Where(member => member.UserId == userId).Select(x => x.UnreadCount)
+                    .FirstOrDefault()
+            }).FirstOrDefaultAsync();
         return result;
     }
 }
