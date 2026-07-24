@@ -45,4 +45,8 @@ export const chatService = {
     );
     return res.data;
   },
+
+  async createConversation(name: string, userIds: string[]) {
+    const res = await api.post(`/conversations`, { name, userIds });
+  },
 };
