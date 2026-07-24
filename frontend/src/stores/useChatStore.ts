@@ -12,6 +12,7 @@ export const useChatStore = create<ChatState>()(
       activeConversationId: null,
       convoLoading: false,
       messageLoading: false,
+      loading: false,
 
       setActiveConversation: (id) => set({ activeConversationId: id }),
       openConversation: async (id) => {
@@ -236,6 +237,27 @@ export const useChatStore = create<ChatState>()(
             conversations: updatedConversations,
           };
         });
+      },
+      addConversation: (conversation) => {
+        set((state) => {
+          const exist = state.conversations.some(
+            (current) => current.id == conversation.id,
+          );
+          if (exist) return state;
+          return {
+            conversations: [conversation, ...state.conversations],
+          };
+        });
+      },
+      createConversation: async (name, userIds) => {
+        try {
+          set({ loading: true });
+          await chatService.createConversation(name, userIds);
+        } catch (error) {
+          console.error("Lỗi xảy ra khi tạo mới group chat", error);
+        } finally {
+          set({ loading: false });
+        }
       },
     }),
     {

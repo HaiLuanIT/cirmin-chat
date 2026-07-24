@@ -11,56 +11,48 @@ namespace Moji.BusinessLogic.Services.Conversations;
 
 public class ConversationService : IConversationService
 {
-    private readonly IValidator<CreateConversationRequest> _createConversationValidator;
+    private readonly IConversationNotificationService _conversationNotificationService;
     private readonly IConversationRepository _conversationRepository;
-    private readonly IDbTransactionManager _txManager;
+    private readonly IValidator<CreateConversationRequest> _createConversationValidator;
     private readonly IFriendShipService _friendShipService;
+    private readonly IDbTransactionManager _txManager;
 
     public ConversationService(IValidator<CreateConversationRequest> createConversationValidator,
-        IConversationRepository conversationRepository, IDbTransactionManager txManager, IFriendShipService friendShipService)
+        IConversationRepository conversationRepository, IDbTransactionManager txManager,
+        IFriendShipService friendShipService, IConversationNotificationService conversationNotificationService)
     {
         _createConversationValidator = createConversationValidator;
         _conversationRepository = conversationRepository;
         _txManager = txManager;
         _friendShipService = friendShipService;
+        _conversationNotificationService = conversationNotificationService;
     }
 
 
-    public async Task<CreateConversationResponse> CreateConversation(Guid currentUserId, CreateConversationRequest request)
+    public async Task CreateConversation(Guid currentUserId,
+        CreateConversationRequest request)
     {
         //validation request
         var validationResult = await _createConversationValidator.ValidateAsync(request);
-        if (!validationResult.IsValid)
-        {
-            throw new MojiValidationException(validationResult.Errors);
-        }
+        if (!validationResult.IsValid) throw new MojiValidationException(validationResult.Errors);
 
         if (request.UserIds.Any(x => x == currentUserId))
-        {
             throw new MojiBadRequestException("Không thể tạo nhóm với bản thân!");
-        }
 
         foreach (var userId in request.UserIds)
-        {
-            if (!( await _friendShipService.IsFriend(currentUserId, userId)))
-            {
+            if (!await _friendShipService.IsFriend(currentUserId, userId))
                 throw new MojiBadRequestException("Bạn và người dùng này không là bạn bè!");
-            }
-        }
 
         Conversation conversation;
         await using var transaction = await _txManager.BeginTransactionAsync();
         try
         {
-            conversation = new Conversation()
+            conversation = new Conversation
             {
                 Name = request.Name,
                 IsGroup = true
             };
-            foreach (var requestUserId in request.UserIds)
-            {
-                conversation.AddMember(requestUserId);
-            }
+            foreach (var requestUserId in request.UserIds) conversation.AddMember(requestUserId);
             conversation.AddMember(currentUserId);
 
             _conversationRepository.Add(conversation);
@@ -73,9 +65,16 @@ public class ConversationService : IConversationService
             throw;
         }
 
-        List<Guid> members = conversation.Members.Select(x => x.UserId).ToList();
-        return new CreateConversationResponse(conversation.Id, conversation.Name, conversation.IsGroup,
-            conversation.CreatedAt, members);
+
+        var conversationModel = await _conversationRepository.GetConversationById(currentUserId, conversation.Id);
+        try
+        {
+            await _conversationNotificationService.NotifyConversationCreatedAsync(conversationModel);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine("Lỗi khi thông báo tạo nhóm mới cho client");
+        }
     }
 
     public async Task<ListConversationResponse> GetConversations(Guid currentUserId)

@@ -27,4 +27,6 @@ public interface IConversationRepository
         List<Guid> currentDirectConversationIds);
 
     Task<List<Guid>> GetDirectConversationIdsByUserId(Guid userId);
+
+    Task<ConversationModel> GetConversationById(Guid userId, Guid conversationId);
 }

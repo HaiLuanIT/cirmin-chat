@@ -54,6 +54,7 @@ public static class ApplicationServiceExtensions
         services.AddScoped<IPresenceService, PresenceService>();
         services.AddScoped<IMessageNotificationService, MessageNotificationService>();
         services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IConversationNotificationService, ConversationNotificationService>();
         return services;
     }
 
