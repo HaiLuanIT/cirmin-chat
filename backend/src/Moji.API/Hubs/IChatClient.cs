@@ -12,4 +12,6 @@ public interface IChatClient
     Task GetOnlineUsers(List<string> userIds);
 
     Task UserSeenMessage(string userId, string conversationId, string lastMessageId);
+
+    Task GroupConversationCreated(ConversationModel conversation);
 }

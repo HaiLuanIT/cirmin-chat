@@ -12,9 +12,9 @@ namespace Moji.API.Hubs;
 public class ChatHub : Hub<IChatClient>
 {
     private readonly IConversationService _conversationService;
-    private readonly IPresenceService _presenceService;
     private readonly IFriendShipService _friendShipService;
     private readonly IMessageService _messageService;
+    private readonly IPresenceService _presenceService;
 
     public ChatHub(IConversationService conversationService, IPresenceService presenceService,
         IFriendShipService friendShipService, IMessageService messageService)
@@ -44,9 +44,7 @@ public class ChatHub : Hub<IChatClient>
         //add user to group conversation
         var conversationIds = await _conversationService.GetJoinedConversationId(userId);
         foreach (var conversationId in conversationIds)
-        {
             await Groups.AddToGroupAsync(Context.ConnectionId, conversationId);
-        }
 
         await base.OnConnectedAsync();
     }
@@ -65,9 +63,7 @@ public class ChatHub : Hub<IChatClient>
         //remove user to all group conversation
         var conversationIds = await _conversationService.GetJoinedConversationId(userId);
         foreach (var conversationId in conversationIds)
-        {
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, conversationId);
-        }
 
         await base.OnDisconnectedAsync(exception);
     }
@@ -79,20 +75,24 @@ public class ChatHub : Hub<IChatClient>
         var lastMessageId = await _messageService.MarkAsSeen(userId, Guid.Parse(conversationId));
 
         if (lastMessageId != null)
-        {
             await Clients.Group(conversationId)
                 .UserSeenMessage(userId.ToString(), conversationId, lastMessageId.ToString());
-        }
+    }
+
+    public async Task JoinConversation(string conversationId)
+    {
+        var userId = GetUserId();
+        var isMember = await _conversationService.IsMember(userId, Guid.Parse(conversationId));
+        if (!isMember) throw new HubException("Bạn không thuộc về cuộc trò chuyện này!");
+
+        await Groups.AddToGroupAsync(Context.ConnectionId, conversationId);
     }
 
 
     private Guid GetUserId()
     {
         var userIdClaim = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (!Guid.TryParse(userIdClaim, out var userId))
-        {
-            throw new HubException("Xác thực danh tính thất bại.");
-        }
+        if (!Guid.TryParse(userIdClaim, out var userId)) throw new HubException("Xác thực danh tính thất bại.");
 
         return userId;
     }

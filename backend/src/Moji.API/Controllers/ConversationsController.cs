@@ -21,17 +21,17 @@ public class ConversationsController : BaseApiController
     [HttpPost]
     public async Task<IActionResult> CreateGroup([FromBody] CreateConversationRequest request)
     {
-        var res = await _conversationService.CreateConversation(CurrentUserId, request);
-        return StatusCode(201, res);
+        await _conversationService.CreateConversation(CurrentUserId, request);
+        return StatusCode(201);
     }
-       
+
     [HttpGet]
     public async Task<IActionResult> GetConversations()
     {
         var conversations = await _conversationService.GetConversations(CurrentUserId);
         return Ok(conversations);
     }
-    
+
     [HttpGet("{id:guid}/messages")]
     public async Task<IActionResult> GetConversationMessages(
         [FromRoute] Guid id,
