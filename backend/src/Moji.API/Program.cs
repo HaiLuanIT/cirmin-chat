@@ -13,7 +13,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
 //add services, repositories
-builder.Services.AddServiceServices();
+builder.Services.AddServiceServices(builder.Configuration);
 builder.Services.AddRepositoryServices();
 
 //add signalR

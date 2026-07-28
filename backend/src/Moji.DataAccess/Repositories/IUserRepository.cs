@@ -14,6 +14,7 @@ public interface IUserRepository
 
     Task<bool> IsEmailUniqueAsync(string email);
 
-    Task<OffsetPagingResult<UserSearchProjection>> SearchUserByUsername(Guid currentUserId, string username, int pageNumber,
+    Task<OffsetPagingResult<UserSearchProjection>> SearchUserByUsername(Guid currentUserId, string username,
+        int pageNumber,
         int pageSize);
 }

@@ -35,7 +35,8 @@ public class UserRepository : IUserRepository
         return !await _context.Users.AnyAsync(x => x.Email == email);
     }
 
-    public async Task<OffsetPagingResult<UserSearchProjection>> SearchUserByUsername(Guid currentUserId, string username,
+    public async Task<OffsetPagingResult<UserSearchProjection>> SearchUserByUsername(Guid currentUserId,
+        string username,
         int pageNumber, int pageSize)
     {
         var baseQuery = _context.Users
@@ -56,7 +57,7 @@ public class UserRepository : IUserRepository
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
-        
+
 
         return new OffsetPagingResult<UserSearchProjection>
         {

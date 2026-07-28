@@ -2,7 +2,6 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Formatters;
 using Moji.BusinessLogic.Exceptions;
 
 namespace Moji.API.Extensions;
@@ -22,7 +21,7 @@ public static class ErrorHandlingExtensions
                 var statusCode = StatusCodes.Status500InternalServerError;
                 var message = "Đã có lỗi hệ thống xảy ra. Vui lòng thử lại sau!";
                 var title = "Internal Server Error";
-                IDictionary<string, string[]>? validationErrors = null;          
+                IDictionary<string, string[]>? validationErrors = null;
                 string? stackTrace = null;
 
                 switch (exception)
@@ -32,38 +31,44 @@ public static class ErrorHandlingExtensions
                         title = "Business Logic Error";
                         message = badEx.Message;
                         break;
-                    
+
                     case MojiValidationException validationEx:
                         statusCode = StatusCodes.Status400BadRequest;
                         title = "Validation Error";
                         message = validationEx.Message;
                         validationErrors = validationEx.Errors;
                         break;
-                    
+
                     case MojiUnauthorizedException unAuthEx:
                         statusCode = StatusCodes.Status401Unauthorized;
                         title = "Unauthorized";
                         message = unAuthEx.Message;
                         break;
-                    
+
                     case MojiForbiddenException forbiddenEx:
                         statusCode = StatusCodes.Status403Forbidden;
                         title = "Forbidden";
                         message = forbiddenEx.Message;
                         break;
-                    
+
                     case MojiConflictException conflictEx:
                         statusCode = StatusCodes.Status409Conflict;
                         title = "Data Conflict";
                         message = conflictEx.Message;
                         break;
-                    
+
                     case MojiNotFoundException notFoundEx:
                         statusCode = StatusCodes.Status404NotFound;
                         title = "Not Found";
                         message = notFoundEx.Message;
                         break;
-                    
+
+                    case MediaStorageException mediaStorageException:
+                        statusCode = StatusCodes.Status502BadGateway;
+                        title = "Media Storage Error";
+                        message = "Cannot upload media to Cloudinary. Try again later.";
+                        break;
+
                     default:
                         if (app.Environment.IsDevelopment())
                         {
@@ -73,10 +78,10 @@ public static class ErrorHandlingExtensions
                         }
 
                         // Luôn luôn in lỗi thật ra màn hình Console/Terminal của Server để tiện giám sát
-                        Console.WriteLine($"[CRITICAL ERROR]: {exception.ToString()}");
+                        Console.WriteLine($"[CRITICAL ERROR]: {exception}");
                         break;
                 }
-                
+
                 context.Response.StatusCode = statusCode;
                 var problemDetails = new ProblemDetails
                 {
@@ -86,15 +91,10 @@ public static class ErrorHandlingExtensions
                     Instance = exceptionFeature.Path
                 };
 
-                if (validationErrors != null)
-                {
-                    problemDetails.Extensions.Add("errors", validationErrors);
-                }
-                
+                if (validationErrors != null) problemDetails.Extensions.Add("errors", validationErrors);
+
                 if (app.Environment.IsDevelopment() && stackTrace != null)
-                {
                     problemDetails.Extensions.Add("stackTrace", stackTrace);
-                }
 
                 var jsonOptions = new JsonSerializerOptions
                 {
