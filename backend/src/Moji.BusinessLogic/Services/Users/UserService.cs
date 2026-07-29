@@ -1,5 +1,4 @@
 ﻿using FluentValidation;
-using Microsoft.EntityFrameworkCore;
 using Moji.BusinessLogic.Constants;
 using Moji.BusinessLogic.Exceptions;
 using Moji.BusinessLogic.Services.Storage;
@@ -7,7 +6,6 @@ using Moji.Contracts.Models.Paginations.OffsetPagination;
 using Moji.Contracts.Models.Users.SearchUser;
 using Moji.Contracts.Models.Users.UploadAvatar;
 using Moji.DataAccess.Commons.Constants;
-using Moji.DataAccess.Commons.DbTransactionManagers;
 using Moji.DataAccess.Models;
 using Moji.DataAccess.Repositories;
 
@@ -19,19 +17,17 @@ public class UserService : IUserService
     private readonly IFriendShipRepository _friendShipRepository;
     private readonly IImageStorageService _imageStorageService;
     private readonly IValidator<SearchUserRequest> _searchUserValidator;
-    private readonly IDbTransactionManager _txManager;
     private readonly IUserRepository _userRepository;
 
     public UserService(IUserRepository userRepository, IValidator<SearchUserRequest> searchUserValidator,
         IFriendShipRepository friendShipRepository, IConversationRepository convoRepository,
-        IImageStorageService imageStorageService, IDbTransactionManager txManager)
+        IImageStorageService imageStorageService)
     {
         _userRepository = userRepository;
         _searchUserValidator = searchUserValidator;
         _friendShipRepository = friendShipRepository;
         _convoRepository = convoRepository;
         _imageStorageService = imageStorageService;
-        _txManager = txManager;
     }
 
     public async Task<OffsetPagingResult<SearchUserResponse>> SearchByUsername(Guid currentUserId,
@@ -100,7 +96,7 @@ public class UserService : IUserService
         string fileName,
         CancellationToken cancellationToken)
     {
-        var user = await _userRepository.FindByIdAsync(currentUserId);
+        var user = await _userRepository.GetAvatarUpdateSnapshot(currentUserId, cancellationToken);
         if (user == null) throw new MojiNotFoundException("User not found");
 
         var folderName = $"users/{user.Id}/avatars";
@@ -109,39 +105,34 @@ public class UserService : IUserService
                 cancellationToken);
 
         var oldAvatarId = user.AvatarId;
-
+        DateTimeOffset updatedAt;
         try
         {
-            await using var transaction = await _txManager.BeginTransactionAsync(cancellationToken);
-            user.AvatarId = uploadResult.PublicId;
-            user.AvatarUrl = uploadResult.SecureUrl;
-            await _txManager.SaveChangesAsync(cancellationToken);
-            await _txManager.CommitAsync(cancellationToken);
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            var isDeleted = await _imageStorageService.DeleteImageAsync(uploadResult.PublicId, cancellationToken);
-            if (!isDeleted)
-                //todo: logg to manual delete or for background job delete cleann up
-                Console.WriteLine("Error deleting image");
-            throw new MojiConflictException("User avatar update conflict");
-        }
-        catch (Exception e)
-        {
-            try
+            var updateResult = await _userRepository.TryUpdateAvatar(currentUserId, user.RowVersion,
+                uploadResult.SecureUrl,
+                uploadResult.PublicId, cancellationToken);
+            
+            if (updateResult.Item1 != AvatarUpdatedResult.Updated)
             {
-                await _txManager.RollbackAsync(CancellationToken.None);
-            }
-            finally
-            {
-                var isDeleted =
-                    await _imageStorageService.DeleteImageAsync(uploadResult.PublicId, CancellationToken.None);
+                var isDeleted = await _imageStorageService.DeleteImageAsync(uploadResult.PublicId, cancellationToken);
                 if (!isDeleted)
                     //todo: logg to manual delete or for background job delete cleann up
                     Console.WriteLine("Error deleting image");
+                throw new MojiConflictException("User avatar update conflict");
             }
-
-            throw new Exception("Error updating user avatar", e);
+            updatedAt = updateResult.Item2;
+        }
+        catch (MojiConflictException)
+        {
+            throw;
+        }
+        catch (Exception)
+        {
+            var isDeleted = await _imageStorageService.DeleteImageAsync(uploadResult.PublicId, CancellationToken.None);
+            if (!isDeleted)
+                //todo: logg to manual delete or for background job delete cleann up
+                Console.WriteLine("Error deleting image");
+            throw;
         }
 
         if (oldAvatarId != null)
@@ -151,12 +142,12 @@ public class UserService : IUserService
                 //todo: logg to manual delete or for background job delete cleann up
                 Console.WriteLine("Error deleting image");
         }
-
+        
         var uploadUserAvatarResponse = new UploadUserAvatarResponse
         {
             UserId = user.Id,
-            AvatarUrl = user.AvatarUrl,
-            UpdatedAt = user.UpdatedAt
+            AvatarUrl = uploadResult.SecureUrl,
+            UpdatedAt = updatedAt
         };
         return uploadUserAvatarResponse;
     }

@@ -67,4 +67,28 @@ public class UserRepository : IUserRepository
             PageSize = pageSize
         };
     }
+
+    public async Task<AvatarUpdateSnapshot?> GetAvatarUpdateSnapshot(Guid userId, CancellationToken cancellationToken)
+    {
+        return await _context.Users.Select(user => new AvatarUpdateSnapshot
+            {
+                Id = user.Id,
+                AvatarUrl = user.AvatarUrl,
+                AvatarId = user.AvatarId,
+                RowVersion = user.RowVersion
+            })
+            .FirstOrDefaultAsync(user => user.Id == userId, cancellationToken);
+    }
+
+    public async Task<(AvatarUpdatedResult, DateTimeOffset)> TryUpdateAvatar(Guid userId, uint expectedVersion, string newAvatarUrl,
+        string newAvatarId, CancellationToken cancellationToken)
+    {
+        var now = DateTimeOffset.UtcNow;
+        var result = await _context.Users.Where(user => user.Id == userId && user.RowVersion == expectedVersion)
+            .ExecuteUpdateAsync(setters =>
+                setters.SetProperty(user => user.AvatarId, newAvatarId)
+                    .SetProperty(user => user.AvatarUrl, newAvatarUrl)
+                    .SetProperty(user => user.UpdatedAt, now), cancellationToken);
+        return (result == 1 ? AvatarUpdatedResult.Updated : AvatarUpdatedResult.ConcurrencyConflict, now);
+    }
 }
