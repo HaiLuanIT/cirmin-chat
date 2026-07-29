@@ -17,4 +17,9 @@ public interface IUserRepository
     Task<OffsetPagingResult<UserSearchProjection>> SearchUserByUsername(Guid currentUserId, string username,
         int pageNumber,
         int pageSize);
+
+    Task<AvatarUpdateSnapshot?> GetAvatarUpdateSnapshot(Guid userId, CancellationToken cancellationToken);
+
+    Task<(AvatarUpdatedResult, DateTimeOffset)> TryUpdateAvatar(Guid userId, uint expectedVersion, string newAvatarUrl,
+        string newAvatarId, CancellationToken cancellationToken);
 }
