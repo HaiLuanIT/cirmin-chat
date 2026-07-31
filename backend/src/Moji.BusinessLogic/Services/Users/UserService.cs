@@ -4,8 +4,10 @@ using Moji.BusinessLogic.Exceptions;
 using Moji.BusinessLogic.Services.Storage;
 using Moji.Contracts.Models.Paginations.OffsetPagination;
 using Moji.Contracts.Models.Users.SearchUser;
+using Moji.Contracts.Models.Users.UpdateUserInfo;
 using Moji.Contracts.Models.Users.UploadAvatar;
 using Moji.DataAccess.Commons.Constants;
+using Moji.DataAccess.Commons.DbTransactionManagers;
 using Moji.DataAccess.Models;
 using Moji.DataAccess.Repositories;
 
@@ -17,17 +19,22 @@ public class UserService : IUserService
     private readonly IFriendShipRepository _friendShipRepository;
     private readonly IImageStorageService _imageStorageService;
     private readonly IValidator<SearchUserRequest> _searchUserValidator;
+    private readonly IDbTransactionManager _txManager;
+    private readonly IValidator<UpdateUserInfoRequest> _updateUserInfoValidator;
     private readonly IUserRepository _userRepository;
 
     public UserService(IUserRepository userRepository, IValidator<SearchUserRequest> searchUserValidator,
         IFriendShipRepository friendShipRepository, IConversationRepository convoRepository,
-        IImageStorageService imageStorageService)
+        IImageStorageService imageStorageService, IValidator<UpdateUserInfoRequest> updateUserInfoValidator,
+        IDbTransactionManager txManager)
     {
         _userRepository = userRepository;
         _searchUserValidator = searchUserValidator;
         _friendShipRepository = friendShipRepository;
         _convoRepository = convoRepository;
         _imageStorageService = imageStorageService;
+        _updateUserInfoValidator = updateUserInfoValidator;
+        _txManager = txManager;
     }
 
     public async Task<OffsetPagingResult<SearchUserResponse>> SearchByUsername(Guid currentUserId,
@@ -111,7 +118,7 @@ public class UserService : IUserService
             var updateResult = await _userRepository.TryUpdateAvatar(currentUserId, user.RowVersion,
                 uploadResult.SecureUrl,
                 uploadResult.PublicId, cancellationToken);
-            
+
             if (updateResult.Item1 != AvatarUpdatedResult.Updated)
             {
                 var isDeleted = await _imageStorageService.DeleteImageAsync(uploadResult.PublicId, cancellationToken);
@@ -120,6 +127,7 @@ public class UserService : IUserService
                     Console.WriteLine("Error deleting image");
                 throw new MojiConflictException("User avatar update conflict");
             }
+
             updatedAt = updateResult.Item2;
         }
         catch (MojiConflictException)
@@ -142,7 +150,7 @@ public class UserService : IUserService
                 //todo: logg to manual delete or for background job delete cleann up
                 Console.WriteLine("Error deleting image");
         }
-        
+
         var uploadUserAvatarResponse = new UploadUserAvatarResponse
         {
             UserId = user.Id,
@@ -150,6 +158,43 @@ public class UserService : IUserService
             UpdatedAt = updatedAt
         };
         return uploadUserAvatarResponse;
+    }
+
+    public async Task<UpdateUserInfoResponse> UpdateUserInfoAsync(Guid currentUserId, UpdateUserInfoRequest request,
+        CancellationToken cancellationToken)
+    {
+        //validate request
+        var validationResult = await _updateUserInfoValidator.ValidateAsync(request);
+        if (!validationResult.IsValid) throw new MojiValidationException(validationResult.Errors);
+
+        //validate user exist
+        var user = await _userRepository.GetTrackedUser(currentUserId, cancellationToken);
+        if (user == null) throw new MojiNotFoundException("User not found");
+
+        //update
+        var normalizedEmail = request.Email?.Trim().ToLower();
+        if (normalizedEmail != null)
+        {
+            var isEmailUnique = await _userRepository.IsEmailUniqueAsync(normalizedEmail);
+            if (!isEmailUnique)
+                if (user.Email != normalizedEmail)
+                    throw new MojiConflictException("Email đã tồn tại");
+        }
+
+        user.FullName = request.DisplayName?.Trim() ?? user.FullName;
+        user.Bio = request.Bio?.Trim() ?? user.Bio;
+        user.Email = normalizedEmail ?? user.Email;
+
+        await _txManager.SaveChangesAsync(cancellationToken);
+
+        //map
+        var model = new UpdateUserInfoResponse
+        {
+            DisplayName = user.FullName,
+            Bio = user.Bio,
+            Email = user.Email
+        };
+        return model;
     }
 
     //helper

@@ -27,7 +27,7 @@ public class UserRepository : IUserRepository
 
     public async Task<User?> FindByIdAsync(Guid id)
     {
-        return await _context.Users.FirstOrDefaultAsync(x => x.Id == id);
+        return await _context.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
     }
 
     public async Task<bool> IsEmailUniqueAsync(string email)
@@ -80,7 +80,8 @@ public class UserRepository : IUserRepository
             .FirstOrDefaultAsync(user => user.Id == userId, cancellationToken);
     }
 
-    public async Task<(AvatarUpdatedResult, DateTimeOffset)> TryUpdateAvatar(Guid userId, uint expectedVersion, string newAvatarUrl,
+    public async Task<(AvatarUpdatedResult, DateTimeOffset)> TryUpdateAvatar(Guid userId, uint expectedVersion,
+        string newAvatarUrl,
         string newAvatarId, CancellationToken cancellationToken)
     {
         var now = DateTimeOffset.UtcNow;
@@ -90,5 +91,16 @@ public class UserRepository : IUserRepository
                     .SetProperty(user => user.AvatarUrl, newAvatarUrl)
                     .SetProperty(user => user.UpdatedAt, now), cancellationToken);
         return (result == 1 ? AvatarUpdatedResult.Updated : AvatarUpdatedResult.ConcurrencyConflict, now);
+    }
+
+    public async Task UpdateUserInfo(User user,
+        CancellationToken cancellationToken)
+    {
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task<User?> GetTrackedUser(Guid userId, CancellationToken cancellationToken)
+    {
+        return await _context.Users.FirstOrDefaultAsync(x => x.Id == userId && x.IsDeleted == false, cancellationToken);
     }
 }

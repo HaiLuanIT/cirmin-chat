@@ -6,6 +6,7 @@ using Moji.BusinessLogic.Exceptions;
 using Moji.BusinessLogic.Helpers;
 using Moji.BusinessLogic.Services.Users;
 using Moji.Contracts.Models.Users.SearchUser;
+using Moji.Contracts.Models.Users.UpdateUserInfo;
 
 namespace Moji.API.Controllers;
 
@@ -51,6 +52,14 @@ public class UsersController : BaseApiController
         using var stream = request.Image!.OpenReadStream();
 
         var result = await _userService.UpdateUserAvatarAsync(CurrentUserId, stream, fileName, cancellationToken);
+        return Ok(result);
+    }
+
+    [HttpPatch("me/update-information")]
+    public async Task<IActionResult> UpdataUserInformation([FromBody] UpdateUserInfoRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await _userService.UpdateUserInfoAsync(CurrentUserId, request, cancellationToken);
         return Ok(result);
     }
 }
