@@ -22,4 +22,8 @@ public interface IUserRepository
 
     Task<(AvatarUpdatedResult, DateTimeOffset)> TryUpdateAvatar(Guid userId, uint expectedVersion, string newAvatarUrl,
         string newAvatarId, CancellationToken cancellationToken);
+
+    Task UpdateUserInfo(User user, CancellationToken cancellationToken);
+
+    Task<User?> GetTrackedUser(Guid userId, CancellationToken cancellationToken);
 }
