@@ -119,7 +119,7 @@ public class UserService : IUserService
                 uploadResult.SecureUrl,
                 uploadResult.PublicId, cancellationToken);
 
-            if (updateResult.Item1 != AvatarUpdatedResult.Updated)
+            if (updateResult.Item1 != UpdatedResult.Updated)
             {
                 var isDeleted = await _imageStorageService.DeleteImageAsync(uploadResult.PublicId, cancellationToken);
                 if (!isDeleted)
@@ -163,8 +163,15 @@ public class UserService : IUserService
     public async Task<UpdateUserInfoResponse> UpdateUserInfoAsync(Guid currentUserId, UpdateUserInfoRequest request,
         CancellationToken cancellationToken)
     {
+        //normalize request
+        var normalizeRequest = new UpdateUserInfoRequest
+        {
+            DisplayName = NormalizeString(request.DisplayName),
+            Bio = NormalizeString(request.Bio),
+            Email = NormalizeString(request.Email)?.ToLower()
+        };
         //validate request
-        var validationResult = await _updateUserInfoValidator.ValidateAsync(request);
+        var validationResult = await _updateUserInfoValidator.ValidateAsync(normalizeRequest);
         if (!validationResult.IsValid) throw new MojiValidationException(validationResult.Errors);
 
         //validate user exist
@@ -172,20 +179,28 @@ public class UserService : IUserService
         if (user == null) throw new MojiNotFoundException("User not found");
 
         //update
-        var normalizedEmail = request.Email?.Trim().ToLower();
-        if (normalizedEmail != null)
+        if (normalizeRequest.Email != null)
         {
-            var isEmailUnique = await _userRepository.IsEmailUniqueAsync(normalizedEmail);
+            var isEmailUnique = await _userRepository.IsEmailUniqueAsync(normalizeRequest.Email);
             if (!isEmailUnique)
-                if (user.Email != normalizedEmail)
+                if (user.Email != normalizeRequest.Email)
                     throw new MojiConflictException("Email đã tồn tại");
         }
 
-        user.FullName = request.DisplayName?.Trim() ?? user.FullName;
-        user.Bio = request.Bio?.Trim() ?? user.Bio;
-        user.Email = normalizedEmail ?? user.Email;
+        //if no update return old value
+        if (normalizeRequest.DisplayName == null && normalizeRequest.Bio == null && normalizeRequest.Email == null)
+            return new UpdateUserInfoResponse
+            {
+                DisplayName = user.FullName,
+                Bio = user.Bio,
+                Email = user.Email
+            };
 
-        await _txManager.SaveChangesAsync(cancellationToken);
+        //update user info
+        var result = await _userRepository.UpdateUserInfo(user, normalizeRequest.DisplayName, normalizeRequest.Bio,
+            normalizeRequest.Email, cancellationToken);
+        if (result == UpdatedResult.ConcurrencyConflict) throw new MojiConflictException("User info update conflict");
+        if (result == UpdatedResult.DuplicatedEmail) throw new MojiConflictException("Email is existed");
 
         //map
         var model = new UpdateUserInfoResponse
@@ -198,6 +213,11 @@ public class UserService : IUserService
     }
 
     //helper
+    private static string? NormalizeString(string? value)
+    {
+        return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+    }
+
     private static string? ResolveUserRelationStatus(Guid currentUserId, UserRelationShipProjection? relationStatus)
     {
         string userRelationStatus = null;
