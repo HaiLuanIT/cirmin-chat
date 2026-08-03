@@ -4,7 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 using Moji.API.Models.Users.UploadAvatar;
 using Moji.BusinessLogic.Exceptions;
 using Moji.BusinessLogic.Helpers;
+using Moji.BusinessLogic.Services.Auth;
 using Moji.BusinessLogic.Services.Users;
+using Moji.Contracts.Models.Auth.ChangePassword;
 using Moji.Contracts.Models.Users.SearchUser;
 using Moji.Contracts.Models.Users.UpdateUserInfo;
 
@@ -13,13 +15,16 @@ namespace Moji.API.Controllers;
 [Authorize]
 public class UsersController : BaseApiController
 {
+    private readonly IAuthService _authService;
     private readonly IValidator<UpdateAvatarHttpRequest> _updateAvatarValidator;
     private readonly IUserService _userService;
 
-    public UsersController(IUserService userService, IValidator<UpdateAvatarHttpRequest> updateAvatarValidator)
+    public UsersController(IUserService userService, IValidator<UpdateAvatarHttpRequest> updateAvatarValidator,
+        IAuthService authService)
     {
         _userService = userService;
         _updateAvatarValidator = updateAvatarValidator;
+        _authService = authService;
     }
 
     [HttpGet]
@@ -61,5 +66,20 @@ public class UsersController : BaseApiController
     {
         var result = await _userService.UpdateUserInfoAsync(CurrentUserId, request, cancellationToken);
         return Ok(result);
+    }
+
+    [HttpPatch("me/change-password")]
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request,
+        CancellationToken cancellationToken)
+    {
+        await _authService.ChangePassword(CurrentUserId, request, cancellationToken);
+        Response.Cookies.Delete("rt", new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.None,
+            Path = "/"
+        });
+        return NoContent();
     }
 }

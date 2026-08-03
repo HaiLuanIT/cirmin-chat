@@ -59,10 +59,13 @@ public static class ApplicationServiceExtensions
         services.AddScoped<IMessageNotificationService, MessageNotificationService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IConversationNotificationService, ConversationNotificationService>();
+        services.AddScoped<IAccessTokenValidator, AccessTokenValidator>();
+        services.AddScoped<ISessionNotificationService, SessionNotificationService>();
 
         //add cloudinary
         services.Configure<CloudinaryOptions>(configuration.GetSection("Cloudinary"));
         services.AddScoped<IImageStorageService, CloudinaryImageStorageService>();
+
         return services;
     }
 

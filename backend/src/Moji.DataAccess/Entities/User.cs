@@ -21,6 +21,8 @@ public class User : BaseEntity
 
     public string? Bio { get; set; }
 
+    public int AuthVersion { get; set; } = 0;
+
     [Timestamp] public uint RowVersion { get; set; }
 
     //navigation

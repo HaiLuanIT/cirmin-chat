@@ -20,10 +20,13 @@ public interface IUserRepository
 
     Task<AvatarUpdateSnapshot?> GetAvatarUpdateSnapshot(Guid userId, CancellationToken cancellationToken);
 
-    Task<(AvatarUpdatedResult, DateTimeOffset)> TryUpdateAvatar(Guid userId, uint expectedVersion, string newAvatarUrl,
+    Task<(UpdatedResult, DateTimeOffset)> TryUpdateAvatar(Guid userId, uint expectedVersion, string newAvatarUrl,
         string newAvatarId, CancellationToken cancellationToken);
 
-    Task UpdateUserInfo(User user, CancellationToken cancellationToken);
+    Task<UpdatedResult> UpdateUserInfo(User user, string? newDisplayName, string? newBio, string? newEmail,
+        CancellationToken cancellationToken);
 
     Task<User?> GetTrackedUser(Guid userId, CancellationToken cancellationToken);
+
+    Task<int?> GetAuthVersion(Guid userId, CancellationToken cancellationToken);
 }
