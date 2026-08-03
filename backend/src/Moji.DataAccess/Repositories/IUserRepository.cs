@@ -27,4 +27,6 @@ public interface IUserRepository
         CancellationToken cancellationToken);
 
     Task<User?> GetTrackedUser(Guid userId, CancellationToken cancellationToken);
+
+    Task<int?> GetAuthVersion(Guid userId, CancellationToken cancellationToken);
 }

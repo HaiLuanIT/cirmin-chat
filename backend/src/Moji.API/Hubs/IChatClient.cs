@@ -14,4 +14,6 @@ public interface IChatClient
     Task UserSeenMessage(string userId, string conversationId, string lastMessageId);
 
     Task GroupConversationCreated(ConversationModel conversation);
+
+    Task SessionRevoked();
 }

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.SignalR;
 using Moji.API.Extensions;
 using Moji.API.Hubs;
 
@@ -18,7 +19,8 @@ builder.Services.AddRepositoryServices();
 
 //add signalR
 // builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
-builder.Services.AddSignalR();
+builder.Services.AddSignalR()
+    .AddHubOptions<ChatHub>(options => { options.AddFilter<AuthVersionHubFilter>(); });
 //add db
 builder.Services.AddDatabaseServices(builder.Configuration);
 
@@ -48,7 +50,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 //add signalR middleware
-app.MapHub<ChatHub>("/hubs/chat");
+app.MapHub<ChatHub>("/hubs/chat", options => { options.CloseOnAuthenticationExpiration = true; });
 
 app.MapControllers();
 

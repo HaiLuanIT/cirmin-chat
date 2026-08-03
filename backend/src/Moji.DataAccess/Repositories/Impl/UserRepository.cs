@@ -28,7 +28,7 @@ public class UserRepository : IUserRepository
 
     public async Task<User?> FindByIdAsync(Guid id)
     {
-        return await _context.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+        return await _context.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted);
     }
 
     public async Task<bool> IsEmailUniqueAsync(string email)
@@ -119,5 +119,12 @@ public class UserRepository : IUserRepository
     public async Task<User?> GetTrackedUser(Guid userId, CancellationToken cancellationToken)
     {
         return await _context.Users.FirstOrDefaultAsync(x => x.Id == userId && x.IsDeleted == false, cancellationToken);
+    }
+
+    public async Task<int?> GetAuthVersion(Guid userId, CancellationToken cancellationToken)
+    {
+        return await _context.Users.AsNoTracking().Where(user => user.Id == userId && user.IsDeleted == false)
+            .Select(user => (int?)user.AuthVersion)
+            .FirstOrDefaultAsync(cancellationToken);
     }
 }

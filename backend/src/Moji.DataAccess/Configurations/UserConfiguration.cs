@@ -26,6 +26,8 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.Property(x => x.Bio).HasMaxLength(500);
 
+        builder.Property(x => x.AuthVersion).HasDefaultValue(0).IsRequired();
+
         builder.Property(x => x.RowVersion).IsRowVersion();
 
         builder.HasIndex(x => x.Username).IsUnique()
