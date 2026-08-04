@@ -1,10 +1,13 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
+using Moji.API.Integrations.Cloudinary;
+using Moji.API.Models.Users.UploadAvatar;
 using Moji.API.RealTimes;
 using Moji.BusinessLogic.Services.Auth;
 using Moji.BusinessLogic.Services.Conversations;
 using Moji.BusinessLogic.Services.Friends;
 using Moji.BusinessLogic.Services.Messages;
+using Moji.BusinessLogic.Services.Storage;
 using Moji.BusinessLogic.Services.Users;
 using Moji.Contracts.Models.Auth.Register;
 using Moji.DataAccess.Commons.DbTransactionManagers;
@@ -33,7 +36,7 @@ public static class ApplicationServiceExtensions
         return services;
     }
 
-    public static IServiceCollection AddServiceServices(this IServiceCollection services)
+    public static IServiceCollection AddServiceServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddSingleton(TimeProvider.System);
 
@@ -42,6 +45,7 @@ public static class ApplicationServiceExtensions
 
         //add fluent validation
         services.AddValidatorsFromAssembly(typeof(RegisterRequest).Assembly);
+        services.AddValidatorsFromAssembly(typeof(UpdateAvatarHttpRequest).Assembly);
 
         services.Configure<ApiBehaviorOptions>(options => { options.SuppressModelStateInvalidFilter = true; });
         //config services
@@ -55,6 +59,13 @@ public static class ApplicationServiceExtensions
         services.AddScoped<IMessageNotificationService, MessageNotificationService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IConversationNotificationService, ConversationNotificationService>();
+        services.AddScoped<IAccessTokenValidator, AccessTokenValidator>();
+        services.AddScoped<ISessionNotificationService, SessionNotificationService>();
+
+        //add cloudinary
+        services.Configure<CloudinaryOptions>(configuration.GetSection("Cloudinary"));
+        services.AddScoped<IImageStorageService, CloudinaryImageStorageService>();
+
         return services;
     }
 

@@ -3,6 +3,7 @@ using Moji.Contracts.Models.Paginations.OffsetPagination;
 using Moji.DataAccess.Configurations;
 using Moji.DataAccess.Entities;
 using Moji.DataAccess.Models;
+using Npgsql;
 
 namespace Moji.DataAccess.Repositories.Impl;
 
@@ -27,7 +28,7 @@ public class UserRepository : IUserRepository
 
     public async Task<User?> FindByIdAsync(Guid id)
     {
-        return await _context.Users.FirstOrDefaultAsync(x => x.Id == id);
+        return await _context.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted);
     }
 
     public async Task<bool> IsEmailUniqueAsync(string email)
@@ -35,7 +36,8 @@ public class UserRepository : IUserRepository
         return !await _context.Users.AnyAsync(x => x.Email == email);
     }
 
-    public async Task<OffsetPagingResult<UserSearchProjection>> SearchUserByUsername(Guid currentUserId, string username,
+    public async Task<OffsetPagingResult<UserSearchProjection>> SearchUserByUsername(Guid currentUserId,
+        string username,
         int pageNumber, int pageSize)
     {
         var baseQuery = _context.Users
@@ -56,7 +58,7 @@ public class UserRepository : IUserRepository
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
-        
+
 
         return new OffsetPagingResult<UserSearchProjection>
         {
@@ -65,5 +67,64 @@ public class UserRepository : IUserRepository
             PageNumber = pageNumber,
             PageSize = pageSize
         };
+    }
+
+    public async Task<AvatarUpdateSnapshot?> GetAvatarUpdateSnapshot(Guid userId, CancellationToken cancellationToken)
+    {
+        return await _context.Users.Select(user => new AvatarUpdateSnapshot
+            {
+                Id = user.Id,
+                AvatarUrl = user.AvatarUrl,
+                AvatarId = user.AvatarId,
+                RowVersion = user.RowVersion
+            })
+            .FirstOrDefaultAsync(user => user.Id == userId, cancellationToken);
+    }
+
+    public async Task<(UpdatedResult, DateTimeOffset)> TryUpdateAvatar(Guid userId, uint expectedVersion,
+        string newAvatarUrl,
+        string newAvatarId, CancellationToken cancellationToken)
+    {
+        var now = DateTimeOffset.UtcNow;
+        var result = await _context.Users.Where(user => user.Id == userId && user.RowVersion == expectedVersion)
+            .ExecuteUpdateAsync(setters =>
+                setters.SetProperty(user => user.AvatarId, newAvatarId)
+                    .SetProperty(user => user.AvatarUrl, newAvatarUrl)
+                    .SetProperty(user => user.UpdatedAt, now), cancellationToken);
+        return (result == 1 ? UpdatedResult.Updated : UpdatedResult.ConcurrencyConflict, now);
+    }
+
+    public async Task<UpdatedResult> UpdateUserInfo(User user, string? newDisplayName, string? newBio, string? newEmail,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            user.FullName = newDisplayName ?? user.FullName;
+            user.Bio = newBio ?? user.Bio;
+            user.Email = newEmail ?? user.Email;
+            user.UpdatedAt = DateTimeOffset.UtcNow;
+            await _context.SaveChangesAsync(cancellationToken);
+            return UpdatedResult.Updated;
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            return UpdatedResult.ConcurrencyConflict;
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is PostgresException pgEx && pgEx.SqlState == "23505")
+        {
+            return UpdatedResult.DuplicatedEmail;
+        }
+    }
+
+    public async Task<User?> GetTrackedUser(Guid userId, CancellationToken cancellationToken)
+    {
+        return await _context.Users.FirstOrDefaultAsync(x => x.Id == userId && x.IsDeleted == false, cancellationToken);
+    }
+
+    public async Task<int?> GetAuthVersion(Guid userId, CancellationToken cancellationToken)
+    {
+        return await _context.Users.AsNoTracking().Where(user => user.Id == userId && user.IsDeleted == false)
+            .Select(user => (int?)user.AuthVersion)
+            .FirstOrDefaultAsync(cancellationToken);
     }
 }

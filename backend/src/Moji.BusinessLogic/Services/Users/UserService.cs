@@ -1,9 +1,13 @@
 ﻿using FluentValidation;
 using Moji.BusinessLogic.Constants;
 using Moji.BusinessLogic.Exceptions;
+using Moji.BusinessLogic.Services.Storage;
 using Moji.Contracts.Models.Paginations.OffsetPagination;
 using Moji.Contracts.Models.Users.SearchUser;
+using Moji.Contracts.Models.Users.UpdateUserInfo;
+using Moji.Contracts.Models.Users.UploadAvatar;
 using Moji.DataAccess.Commons.Constants;
+using Moji.DataAccess.Commons.DbTransactionManagers;
 using Moji.DataAccess.Models;
 using Moji.DataAccess.Repositories;
 
@@ -13,16 +17,24 @@ public class UserService : IUserService
 {
     private readonly IConversationRepository _convoRepository;
     private readonly IFriendShipRepository _friendShipRepository;
+    private readonly IImageStorageService _imageStorageService;
     private readonly IValidator<SearchUserRequest> _searchUserValidator;
+    private readonly IDbTransactionManager _txManager;
+    private readonly IValidator<UpdateUserInfoRequest> _updateUserInfoValidator;
     private readonly IUserRepository _userRepository;
 
     public UserService(IUserRepository userRepository, IValidator<SearchUserRequest> searchUserValidator,
-        IFriendShipRepository friendShipRepository, IConversationRepository convoRepository)
+        IFriendShipRepository friendShipRepository, IConversationRepository convoRepository,
+        IImageStorageService imageStorageService, IValidator<UpdateUserInfoRequest> updateUserInfoValidator,
+        IDbTransactionManager txManager)
     {
         _userRepository = userRepository;
         _searchUserValidator = searchUserValidator;
         _friendShipRepository = friendShipRepository;
         _convoRepository = convoRepository;
+        _imageStorageService = imageStorageService;
+        _updateUserInfoValidator = updateUserInfoValidator;
+        _txManager = txManager;
     }
 
     public async Task<OffsetPagingResult<SearchUserResponse>> SearchByUsername(Guid currentUserId,
@@ -87,7 +99,125 @@ public class UserService : IUserService
         };
     }
 
+    public async Task<UploadUserAvatarResponse> UpdateUserAvatarAsync(Guid currentUserId, Stream content,
+        string fileName,
+        CancellationToken cancellationToken)
+    {
+        var user = await _userRepository.GetAvatarUpdateSnapshot(currentUserId, cancellationToken);
+        if (user == null) throw new MojiNotFoundException("User not found");
+
+        var folderName = $"users/{user.Id}/avatars";
+        var uploadResult =
+            await _imageStorageService.UploadImageAsync(content, fileName, folderName,
+                cancellationToken);
+
+        var oldAvatarId = user.AvatarId;
+        DateTimeOffset updatedAt;
+        try
+        {
+            var updateResult = await _userRepository.TryUpdateAvatar(currentUserId, user.RowVersion,
+                uploadResult.SecureUrl,
+                uploadResult.PublicId, cancellationToken);
+
+            if (updateResult.Item1 != UpdatedResult.Updated)
+            {
+                var isDeleted = await _imageStorageService.DeleteImageAsync(uploadResult.PublicId, cancellationToken);
+                if (!isDeleted)
+                    //todo: logg to manual delete or for background job delete cleann up
+                    Console.WriteLine("Error deleting image");
+                throw new MojiConflictException("User avatar update conflict");
+            }
+
+            updatedAt = updateResult.Item2;
+        }
+        catch (MojiConflictException)
+        {
+            throw;
+        }
+        catch (Exception)
+        {
+            var isDeleted = await _imageStorageService.DeleteImageAsync(uploadResult.PublicId, CancellationToken.None);
+            if (!isDeleted)
+                //todo: logg to manual delete or for background job delete cleann up
+                Console.WriteLine("Error deleting image");
+            throw;
+        }
+
+        if (oldAvatarId != null)
+        {
+            var isDeleted = await _imageStorageService.DeleteImageAsync(oldAvatarId, cancellationToken);
+            if (!isDeleted)
+                //todo: logg to manual delete or for background job delete cleann up
+                Console.WriteLine("Error deleting image");
+        }
+
+        var uploadUserAvatarResponse = new UploadUserAvatarResponse
+        {
+            UserId = user.Id,
+            AvatarUrl = uploadResult.SecureUrl,
+            UpdatedAt = updatedAt
+        };
+        return uploadUserAvatarResponse;
+    }
+
+    public async Task<UpdateUserInfoResponse> UpdateUserInfoAsync(Guid currentUserId, UpdateUserInfoRequest request,
+        CancellationToken cancellationToken)
+    {
+        //normalize request
+        var normalizeRequest = new UpdateUserInfoRequest
+        {
+            DisplayName = NormalizeString(request.DisplayName),
+            Bio = NormalizeString(request.Bio),
+            Email = NormalizeString(request.Email)?.ToLower()
+        };
+        //validate request
+        var validationResult = await _updateUserInfoValidator.ValidateAsync(normalizeRequest);
+        if (!validationResult.IsValid) throw new MojiValidationException(validationResult.Errors);
+
+        //validate user exist
+        var user = await _userRepository.GetTrackedUser(currentUserId, cancellationToken);
+        if (user == null) throw new MojiNotFoundException("User not found");
+
+        //update
+        if (normalizeRequest.Email != null)
+        {
+            var isEmailUnique = await _userRepository.IsEmailUniqueAsync(normalizeRequest.Email);
+            if (!isEmailUnique)
+                if (user.Email != normalizeRequest.Email)
+                    throw new MojiConflictException("Email đã tồn tại");
+        }
+
+        //if no update return old value
+        if (normalizeRequest.DisplayName == null && normalizeRequest.Bio == null && normalizeRequest.Email == null)
+            return new UpdateUserInfoResponse
+            {
+                DisplayName = user.FullName,
+                Bio = user.Bio,
+                Email = user.Email
+            };
+
+        //update user info
+        var result = await _userRepository.UpdateUserInfo(user, normalizeRequest.DisplayName, normalizeRequest.Bio,
+            normalizeRequest.Email, cancellationToken);
+        if (result == UpdatedResult.ConcurrencyConflict) throw new MojiConflictException("User info update conflict");
+        if (result == UpdatedResult.DuplicatedEmail) throw new MojiConflictException("Email is existed");
+
+        //map
+        var model = new UpdateUserInfoResponse
+        {
+            DisplayName = user.FullName,
+            Bio = user.Bio,
+            Email = user.Email
+        };
+        return model;
+    }
+
     //helper
+    private static string? NormalizeString(string? value)
+    {
+        return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+    }
+
     private static string? ResolveUserRelationStatus(Guid currentUserId, UserRelationShipProjection? relationStatus)
     {
         string userRelationStatus = null;
