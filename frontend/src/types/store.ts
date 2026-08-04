@@ -19,7 +19,8 @@ export interface AuthState {
   signIn: (username: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   fetchMe: () => Promise<void>;
-  refresh: () => Promise<void>;
+  refresh: () => void;
+  setUser: (user: User) => void;
 }
 
 export interface ThemeState {
@@ -86,4 +87,14 @@ export interface FriendState {
   acceptFriendRequest: (requestId: string) => Promise<void>;
   rejectFriendRequest: (requestId: string) => Promise<void>;
   getFriends: () => Promise<void>;
+}
+
+export interface UserState {
+  uploadAvatarUrl: (formData: FormData) => Promise<void>;
+  updateUserInfo: (
+    displayName?: string,
+    email?: string,
+    bio?: string,
+  ) => Promise<void>;
+  changePassword: (oldPassword: string, newPassword: string) => Promise<void>;
 }
