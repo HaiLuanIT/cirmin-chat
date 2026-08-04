@@ -4,7 +4,9 @@ import { authService } from "../services/authService";
 import type { AuthState } from "../types/store";
 import { persist } from "zustand/middleware";
 import { useChatStore } from "./useChatStore";
+import { userService } from "@/services/userService";
 
+let refreshPromise: Promise<void> | null = null;
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
@@ -65,6 +67,7 @@ export const useAuthStore = create<AuthState>()(
         } catch (error) {
           console.log(error);
           toast.error("Đăng nhập không thành công");
+          throw error;
         } finally {
           set({ loading: false });
         }
@@ -93,24 +96,31 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      refresh: async () => {
-        try {
-          set({ loading: true });
-          const { user, fetchMe, setAccessToken } = get();
-          const accessToken = await authService.refresh();
+      refresh: () => {
+        if (refreshPromise) return refreshPromise;
+        set({ loading: true });
+        refreshPromise = (async () => {
+          try {
+            const accessToken = await authService.refresh();
 
-          setAccessToken(accessToken);
-
-          if (!user) {
-            await fetchMe();
+            set({ accessToken: accessToken });
+            if (!get().user) {
+              await get().fetchMe();
+            }
+          } catch (error) {
+            console.error(error);
+            get().clearState();
+            toast.error("Phiên đăng nhập đã hết hạn! Vui lòng đăng nhập lại!");
+            throw error;
+          } finally {
+            set({ loading: false });
+            refreshPromise = null;
           }
-        } catch (error) {
-          console.error(error);
-          get().clearState();
-          toast.error("Phiên đăng nhập đã hết hạn! Vui lòng đăng nhập lại!");
-        } finally {
-          set({ loading: false });
-        }
+        })();
+        return refreshPromise;
+      },
+      setUser: (user) => {
+        set({ user });
       },
     }),
     {
