@@ -23,33 +23,35 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    //list api không cần check
+    if (!originalRequest) {
+      return Promise.reject(error);
+    }
     if (
       originalRequest.url.includes("/auth/signin") ||
       originalRequest.url.includes("/auth/signup") ||
       originalRequest.url.includes("/auth/refresh")
     ) {
+      //list api không cần check
       return Promise.reject(error);
     }
-    originalRequest._retryCount = originalRequest._retryCount || 0;
-    //khi thấy 401 -> token hết hạn -> gọi api refresh để tạo mới token -> tối đa thử 4 lần
-    if (error.response?.status === 401 && originalRequest._retryCount < 4) {
-      originalRequest._retryCount += 1;
-      try {
-        const res = await api.post(
-          "/auth/refresh",
-          {},
-          { withCredentials: true },
-        );
-        const newAccessToken = res.data.accessToken;
-        useAuthStore.getState().setAccessToken(newAccessToken);
-        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-      } catch (refreshError) {
-        useAuthStore.getState().clearState();
-        return Promise.reject(refreshError);
-      }
+    //khi không phải lỗi 401 và đã retry rồi -> trả lỗi ngay
+    if (error.response?.status !== 401 || originalRequest._retry) {
+      return Promise.reject(error);
     }
-    return Promise.reject(error);
+
+    originalRequest._retry = true;
+    try {
+      await useAuthStore.getState().refresh();
+      const accessToken = useAuthStore.getState().accessToken;
+      if (!accessToken) {
+        return Promise.reject(error);
+      }
+      originalRequest.headers = originalRequest.headers ?? {};
+      originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+      return api(originalRequest);
+    } catch (refreshError) {
+      return Promise.reject(refreshError);
+    }
   },
 );
 

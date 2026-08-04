@@ -3,21 +3,32 @@ import { useAuthStore } from "../../stores/useAuthStore";
 import { useEffect, useState } from "react";
 
 const ProtectedRoute = () => {
-  const { accessToken, user, loading, refresh, fetchMe } = useAuthStore();
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const loading = useAuthStore((state) => state.loading);
   const [starting, setStarting] = useState(true);
 
-  const init = async () => {
-    if (!accessToken) {
-      await refresh();
-    }
-
-    if (accessToken && !user) {
-      await fetchMe();
-    }
-    setStarting(false);
-  };
-
   useEffect(() => {
+    let active = true;
+    const init = async () => {
+      try {
+        const authStore = useAuthStore.getState();
+        if (!authStore.accessToken) {
+          await authStore.refresh();
+        }
+
+        const latestAuthStore = useAuthStore.getState();
+
+        if (latestAuthStore.accessToken && !latestAuthStore.user) {
+          await latestAuthStore.fetchMe();
+        }
+      } catch (error) {
+        console.error("Không thể khôi phục phiên đăng nhập", error);
+      } finally {
+        if (active) {
+          setStarting(false);
+        }
+      }
+    };
     init();
   }, []);
 

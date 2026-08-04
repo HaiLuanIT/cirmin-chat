@@ -29,10 +29,12 @@ export function SigninForm({
     resolver: zodResolver(signInSchema),
   });
   const onSubmit = async (data: SignInFormValues) => {
-    const { username, password } = data;
-    //gọi backend
-    await signIn(username, password);
-    navigate("/");
+    try {
+      const { username, password } = data;
+      //gọi backend
+      await signIn(username, password);
+      navigate("/");
+    } catch (error) {}
   };
 
   return (

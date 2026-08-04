@@ -3,6 +3,7 @@ import { useAuthStore } from "../../stores/useAuthStore";
 import { Button } from "../ui/button";
 import { LogOut } from "lucide-react";
 import { signalRService } from "@/services/signalRService";
+import { toast } from "sonner";
 
 const SignOut = () => {
   const { signOut } = useAuthStore();

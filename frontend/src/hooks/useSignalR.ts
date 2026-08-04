@@ -71,6 +71,11 @@ export const useSignalR = () => {
         .catch((err) => console.error("Lỗi khi tham gia hội thoại mới", err));
     };
 
+    const handleSessionRevoked = async () => {
+      if (!user) return;
+      useAuthStore.getState().signOut();
+      signalRService.stopConnection();
+    };
     connection.on("GetOnlineUsers", handleSetOnlineUsers);
 
     connection.on("UserStatusChanged", handleSetUserStatus);
@@ -80,6 +85,8 @@ export const useSignalR = () => {
     connection.on("UserSeenMessage", handleUserSeenMessage);
 
     connection.on("GroupConversationCreated", handleGroupCreated);
+
+    connection.on("SessionRevoked", handleSessionRevoked);
     if (connection.state === signalR.HubConnectionState.Disconnected) {
       connection
         .start()
@@ -92,6 +99,7 @@ export const useSignalR = () => {
       connection.off("ReceiveMessage", handleAddMessage);
       connection.off("UserSeenMessage", handleUserSeenMessage);
       connection.off("GroupConversationCreated", handleGroupCreated);
+      connection.off("SessionRevoked", handleSessionRevoked);
       console.log("Tắt lắng nghe sự kiện SignalR");
     };
   }, [
