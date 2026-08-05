@@ -28,12 +28,15 @@ import SignOut from "../auth/signout";
 import { useState } from "react";
 import FriendRequestDialog from "../friendRequest/FriendRequestDialog";
 import ProfileDialog from "../profile/ProfileDialog";
+import { useTranslation } from "react-i18next";
 
 export function NavUser({ user }: { user: User }) {
   const { isMobile } = useSidebar();
 
   const [friendRequestOpen, setFriendRequestOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+
+  const { t } = useTranslation("common");
   return (
     <>
       <SidebarMenu>
@@ -83,11 +86,11 @@ export function NavUser({ user }: { user: User }) {
               <DropdownMenuGroup>
                 <DropdownMenuItem onClick={() => setProfileOpen(true)}>
                   <UserIcon className="text-muted-foreground dark:group-focus:!text-accent-foreground" />
-                  Tài khoản
+                  {t("sidebar.navUser.profileLabel")}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setFriendRequestOpen(true)}>
                   <Bell className="text-muted-foreground dark:group-focus:!text-accent-foreground" />
-                  Thông báo
+                  {t("sidebar.navUser.notifyLabel")}
                 </DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />

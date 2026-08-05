@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuthStore } from "../../stores/useAuthStore";
 import { useNavigate } from "react-router";
+import { useTranslation } from "react-i18next";
 
 const signUpSchema = z.object({
   firstName: z.string().min(1, "Họ bắt buộc phải có"),
@@ -25,6 +26,7 @@ export function SignupForm({
 }: React.ComponentProps<"div">) {
   const { signUp } = useAuthStore();
   const navigate = useNavigate();
+  const { t } = useTranslation("auth");
 
   const {
     register,
@@ -50,9 +52,9 @@ export function SignupForm({
                 <a href="/" className="mx-auto block w-fit text-center">
                   <img src="/logo.svg" alt="logo" />
                 </a>
-                <h1 className="text-2xl font-bold">Tạo tài khoản Moji</h1>
+                <h1 className="text-2xl font-bold">{t("signUp.title")}</h1>
                 <p className="text-muted-foreground text-balance">
-                  Chào mừng bạn! Hãy đăng ký để bắt đầu!
+                  {t("signUp.description")}
                 </p>
               </div>
 
@@ -60,7 +62,7 @@ export function SignupForm({
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
                   <Label htmlFor="firstName" className="block text-sm">
-                    Họ
+                    {t("fields.firstName")}
                   </Label>
                   <Input
                     type="text"
@@ -73,7 +75,7 @@ export function SignupForm({
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="lastName" className="block text-sm">
-                    Tên
+                    {t("fields.lastName")}
                   </Label>
                   <Input type="text" id="lastName" {...register("lastName")} />
                   {errors.lastName && (
@@ -84,7 +86,7 @@ export function SignupForm({
               {/* username */}
               <div className="flex flex-col gap-3">
                 <Label htmlFor="username" className="block text-sm">
-                  Tên đăng nhập
+                  {t("fields.username")}
                 </Label>
                 <Input
                   type="text"
@@ -99,7 +101,7 @@ export function SignupForm({
               {/* email */}
               <div className="flex flex-col gap-3">
                 <Label htmlFor="email" className="block text-sm">
-                  Email
+                  {t("fields.email")}
                 </Label>
                 <Input
                   type="email"
@@ -114,7 +116,7 @@ export function SignupForm({
               {/* password */}
               <div className="flex flex-col gap-3">
                 <Label htmlFor="password" className="block text-sm">
-                  Mật khẩu
+                  {t("fields.password")}
                 </Label>
                 <Input
                   type="password"
@@ -127,13 +129,13 @@ export function SignupForm({
               </div>
               {/* nút đăng ký */}
               <Button type="submit" className="w-full" disabled={isSubmitting}>
-                Tạo tài khoản
+                {t("signUp.submit")}
               </Button>
 
               <div className="text-center text-sm">
-                Đã có tài khoản?{" "}
+                {t("signUp.switchPrompt")}{" "}
                 <a href="/signin" className="underline underline-offset-4">
-                  Đăng nhập
+                  {t("signIn.submit")}
                 </a>
               </div>
             </div>
@@ -148,8 +150,8 @@ export function SignupForm({
         </CardContent>
       </Card>
       <div className=" text-xs text-balance px-6 text-center *:[a]:hover:text-primary text-muted-foreground *:[a]:underline *:[a]:underline-offset-4">
-        Bằng cách tiếp tục, bạn đồng ý với <a href="#">Điều khoản dịch vụ</a> và{" "}
-        <a href="#">Chính sách bảo mật</a> của chúng tôi.
+        {t("termsAgreement.prefix")} <a href="#">{t("termsAgreement.terms")}</a>{" "}
+        {t("termsAgreement.link")} <a href="#">{t("termsAgreement.privacy")}</a>
       </div>
     </div>
   );

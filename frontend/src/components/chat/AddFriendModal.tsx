@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import SearchForm from "../addFriendModal/SearchForm";
 import SendFriendRequestForm from "../addFriendModal/SendFriendRequestForm";
 import SearchUserList from "../addFriendModal/SearchUserList";
+import { useTranslation } from "react-i18next";
 
 export interface IFromValues {
   username: string;
@@ -24,6 +25,7 @@ const AddFriendModal = () => {
   const [searchResult, setSearchResult] = useState<SearchUserResponse | null>(
     null,
   );
+  const { t } = useTranslation("common");
 
   const [selectedUser, setSelectedUser] = useState<SearchUser | null>(null);
 
@@ -110,12 +112,12 @@ const AddFriendModal = () => {
       <DialogTrigger asChild>
         <div className="flex justify-center items-center size-5 rounded-full hover:bg-sidebar-accent cursor-pointer z-10">
           <UserPlus className="size-4" />
-          <span className="sr-only">Kết bạn</span>
+          <span className="sr-only">{t("sidebar.directs.form.title")}</span>
         </div>
       </DialogTrigger>
       <DialogContent className="sm:max-w-106.25 border-none">
         <DialogHeader>
-          <DialogTitle>Kết bạn</DialogTitle>
+          <DialogTitle>{t("sidebar.directs.form.title")}</DialogTitle>
         </DialogHeader>
 
         {!selectedUser && (

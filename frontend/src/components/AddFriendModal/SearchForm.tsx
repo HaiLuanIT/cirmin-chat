@@ -1,11 +1,16 @@
 import React from "react";
-import type { FieldErrors, UseFormRegister, UseFormSetValue } from "react-hook-form";
+import type {
+  FieldErrors,
+  UseFormRegister,
+  UseFormSetValue,
+} from "react-hook-form";
 import type { IFromValues } from "../chat/AddFriendModal";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { DialogClose, DialogFooter } from "../ui/dialog";
 import { Button } from "../ui/button";
 import { Search, SearchX, AlertCircle, Loader2, X } from "lucide-react";
+import { Trans, useTranslation } from "react-i18next";
 
 interface SearchFormProps {
   register: UseFormRegister<IFromValues>;
@@ -35,21 +40,25 @@ const SearchForm = ({
       setValue("username", "", { shouldValidate: true });
     }
   };
+  const { t } = useTranslation(["common", "friends"]);
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="username" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <Label
+          htmlFor="username"
+          className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5"
+        >
           <Search className="size-3.5 text-primary" />
-          Tìm kiếm theo username
+          {t("common:sidebar.directs.form.searchField")}
         </Label>
-        
+
         <div className="relative flex items-center">
           <Search className="absolute left-3.5 size-4 text-muted-foreground/70 pointer-events-none transition-colors" />
-          
+
           <Input
             id="username"
-            placeholder="Nhập tên tài khoản (ví dụ: alex_moji)..."
+            placeholder={t("common:sidebar.directs.form.searchPlaceholder")}
             className="pl-10 pr-9 h-11 rounded-xl glass border-border/60 focus-visible:border-primary/60 focus-visible:ring-2 focus-visible:ring-primary/20 transition-all text-sm shadow-xs"
             {...register("username", {
               required: "Username không được bỏ trống",
@@ -82,10 +91,19 @@ const SearchForm = ({
             </div>
             <div className="space-y-0.5">
               <p className="font-semibold text-xs text-destructive uppercase tracking-wide">
-                Không tìm thấy tài khoản
+                {t("friends:search.noResults.title")}
               </p>
               <p className="text-xs text-muted-foreground">
-                Rất tiếc, không tìm thấy kết quả nào cho <span className="font-semibold text-foreground">@{searchedUsername}</span>. Vui lòng kiểm tra lại chính tả.
+                <Trans
+                  ns="friends"
+                  i18nKey="search.noResults.description"
+                  values={{ username: searchedUsername }}
+                  components={{
+                    username: (
+                      <span className="font-semibold text-foreground" />
+                    ),
+                  }}
+                />
               </p>
             </div>
           </div>
@@ -100,7 +118,7 @@ const SearchForm = ({
             className="flex-1 rounded-xl h-10 border-border/60 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 transition-all duration-200"
             onClick={onCancel}
           >
-            Hủy
+            {t("sidebar.directs.form.cancel")}
           </Button>
         </DialogClose>
 
@@ -117,7 +135,7 @@ const SearchForm = ({
           ) : (
             <div className="flex items-center justify-center gap-2">
               <Search className="size-4" />
-              <span>Tìm kiếm</span>
+              <span>{t("sidebar.directs.form.submit")}</span>
             </div>
           )}
         </Button>
