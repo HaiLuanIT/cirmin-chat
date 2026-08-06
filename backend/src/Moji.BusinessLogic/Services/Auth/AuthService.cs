@@ -1,7 +1,7 @@
 using FluentValidation;
 using Microsoft.Extensions.Configuration;
 using Moji.BusinessLogic.Exceptions;
-using Moji.BusinessLogic.Services.Conversations;
+using Moji.Contracts.Errors;
 using Moji.Contracts.Models.Auth;
 using Moji.Contracts.Models.Auth.ChangePassword;
 using Moji.Contracts.Models.Auth.Login;
@@ -41,7 +41,7 @@ public class AuthService : IAuthService
         _configuration = configuration;
         _userTokenRepository = userTokenRepository;
         _txManager = txManager;
-        _changePasswordValidator = changePasswordValidator; ;
+        _changePasswordValidator = changePasswordValidator;
         _sessionNotificationService = sessionNotificationService;
     }
 
@@ -52,10 +52,10 @@ public class AuthService : IAuthService
         if (!validationResult.IsValid) throw new MojiValidationException(validationResult.Errors);
 
         var existedUser = await _userRepository.FindByUsernameAsync(request.Username);
-        if (existedUser != null) throw new MojiConflictException("Tên tài khoản này đã tồn tại trong hệ thống!");
+        if (existedUser != null) throw new MojiConflictException(ErrorCodes.User.UsernameAlreadyExists);
 
         var isEmailUnique = await _userRepository.IsEmailUniqueAsync(request.Email);
-        if (!isEmailUnique) throw new MojiConflictException("Email đã sử dụng!");
+        if (!isEmailUnique) throw new MojiConflictException(ErrorCodes.User.EmailAlreadyExists);
 
         var hashedPassword = _passwordHasher.HashPassword(request.Password);
 
@@ -79,11 +79,11 @@ public class AuthService : IAuthService
 
         var user = await _userRepository.FindByUsernameAsync(request.Username);
 
-        if (user == null) throw new MojiUnauthorizedException("Username hoặc password không chính xác!");
+        if (user == null) throw new MojiUnauthorizedException(ErrorCodes.Auth.InvalidCredentials);
 
         var isMatchPassword = _passwordHasher.VerifyHashedPassword(user.HashedPassword, request.Password);
 
-        if (!isMatchPassword) throw new MojiUnauthorizedException("Username hoặc password không chính xác!");
+        if (!isMatchPassword) throw new MojiUnauthorizedException(ErrorCodes.Auth.InvalidCredentials);
 
         var accessToken = _tokenService.GenerateAccessToken(user, user.AuthVersion);
 
@@ -132,7 +132,7 @@ public class AuthService : IAuthService
     public async Task<UserModel> GetUser(Guid id)
     {
         var user = await _userRepository.FindByIdAsync(id);
-        if (user == null) throw new MojiNotFoundException("User not found or disabled");
+        if (user == null) throw new MojiNotFoundException(ErrorCodes.User.NotFound);
 
         var userModel = new UserModel
         {
@@ -152,16 +152,16 @@ public class AuthService : IAuthService
     {
         //1. Find token in db
         var token = await _userTokenRepository.FindByTokenAsync(oldToken);
-        if (token == null) throw new MojiUnauthorizedException("Invalid token");
+        if (token == null) throw new MojiUnauthorizedException(ErrorCodes.Auth.InvalidSession);
 
         //2. Check revoke and expiredTime
         if (token.IsRevoked || token.ExpiresAt < DateTimeOffset.UtcNow)
-            throw new MojiUnauthorizedException("Token is revoked or expired");
+            throw new MojiUnauthorizedException(ErrorCodes.Auth.SessionExpired);
 
         // check user exist and auth version is same
         var user = await _userRepository.FindByIdAsync(token.UserId);
         if (user == null || user.AuthVersion != token.AuthVersion)
-            throw new MojiUnauthorizedException("Session has been revoked");
+            throw new MojiUnauthorizedException(ErrorCodes.Auth.SessionExpired);
 
 
         //3. Generate new access token and refresh token
@@ -175,7 +175,7 @@ public class AuthService : IAuthService
         {
             var updateResult = await _userTokenRepository.RevokeTokenAsync(token);
             if (updateResult != UpdatedResult.Updated)
-                throw new MojiUnauthorizedException("Token is revoked or expired");
+                throw new MojiUnauthorizedException(ErrorCodes.Auth.SessionExpired);
 
             //5. Add new token in db
             var userToken = new UserToken
@@ -194,7 +194,7 @@ public class AuthService : IAuthService
         catch (DataConcurrencyException)
         {
             await _txManager.RollbackAsync();
-            throw new MojiConflictException("User has been updated by another user");
+            throw new MojiConflictException(ErrorCodes.Concurrency.Conflict);
         }
 
         //6. Create res
@@ -218,11 +218,11 @@ public class AuthService : IAuthService
 
         //check user exist
         var user = await _userRepository.GetTrackedUser(userId, cancellationToken);
-        if (user == null) throw new MojiNotFoundException("User not found");
+        if (user == null) throw new MojiNotFoundException(ErrorCodes.User.NotFound);
 
         //check password
         var isMatchPassword = _passwordHasher.VerifyHashedPassword(user.HashedPassword, request.OldPassword);
-        if (!isMatchPassword) throw new MojiBadRequestException("Old password is incorrect");
+        if (!isMatchPassword) throw new MojiUnauthorizedException(ErrorCodes.Auth.InvalidCredentials);
 
         var newHashedPassword = _passwordHasher.HashPassword(request.NewPassword);
         await using var transaction = await _txManager.BeginTransactionAsync(cancellationToken);
@@ -238,7 +238,7 @@ public class AuthService : IAuthService
         catch (DataConcurrencyException)
         {
             await _txManager.RollbackAsync(cancellationToken);
-            throw new MojiConflictException("User has been updated by another user");
+            throw new MojiConflictException(ErrorCodes.Concurrency.Conflict);
         }
 
         try

@@ -2,6 +2,7 @@
 using Moji.BusinessLogic.Constants;
 using Moji.BusinessLogic.Exceptions;
 using Moji.BusinessLogic.Services.Storage;
+using Moji.Contracts.Errors;
 using Moji.Contracts.Models.Paginations.OffsetPagination;
 using Moji.Contracts.Models.Users.SearchUser;
 using Moji.Contracts.Models.Users.UpdateUserInfo;
@@ -104,7 +105,7 @@ public class UserService : IUserService
         CancellationToken cancellationToken)
     {
         var user = await _userRepository.GetAvatarUpdateSnapshot(currentUserId, cancellationToken);
-        if (user == null) throw new MojiNotFoundException("User not found");
+        if (user == null) throw new MojiNotFoundException(ErrorCodes.User.NotFound);
 
         var folderName = $"users/{user.Id}/avatars";
         var uploadResult =
@@ -121,11 +122,12 @@ public class UserService : IUserService
 
             if (updateResult.Item1 != UpdatedResult.Updated)
             {
-                var isDeleted = await _imageStorageService.DeleteImageAsync(uploadResult.PublicId, cancellationToken);
+                var isDeleted =
+                    await _imageStorageService.DeleteImageAsync(uploadResult.PublicId, CancellationToken.None);
                 if (!isDeleted)
                     //todo: logg to manual delete or for background job delete cleann up
                     Console.WriteLine("Error deleting image");
-                throw new MojiConflictException("User avatar update conflict");
+                throw new MojiConflictException(ErrorCodes.Concurrency.Conflict);
             }
 
             updatedAt = updateResult.Item2;
@@ -176,7 +178,7 @@ public class UserService : IUserService
 
         //validate user exist
         var user = await _userRepository.GetTrackedUser(currentUserId, cancellationToken);
-        if (user == null) throw new MojiNotFoundException("User not found");
+        if (user == null) throw new MojiNotFoundException(ErrorCodes.User.NotFound);
 
         //update
         if (normalizeRequest.Email != null)
@@ -184,7 +186,7 @@ public class UserService : IUserService
             var isEmailUnique = await _userRepository.IsEmailUniqueAsync(normalizeRequest.Email);
             if (!isEmailUnique)
                 if (user.Email != normalizeRequest.Email)
-                    throw new MojiConflictException("Email đã tồn tại");
+                    throw new MojiConflictException(ErrorCodes.User.EmailAlreadyExists);
         }
 
         //if no update return old value
@@ -199,8 +201,10 @@ public class UserService : IUserService
         //update user info
         var result = await _userRepository.UpdateUserInfo(user, normalizeRequest.DisplayName, normalizeRequest.Bio,
             normalizeRequest.Email, cancellationToken);
-        if (result == UpdatedResult.ConcurrencyConflict) throw new MojiConflictException("User info update conflict");
-        if (result == UpdatedResult.DuplicatedEmail) throw new MojiConflictException("Email is existed");
+        if (result == UpdatedResult.ConcurrencyConflict)
+            throw new MojiConflictException(ErrorCodes.Concurrency.Conflict);
+        if (result == UpdatedResult.DuplicatedEmail)
+            throw new MojiConflictException(ErrorCodes.User.EmailAlreadyExists);
 
         //map
         var model = new UpdateUserInfoResponse

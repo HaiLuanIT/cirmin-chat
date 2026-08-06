@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using Moji.Contracts.Errors;
 
 namespace Moji.Contracts.Models.Conversations.CreateConversation;
 
@@ -6,12 +7,12 @@ public class CreateConversationRequestValidator : AbstractValidator<CreateConver
 {
     public CreateConversationRequestValidator()
     {
-        RuleFor(x => x.Name).NotEmpty().WithMessage("Tên nhóm không được để trống!");
-        RuleFor(x => x.UserIds).NotEmpty().WithMessage("Danh sách thành viên không được để trống!")
+        RuleFor(x => x.Name).NotEmpty().WithErrorCode(ErrorCodes.Validation.Required);
+        RuleFor(x => x.UserIds).NotEmpty().WithErrorCode(ErrorCodes.Validation.Required)
             .Must(members => members != null && members.Count >= 2)
-            .WithMessage("Nhóm chat phải có tối thiểu 2 thành viên khác bạn!");
-        RuleFor(x => x.UserIds).Must(HaveUniqueIds).WithMessage("Danh sách thành viên không được trùng nhau!");
-        
+            .WithErrorCode(ErrorCodes.Conversation.MinMembers)
+            .WithState(_ => ValidationErrorParams.Create(("min", 2)));
+        RuleFor(x => x.UserIds).Must(HaveUniqueIds).WithErrorCode(ErrorCodes.Conversation.NotDuplicatedMember);
     }
 
     private bool HaveUniqueIds(List<Guid> memberIds)

@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using Moji.Contracts.Errors;
 
 namespace Moji.Contracts.Models.Auth.ChangePassword;
 
@@ -6,10 +7,12 @@ public class ChangePasswordRequestValidator : AbstractValidator<ChangePasswordRe
 {
     public ChangePasswordRequestValidator()
     {
-        RuleFor(x => x.OldPassword).NotEmpty().WithMessage("Mật khẩu hiện tại không được để trống.");
-        RuleFor(x => x.NewPassword).NotEmpty().WithMessage("Mật khẩu mới không được để trống.")
-            .MinimumLength(8).WithMessage("Mật khẩu phải có ít nhất 8 kí tự.")
-            .MaximumLength(64).WithMessage("Mật khẩu không được vượt quá 64 kí tự.")
-            .NotEqual(x => x.OldPassword).WithMessage("Mật khẩu mới không được trùng với mật khẩu cũ.");
+        RuleFor(x => x.OldPassword).NotEmpty().WithErrorCode(ErrorCodes.Validation.Required);
+        RuleFor(x => x.NewPassword).NotEmpty().WithErrorCode(ErrorCodes.Validation.Required)
+            .MinimumLength(8).WithErrorCode(ErrorCodes.Validation.MinLength)
+            .WithState(_ => ValidationErrorParams.Create(("min", 8)))
+            .MaximumLength(64).WithErrorCode(ErrorCodes.Validation.MaxLength)
+            .WithState(_ => ValidationErrorParams.Create(("max", 64)))
+            .NotEqual(x => x.OldPassword).WithErrorCode(ErrorCodes.Auth.NewPasswordSameAsOld);
     }
 }

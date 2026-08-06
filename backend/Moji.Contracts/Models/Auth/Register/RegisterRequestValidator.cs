@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using Moji.Contracts.Errors;
 
 namespace Moji.Contracts.Models.Auth.Register;
 
@@ -6,15 +7,19 @@ public class RegisterRequestValidator : AbstractValidator<RegisterRequest>
 {
     public RegisterRequestValidator()
     {
-        RuleFor(x => x.Username).NotEmpty().WithMessage("Username không được bỏ trống!")
-            .Matches(@"^[a-z0-9_]+$").WithMessage("Username chỉ được chứa chữ thường, số và dấu gạch nối");
-        RuleFor(x => x.Password).NotEmpty().WithMessage("Mật khẩu không được để trống.")
-            .MinimumLength(8).WithMessage("Mật khẩu phải có ít nhất 8 kí tự.")
-            .MaximumLength(64).WithMessage("Mật khẩu không được vượt quá 64 kí tự.");
-        RuleFor(x => x.Email).EmailAddress().WithMessage("Email không hợp lệ!");
-        RuleFor(x => x.FirstName).NotEmpty().WithMessage("First name không được để trống")
-            .MinimumLength(1).WithMessage("First name phải có ít nhất 1 ký tự");
-        RuleFor(x => x.LastName).NotEmpty().WithMessage("Last name không được để trống").MinimumLength(1)
-            .WithMessage("Last name phải có ít nhất 1 ký tự");
+        RuleFor(x => x.Username).NotEmpty().WithErrorCode(ErrorCodes.Validation.Required)
+            .Matches(@"^[a-z0-9_]+$").WithErrorCode(ErrorCodes.Validation.InvalidFormat);
+        RuleFor(x => x.Password).NotEmpty().WithErrorCode(ErrorCodes.Validation.Required)
+            .MinimumLength(8).WithErrorCode(ErrorCodes.Validation.MinLength)
+            .WithState(_ => ValidationErrorParams.Create(("min", 8)))
+            .MaximumLength(64).WithErrorCode(ErrorCodes.Validation.MaxLength)
+            .WithState(_ => ValidationErrorParams.Create(("max", 64)));
+        RuleFor(x => x.Email).EmailAddress().WithErrorCode(ErrorCodes.Validation.InvalidEmail);
+        RuleFor(x => x.FirstName).NotEmpty().WithErrorCode(ErrorCodes.Validation.Required)
+            .MinimumLength(1).WithErrorCode(ErrorCodes.Validation.MinLength)
+            .WithState(_ => ValidationErrorParams.Create(("min", 1)));
+        RuleFor(x => x.LastName).NotEmpty().WithErrorCode(ErrorCodes.Validation.Required).MinimumLength(1)
+            .WithErrorCode(ErrorCodes.Validation.MinLength)
+            .WithState(_ => ValidationErrorParams.Create(("min", 1)));
     }
 }

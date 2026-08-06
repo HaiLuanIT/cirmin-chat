@@ -1,8 +1,11 @@
-﻿using System.Net.Mime;
+﻿using System.Diagnostics;
+using System.Net.Mime;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Moji.BusinessLogic.Exceptions;
+using Moji.Contracts.Errors;
 
 namespace Moji.API.Extensions;
 
@@ -14,28 +17,36 @@ public static class ErrorHandlingExtensions
         {
             exeptionHandlerApp.Run(async context =>
             {
-                context.Response.ContentType = MediaTypeNames.Application.ProblemJson;
                 // Trích xuất lỗi thô từ bộ nhớ RAM của hệ thống
                 var exceptionFeature = context.Features.Get<IExceptionHandlerPathFeature>();
-                var exception = exceptionFeature.Error;
+                var exception = exceptionFeature?.Error ??
+                                new InvalidOperationException("An unhandled exception occurred.");
+                var traceId = Activity.Current?.TraceId.ToString() ?? context.TraceIdentifier;
                 var statusCode = StatusCodes.Status500InternalServerError;
                 var message = "Đã có lỗi hệ thống xảy ra. Vui lòng thử lại sau!";
                 var title = "Internal Server Error";
-                IDictionary<string, string[]>? validationErrors = null;
+                var code = ErrorCodes.System.InternalError;
+                IReadOnlyDictionary<string, object?>? parameters = new Dictionary<string, object?>();
+                object? validationErrors = null;
                 string? stackTrace = null;
+                var logger = context.RequestServices.GetRequiredService<ILoggerFactory>()
+                    .CreateLogger("GlobalExceptionHandler");
 
                 switch (exception)
                 {
                     case MojiBadRequestException badEx:
                         statusCode = StatusCodes.Status400BadRequest;
-                        title = "Business Logic Error";
+                        title = "Bad Request";
                         message = badEx.Message;
+                        code = badEx.Code;
+                        parameters = badEx.Params;
                         break;
 
                     case MojiValidationException validationEx:
                         statusCode = StatusCodes.Status400BadRequest;
-                        title = "Validation Error";
+                        title = "Validation Failed";
                         message = validationEx.Message;
+                        code = ErrorCodes.Validation.Failed;
                         validationErrors = validationEx.Errors;
                         break;
 
@@ -43,30 +54,40 @@ public static class ErrorHandlingExtensions
                         statusCode = StatusCodes.Status401Unauthorized;
                         title = "Unauthorized";
                         message = unAuthEx.Message;
+                        code = unAuthEx.Code;
+                        parameters = unAuthEx.Params;
                         break;
 
                     case MojiForbiddenException forbiddenEx:
                         statusCode = StatusCodes.Status403Forbidden;
                         title = "Forbidden";
                         message = forbiddenEx.Message;
+                        code = forbiddenEx.Code;
+                        parameters = forbiddenEx.Params;
                         break;
 
                     case MojiConflictException conflictEx:
                         statusCode = StatusCodes.Status409Conflict;
-                        title = "Data Conflict";
+                        title = "Conflict";
                         message = conflictEx.Message;
+                        code = conflictEx.Code;
+                        parameters = conflictEx.Params;
                         break;
 
                     case MojiNotFoundException notFoundEx:
                         statusCode = StatusCodes.Status404NotFound;
                         title = "Not Found";
                         message = notFoundEx.Message;
+                        code = notFoundEx.Code;
+                        parameters = notFoundEx.Params;
                         break;
 
                     case MediaStorageException mediaStorageException:
                         statusCode = StatusCodes.Status502BadGateway;
                         title = "Media Storage Error";
                         message = "Cannot upload media to Cloudinary. Try again later.";
+                        code = mediaStorageException.Code;
+                        parameters = mediaStorageException.Params;
                         break;
 
                     default:
@@ -82,14 +103,33 @@ public static class ErrorHandlingExtensions
                         break;
                 }
 
-                context.Response.StatusCode = statusCode;
+                if (statusCode >= 500)
+                    logger.LogError(exception, "Unhandled exception occurred. TraceId: {TraceId}, Path: {Path}",
+                        traceId, context.Request.Path);
+                else if (exception is MojiApplicationException mojiAppEx)
+                    logger.LogWarning(
+                        "Request rejected. Code: {Code}, TraceId: {TraceId}, Path: {Path}",
+                        mojiAppEx.Code,
+                        traceId,
+                        context.Request.Path);
+
                 var problemDetails = new ProblemDetails
                 {
                     Status = statusCode,
-                    Title = title,
-                    Detail = message,
-                    Instance = exceptionFeature.Path
+                    Title = title
                 };
+
+                problemDetails.Extensions["code"] = code;
+                if (validationErrors is not null)
+                    problemDetails.Extensions["errors"] =
+                        validationErrors;
+                else
+                    problemDetails.Extensions["params"] =
+                        parameters;
+
+                problemDetails.Extensions["traceId"] = traceId;
+                context.Response.StatusCode = statusCode;
+                context.Response.ContentType = MediaTypeNames.Application.ProblemJson;
 
                 if (validationErrors != null) problemDetails.Extensions.Add("errors", validationErrors);
 
@@ -99,9 +139,11 @@ public static class ErrorHandlingExtensions
                 var jsonOptions = new JsonSerializerOptions
                 {
                     PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
                     WriteIndented = true
                 };
-                await context.Response.WriteAsync(JsonSerializer.Serialize(problemDetails, jsonOptions));
+                await context.Response.WriteAsync(JsonSerializer.Serialize(problemDetails, jsonOptions),
+                    context.RequestAborted);
             });
         });
     }
