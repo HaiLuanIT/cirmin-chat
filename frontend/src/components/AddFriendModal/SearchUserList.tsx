@@ -3,6 +3,7 @@ import React from "react";
 import { Button } from "../ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { ChevronLast, ChevronLeft, ChevronRight } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface SearchUserListProps {
   result: SearchUserResponse;
@@ -17,6 +18,7 @@ const SearchUserList = ({
   onChangePage,
 }: SearchUserListProps) => {
   if (result?.items?.length === 0) return null;
+  const { t } = useTranslation("common");
 
   return (
     <div className="space-y-3">
@@ -63,10 +65,10 @@ const SearchUserList = ({
           onClick={() => onChangePage(result.pageNumber - 1)}
         >
           <ChevronLeft className="size-4" />
-          Trước
+          {t("paginate.prev")}
         </Button>
         <span className="text-sm text-muted-foreground">
-          Trang {result.pageNumber}
+          {t("paginate.page")} {result.pageNumber}
         </span>
         <Button
           type="button"
@@ -75,7 +77,7 @@ const SearchUserList = ({
           disabled={loading || !result.hasNextPage}
           onClick={() => onChangePage(result.pageNumber + 1)}
         >
-          Sau
+          {t("paginate.next")}
           <ChevronRight className="size-4" />
         </Button>
       </div>

@@ -1,0 +1,53 @@
+{
+  "title": "Account and Security",
+
+  "tabs": {
+    "account": "Account",
+    "security": "Security"
+  },
+
+  "account": {
+    "title": "Personal Information",
+    "description": "Update the information displayed on your profile and in conversations.",
+
+    "fields": {
+      "displayName": "Display Name",
+      "username": "Username",
+      "email": "Email",
+      "bio": "Bio"
+    },
+
+    "placeholders": {
+      "bio": "Write a few things about yourself..."
+    },
+
+    "descriptions": {
+      "username": "Your username cannot be changed at this time."
+    },
+
+    "status": {
+      "saved": "Your current information has been saved.",
+      "unsaved": "You have unsaved changes."
+    },
+
+    "validation": {
+      "bioMaxLength": "Bio must not exceed {{max}} characters."
+    }
+  },
+
+  "bio": {
+    "showMore": "See more",
+    "showLess": "See less"
+  },
+
+  "security": {
+    "title": "Password",
+    "description": "Change your password to protect your account from unauthorized access.",
+
+    "fields": {
+      "currentPassword": "Current Password",
+      "newPassword": "New Password",
+      "confirmPassword": "Confirm Password"
+    }
+  }
+}

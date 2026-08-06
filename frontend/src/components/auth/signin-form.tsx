@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuthStore } from "../../stores/useAuthStore";
 import { useNavigate } from "react-router";
+import { useTranslation } from "react-i18next";
 
 const signInSchema = z.object({
   username: z.string().nonempty("Tên đăng nhập không được để trống"),
@@ -21,6 +22,7 @@ export function SigninForm({
 }: React.ComponentProps<"div">) {
   const { signIn } = useAuthStore();
   const navigate = useNavigate();
+  const { t } = useTranslation("auth");
   const {
     register,
     handleSubmit,
@@ -48,16 +50,16 @@ export function SigninForm({
                 <a href="/" className="mx-auto block w-fit text-center">
                   <img src="/logo.svg" alt="logo" />
                 </a>
-                <h1 className="text-2xl font-bold">Chào mừng quay lại</h1>
+                <h1 className="text-2xl font-bold">{t("signIn.title")}</h1>
                 <p className="text-muted-foreground text-balance">
-                  Đăng nhập vào tài khoản Moji của bạn
+                  {t("signIn.description")}
                 </p>
               </div>
 
               {/* username */}
               <div className="flex flex-col gap-3">
                 <Label htmlFor="username" className="block text-sm">
-                  Tên đăng nhập
+                  {t("fields.username")}
                 </Label>
                 <Input
                   type="text"
@@ -72,7 +74,7 @@ export function SigninForm({
               {/* password */}
               <div className="flex flex-col gap-3">
                 <Label htmlFor="password" className="block text-sm">
-                  Mật khẩu
+                  {t("fields.password")}
                 </Label>
                 <Input
                   type="password"
@@ -85,13 +87,13 @@ export function SigninForm({
               </div>
               {/* nút đăng nhập */}
               <Button type="submit" className="w-full" disabled={isSubmitting}>
-                Đăng nhập
+                {t("signIn.submit")}
               </Button>
 
               <div className="text-center text-sm">
-                Chưa có tài khoản?{" "}
+                {t("signIn.switchPrompt")}{" "}
                 <a href="/signup" className="underline underline-offset-4">
-                  Đăng ký
+                  {t("signUp.submit")}
                 </a>
               </div>
             </div>
@@ -106,8 +108,8 @@ export function SigninForm({
         </CardContent>
       </Card>
       <div className=" text-xs text-balance px-6 text-center *:[a]:hover:text-primary text-muted-foreground *:[a]:underline *:[a]:underline-offset-4">
-        Bằng cách tiếp tục, bạn đồng ý với <a href="#">Điều khoản dịch vụ</a> và{" "}
-        <a href="#">Chính sách bảo mật</a> của chúng tôi.
+        {t("termsAgreement.prefix")} <a href="#">{t("termsAgreement.terms")}</a>{" "}
+        {t("termsAgreement.link")} <a href="#">{t("termsAgreement.privacy")}</a>
       </div>
     </div>
   );

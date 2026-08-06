@@ -98,3 +98,9 @@ export interface UserState {
   ) => Promise<void>;
   changePassword: (oldPassword: string, newPassword: string) => Promise<void>;
 }
+
+export type SupportedLanguage = "vi" | "en";
+export interface LocaleState {
+  lang: SupportedLanguage;
+  setLang: (lang: SupportedLanguage) => Promise<void>;
+}

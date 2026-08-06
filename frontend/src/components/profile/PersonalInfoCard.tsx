@@ -14,7 +14,7 @@ import { Button } from "../ui/button";
 import { Loader2, Save } from "lucide-react";
 import { useForm, useWatch } from "react-hook-form";
 import { useUserStore } from "@/stores/useUserStore";
-
+import { useTranslation } from "react-i18next";
 interface PersonalInfoCardProps {
   user: User;
 }
@@ -27,11 +27,12 @@ interface PersonalInfoFormValues {
 
 const DISPLAY_NAME_MAX_LENGTH = 100;
 const EMAIL_MAX_LENGTH = 50;
-const BIO_MAX_LENGTH = 500;
+const BIO_MAX_LENGTH = 101;
 
 const PersonalInfoCard = ({ user }: PersonalInfoCardProps) => {
   const { updateUserInfo } = useUserStore();
 
+  const { t } = useTranslation(["common", "profile"]);
   const {
     register,
     handleSubmit,
@@ -77,11 +78,9 @@ const PersonalInfoCard = ({ user }: PersonalInfoCardProps) => {
       <Card className="border-white/20 bg-card/80 shadow-sm backdrop-blur-xl dark:border-white/10">
         <CardHeader className="gap-2 border-b border-gray-300 bg-muted/30 px-5 py-5">
           <CardTitle className="text-xl font-semibold">
-            Thông tin cá nhân
+            {t("profile:account.title")}
           </CardTitle>
-          <CardDescription>
-            Cập nhật thông tin hiển thị trên hồ sơ và trong các cuộc trò chuyện.
-          </CardDescription>
+          <CardDescription>{t("profile:account.description")}</CardDescription>
         </CardHeader>
 
         <CardContent className="px-5">
@@ -93,7 +92,9 @@ const PersonalInfoCard = ({ user }: PersonalInfoCardProps) => {
           */}
           <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
             <Field data-invalid={Boolean(errors.displayName)}>
-              <FieldLabel htmlFor="displayName">Tên hiển thị</FieldLabel>
+              <FieldLabel htmlFor="displayName">
+                {t("profile:account.fields.displayName")}
+              </FieldLabel>
               <Input
                 id="displayName"
                 autoComplete="name"
@@ -113,7 +114,9 @@ const PersonalInfoCard = ({ user }: PersonalInfoCardProps) => {
             </Field>
 
             <Field>
-              <FieldLabel htmlFor="username">Username</FieldLabel>
+              <FieldLabel htmlFor="username">
+                {t("profile:account.fields.username")}
+              </FieldLabel>
               <Input
                 id="username"
                 value={user.username}
@@ -122,7 +125,7 @@ const PersonalInfoCard = ({ user }: PersonalInfoCardProps) => {
                 className="cursor-default bg-muted/50"
               />
               <FieldDescription>
-                Username hiện không thể thay đổi.
+                {t("profile:account.descriptions.username")}
               </FieldDescription>
             </Field>
 
@@ -131,7 +134,9 @@ const PersonalInfoCard = ({ user }: PersonalInfoCardProps) => {
               data-invalid={Boolean(errors.email)}
               className="md:col-span-2"
             >
-              <FieldLabel htmlFor="email">Email</FieldLabel>
+              <FieldLabel htmlFor="email">
+                {t("profile:account.fields.email")}
+              </FieldLabel>
               <Input
                 id="email"
                 type="email"
@@ -153,18 +158,22 @@ const PersonalInfoCard = ({ user }: PersonalInfoCardProps) => {
             </Field>
 
             <Field data-invalid={Boolean(errors.bio)} className="md:col-span-2">
-              <FieldLabel htmlFor="bio">Giới thiệu</FieldLabel>
+              <FieldLabel htmlFor="bio">
+                {t("profile:account.fields.bio")}
+              </FieldLabel>
               <Textarea
                 id="bio"
                 rows={4}
                 maxLength={BIO_MAX_LENGTH}
-                placeholder="Viết một vài điều về bạn..."
+                placeholder={t("profile:account.placeholders.bio")}
                 aria-invalid={Boolean(errors.bio)}
                 className="resize-none"
                 {...register("bio", {
                   maxLength: {
                     value: BIO_MAX_LENGTH,
-                    message: `Giới thiệu không được vượt quá ${BIO_MAX_LENGTH} ký tự.`,
+                    message: t("profile:account.validation.bioMaxLength", {
+                      max: BIO_MAX_LENGTH,
+                    }),
                   },
                 })}
               />
@@ -183,8 +192,8 @@ const PersonalInfoCard = ({ user }: PersonalInfoCardProps) => {
         <CardFooter className="flex-col items-stretch justify-between gap-3 px-5 sm:flex-row sm:items-center border-none bg-card/80">
           <p className="text-xs text-muted-foreground">
             {isDirty
-              ? "Bạn có thay đổi chưa được lưu."
-              : "Thông tin hiện tại đã được lưu."}
+              ? t("profile:account.status.unsaved")
+              : t("profile:account.status.saved")}
           </p>
 
           <Button
@@ -195,12 +204,12 @@ const PersonalInfoCard = ({ user }: PersonalInfoCardProps) => {
             {isSubmitting ? (
               <>
                 <Loader2 className="animate-spin" />
-                Đang lưu...
+                {t("actions.saving")}
               </>
             ) : (
               <>
                 <Save />
-                Lưu thay đổi
+                {t("actions.save")}
               </>
             )}
           </Button>

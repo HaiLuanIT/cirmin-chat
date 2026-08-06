@@ -4,10 +4,12 @@ import { Button } from "../ui/button";
 import { LogOut } from "lucide-react";
 import { signalRService } from "@/services/signalRService";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 const SignOut = () => {
   const { signOut } = useAuthStore();
   const navigate = useNavigate();
+  const { t } = useTranslation("auth");
 
   const handleSignOut = async () => {
     try {
@@ -22,7 +24,7 @@ const SignOut = () => {
   return (
     <Button onClick={handleSignOut} variant="completeGhost">
       <LogOut className="text-destructive" />
-      Đăng xuất
+      {t("signOut.submit")}
     </Button>
   );
 };
