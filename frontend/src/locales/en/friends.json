@@ -1,0 +1,8 @@
+{
+  "search": {
+    "noResults": {
+      "title": "Account not found",
+      "description": "Sorry, we couldn't find any results for <username>@{{username}}</username>. Please check the spelling."
+    }
+  }
+}

@@ -14,6 +14,7 @@ import { Loader, Loader2, Save } from "lucide-react";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { useUserStore } from "@/stores/useUserStore";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 interface IFormValue {
   password: string;
@@ -22,6 +23,7 @@ interface IFormValue {
 }
 const SecurityInfoCard = () => {
   const { changePassword } = useUserStore();
+  const { t } = useTranslation(["common", "profile"]);
   const {
     register,
     handleSubmit,
@@ -48,15 +50,17 @@ const SecurityInfoCard = () => {
       <form onSubmit={handleChangePassword}>
         <Card className="bg-card/80 mb-5">
           <CardHeader>
-            <CardTitle>Mật khẩu</CardTitle>
+            <CardTitle>{t("profile:security.title")}</CardTitle>
             <CardDescription>
-              Thay đổi mật khẩu để bảo vệ tài khoản khỏi truy cập trái phép.
+              {t("profile:security.description")}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <Field className="md:col-span-2">
-                <FieldLabel htmlFor="password">Mật khẩu hiện tại</FieldLabel>
+                <FieldLabel htmlFor="password">
+                  {t("profile:security.fields.currentPassword")}
+                </FieldLabel>
                 <Input
                   id="password"
                   type="password"
@@ -65,7 +69,9 @@ const SecurityInfoCard = () => {
                 />
               </Field>
               <Field>
-                <FieldLabel htmlFor="newPassword">Mật khẩu mới</FieldLabel>
+                <FieldLabel htmlFor="newPassword">
+                  {t("profile:security.fields.newPassword")}
+                </FieldLabel>
                 <Input
                   id="newPassword"
                   type="password"
@@ -75,7 +81,7 @@ const SecurityInfoCard = () => {
               </Field>
               <Field>
                 <FieldLabel htmlFor="confirmNewPassword">
-                  Xác nhận mật khẩu
+                  {t("profile:security.fields.confirmPassword")}
                 </FieldLabel>
                 <Input
                   id="confirmNewPassword"
@@ -98,7 +104,7 @@ const SecurityInfoCard = () => {
                 </>
               ) : (
                 <>
-                  <Save /> Lưu thay đổi
+                  <Save /> {t("common:actions.save")}
                 </>
               )}
             </Button>

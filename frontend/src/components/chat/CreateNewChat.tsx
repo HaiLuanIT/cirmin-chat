@@ -5,6 +5,7 @@ import { MessageCircle } from "lucide-react";
 import FriendListModal from "../createNewChat/FriendListModal";
 import { useChatStore } from "@/stores/useChatStore";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 const CreateNewChat = () => {
   const [open, setOpen] = useState(false);
@@ -12,6 +13,7 @@ const CreateNewChat = () => {
   const { getFriends } = useFriendStore();
   const { conversations, fetchConversations, openConversation } =
     useChatStore();
+  const { t } = useTranslation("common");
 
   const handleOpenChange = (nextOpen: boolean) => {
     setOpen(nextOpen);
@@ -51,7 +53,7 @@ const CreateNewChat = () => {
             <MessageCircle className="size-4 text-white" />
           </div>
           <span className="text-sm font-medium capitalize">
-            Gửi tin nhắn mới
+            {t("sidebar.newMessage.label")}
           </span>
         </button>
       </DialogTrigger>

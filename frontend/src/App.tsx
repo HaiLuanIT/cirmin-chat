@@ -7,6 +7,7 @@ import ProtectedRoute from "./components/auth/ProtectedRoute";
 import { useThemeStore } from "./stores/useThemeStore";
 import { useEffect } from "react";
 import { useSignalR } from "./hooks/useSignalR";
+import "./i18n.ts";
 function App() {
   const { isDark, setTheme } = useThemeStore();
 

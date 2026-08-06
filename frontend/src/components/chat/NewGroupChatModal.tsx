@@ -17,6 +17,7 @@ import InviteSuggestionList from "../newGroupChat/InviteSuggestionList";
 import SelectedUsersList from "../newGroupChat/SelectedUsersList";
 import { toast } from "sonner";
 import { useChatStore } from "@/stores/useChatStore";
+import { useTranslation } from "react-i18next";
 
 const NewGroupChatModal = () => {
   const [groupName, setGroupName] = useState("");
@@ -24,6 +25,7 @@ const NewGroupChatModal = () => {
   const { friends, getFriends } = useFriendStore();
   const [invitedUsers, setInvitedUsers] = useState<Friend[]>([]);
   const { loading, createConversation } = useChatStore();
+  const { t } = useTranslation("common");
 
   const handleGetFriend = async () => {
     await getFriends();
@@ -70,21 +72,23 @@ const NewGroupChatModal = () => {
           className="flex z-10 justify-center items-center size-5 rounded-full hover:bg-sidebar-accent transition cursor-pointer"
         >
           <Users className="size-4" />
-          <span className="sr-only">Tạo nhóm</span>
+          <span className="sr-only">{t("sidebar.groups.form.submit")}</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-106.25 border-none">
         <DialogHeader>
-          <DialogTitle className="capitalize">tạo nhóm chat mới</DialogTitle>
+          <DialogTitle className="capitalize">
+            {t("sidebar.groups.form.title")}
+          </DialogTitle>
           <form className="space-y-4" onSubmit={handleSubmit}>
             {/* name group */}
             <div className="space-y-2">
               <Label htmlFor="groupName" className="text-sm font-semibold">
-                Tên nhóm
+                {t("sidebar.groups.form.nameGroupField")}
               </Label>
               <Input
                 id="groupName"
-                placeholder="Gõ tên nhóm vào đây..."
+                placeholder={t("sidebar.groups.form.nameGroupPlaceholder")}
                 className="glass border-border/50 focus:border-primary/50 transition-smooth"
                 value={groupName}
                 onChange={(e) => setGroupName(e.target.value)}
@@ -94,11 +98,11 @@ const NewGroupChatModal = () => {
             {/* invite member */}
             <div className="space-y-2">
               <Label htmlFor="invite" className="text-sm font-semibold">
-                Mời thành viên
+                {t("sidebar.groups.form.inviteField")}
               </Label>
               <Input
                 id="invite"
-                placeholder="Tìm theo tên hiển thị..."
+                placeholder={t("sidebar.groups.form.invitePlaceholder")}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               ></Input>
@@ -124,11 +128,11 @@ const NewGroupChatModal = () => {
                 className="flex-1 bg-gradient-chat text-white hover:opacity-90 transition-smooth"
               >
                 {loading ? (
-                  <span>Đang tạo...</span>
+                  <span>{t("states.createLoading")}</span>
                 ) : (
                   <>
                     <UserPlus className="size-4 mr-2" />
-                    Tạo nhóm
+                    {t("sidebar.groups.form.submit")}
                   </>
                 )}
               </Button>

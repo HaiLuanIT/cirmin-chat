@@ -1,0 +1,8 @@
+{
+  "search": {
+    "noResults": {
+      "title": "Không tìm thấy tài khoản",
+      "description": "Rất tiếc, không tìm thấy kết quả nào cho <username>@{{username}}</username>. Vui lòng kiểm tra lại chính tả."
+    }
+  }
+}

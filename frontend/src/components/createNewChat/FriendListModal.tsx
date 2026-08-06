@@ -2,40 +2,39 @@ import { useFriendStore } from "@/stores/useFriendStore";
 import { DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import { MessageCircleMore, User } from "lucide-react";
 import UserAvatar from "../chat/UserAvatar";
+import { useTranslation } from "react-i18next";
 
 interface FriendListModalProps {
   loading: boolean;
   onSelectFriend: (friendId: string) => Promise<void>;
 }
 
-const FriendListModal = ({
-  loading,
-  onSelectFriend,
-}: FriendListModalProps) => {
+const FriendListModal = ({ loading, onSelectFriend }: FriendListModalProps) => {
   const { friends } = useFriendStore();
+  const { t } = useTranslation("common");
 
   return (
     <DialogContent className="glass max-w-md">
       <DialogHeader>
         <DialogTitle className="flex items-center gap-2 capitalize text-xl">
           <MessageCircleMore />
-          bắt đầu hội thoại mới
+          {t("sidebar.newMessage.dialog.title")}
         </DialogTitle>
       </DialogHeader>
 
       {loading ? (
         <p className="py-8 text-center text-sm text-muted-foreground">
-          Đang tải danh sách bạn bè...
+          {t("sidebar.newMessage.dialog.loading")}
         </p>
       ) : friends.length === 0 ? (
         <div className="py-8 text-center text-muted-foreground">
           <User className="mx-auto mb-3 size-12 opacity-50" />
-          Chưa có bạn bè. Hãy kết bạn để bắt đầu chat.
+          {t("sidebar.newMessage.dialog.fallback")}
         </div>
       ) : (
         <div className="space-y-4">
           <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-            Danh sách bạn bè
+            {t("sidebar.newMessage.dialog.label")}
           </h2>
           <div className="max-h-60 space-y-2 overflow-y-auto">
             {friends.map((friend) => (

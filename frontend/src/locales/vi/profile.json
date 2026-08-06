@@ -1,0 +1,53 @@
+{
+  "title": "Tài Khoản Và Bảo Mật",
+
+  "tabs": {
+    "account": "Tài khoản",
+    "security": "Bảo mật"
+  },
+
+  "account": {
+    "title": "Thông tin cá nhân",
+    "description": "Cập nhật thông tin hiển thị trên hồ sơ và trong các cuộc trò chuyện.",
+
+    "fields": {
+      "displayName": "Tên hiển thị",
+      "username": "Tên tài khoản",
+      "email": "Email",
+      "bio": "Giới thiệu"
+    },
+
+    "placeholders": {
+      "bio": "Viết một vài điều về bạn..."
+    },
+
+    "descriptions": {
+      "username": "Tên tài khoản hiện không thể thay đổi."
+    },
+
+    "status": {
+      "saved": "Thông tin hiện tại đã được lưu.",
+      "unsaved": "Bạn có thay đổi chưa được lưu."
+    },
+
+    "validation": {
+      "bioMaxLength": "Giới thiệu không được vượt quá {{max}} ký tự."
+    }
+  },
+
+  "bio": {
+    "showMore": "Xem thêm",
+    "showLess": "Thu gọn"
+  },
+
+  "security": {
+    "title": "Mật khẩu",
+    "description": "Thay đổi mật khẩu để bảo vệ tài khoản khỏi truy cập trái phép.",
+
+    "fields": {
+      "currentPassword": "Mật khẩu hiện tại",
+      "newPassword": "Mật khẩu mới",
+      "confirmPassword": "Xác nhận mật khẩu"
+    }
+  }
+}
