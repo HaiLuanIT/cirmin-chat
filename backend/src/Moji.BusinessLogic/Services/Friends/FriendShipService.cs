@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using Moji.BusinessLogic.Exceptions;
+using Moji.Contracts.Errors;
 using Moji.Contracts.Models.FriendShips;
 using Moji.Contracts.Models.FriendShips.AddFriend;
 using Moji.DataAccess.Commons.Constants;
@@ -33,15 +34,16 @@ public class FriendShipService : IFriendShipService
         var validationResult = await _friendRequestValidator.ValidateAsync(request);
         if (!validationResult.IsValid) throw new MojiValidationException(validationResult.Errors);
 
-        if (currentUserId == request.ReceiverId) throw new MojiBadRequestException("Không thể kết bạn với bản thân");
+        if (currentUserId == request.ReceiverId)
+            throw new MojiBadRequestException(ErrorCodes.Friendship.CannotMakeFriendWithSelf);
         //check receiver exist
         var receiver = await _userRepository.FindByIdAsync(request.ReceiverId);
-        if (receiver == null) throw new MojiNotFoundException("Người dùng nhận lời mời không tồn tại!");
+        if (receiver == null) throw new MojiNotFoundException(ErrorCodes.User.NotFound);
 
         //check friend request is exist or not
         var friendRequest = await _friendShipRepository.FindRequestAsync(currentUserId, request.ReceiverId);
         if (friendRequest != null)
-            throw new MojiConflictException("Lời mời kết bạn hoặc mối quan hệ giữa hai người đã tồn tại!");
+            throw new MojiConflictException(ErrorCodes.Friendship.HasAlreadyRequestedOrIsFriend);
 
         //add to db
         var newRequest = new FriendShip
@@ -60,14 +62,14 @@ public class FriendShipService : IFriendShipService
     {
         //check friend request exist and status must be pending
         var friendRequest = await _friendShipRepository.FindByIdAsync(friendRequestId);
-        if (friendRequest == null) throw new MojiNotFoundException("Friend request not found");
+        if (friendRequest == null) throw new MojiNotFoundException(ErrorCodes.Friendship.FriendRequestNotFound);
 
         //check permission with friend request
         if (friendRequest.RequesterId == currentUserId)
-            throw new MojiForbiddenException("Bạn không có quyền thực hiện hành động này!");
+            throw new MojiForbiddenException(ErrorCodes.Auth.Forbidden);
 
         if (friendRequest.Status != FriendShipStatus.Pending)
-            throw new MojiBadRequestException("Lời mời kết bạn này đã được xử lý");
+            throw new MojiBadRequestException(ErrorCodes.Friendship.FriendRequestProcessed);
 
         //normalize status in request must be match in enum
         var normalizeStatus = isAccepted
@@ -128,7 +130,7 @@ public class FriendShipService : IFriendShipService
 
     public async Task<bool> IsFriend(Guid userId, Guid friendId)
     {
-        if (userId == friendId) throw new MojiBadRequestException("Không thể làm bạn với bản thân");
+        if (userId == friendId) throw new MojiBadRequestException(ErrorCodes.Friendship.CannotMakeFriendWithSelf);
         return await _friendShipRepository.IsFriend(userId, friendId);
     }
 

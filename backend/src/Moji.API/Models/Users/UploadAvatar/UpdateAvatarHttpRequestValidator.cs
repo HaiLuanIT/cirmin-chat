@@ -1,10 +1,12 @@
 ﻿using FluentValidation;
+using Moji.Contracts.Errors;
 
 namespace Moji.API.Models.Users.UploadAvatar;
 
 public class UpdateAvatarHttpRequestValidator : AbstractValidator<UpdateAvatarHttpRequest>
 {
     private const long MaxFileSizeInBytes = 5 * 1024 * 1024;
+    private const int MaxFileSizeInMb = 5;
 
     private static readonly HashSet<string> AllowedContentType = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -13,20 +15,29 @@ public class UpdateAvatarHttpRequestValidator : AbstractValidator<UpdateAvatarHt
         "image/webp"
     };
 
+    private static readonly string[] AllowedFormats =
+    [
+        "JPEG",
+        "PNG",
+        "WebP"
+    ];
+
     public UpdateAvatarHttpRequestValidator()
     {
-        RuleFor(request => request.Image).NotNull().WithMessage("Ảnh đại diện là bắt buộc.");
+        RuleFor(request => request.Image).NotNull().WithErrorCode(ErrorCodes.Media.ImageRequired);
         When(request => request.Image is not null, () =>
         {
             RuleFor(request => request.Image!.Length)
                 .GreaterThan(0)
-                .WithMessage("Ảnh không được rỗng.")
+                .WithErrorCode(ErrorCodes.Media.EmptyImage)
                 .LessThanOrEqualTo(MaxFileSizeInBytes)
-                .WithMessage("Ảnh không được vượt quá 5 mb.");
+                .WithErrorCode(ErrorCodes.Media.ImageTooLarge)
+                .WithState(_ => ValidationErrorParams.Create(("max", MaxFileSizeInMb)));
 
             RuleFor(request => request.Image!.ContentType)
                 .Must(AllowedContentType.Contains)
-                .WithMessage("Chỉ hỗ trợ JPEG, PNG and WebP.");
+                .WithErrorCode(ErrorCodes.Media.UnsupportedImageType)
+                .WithState(_ => ValidationErrorParams.Create(("formats", AllowedFormats)));
         });
     }
 }

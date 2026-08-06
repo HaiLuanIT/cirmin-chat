@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using Moji.BusinessLogic.Exceptions;
 using Moji.BusinessLogic.Services.Friends;
+using Moji.Contracts.Errors;
 using Moji.Contracts.Models.Conversations;
 using Moji.Contracts.Models.Conversations.CreateConversation;
 using Moji.DataAccess.Commons.DbTransactionManagers;
@@ -37,11 +38,11 @@ public class ConversationService : IConversationService
         if (!validationResult.IsValid) throw new MojiValidationException(validationResult.Errors);
 
         if (request.UserIds.Any(x => x == currentUserId))
-            throw new MojiBadRequestException("Không thể tạo nhóm với bản thân!");
+            throw new MojiBadRequestException(ErrorCodes.Conversation.CannotInviteSelf);
 
         foreach (var userId in request.UserIds)
             if (!await _friendShipService.IsFriend(currentUserId, userId))
-                throw new MojiBadRequestException("Bạn và người dùng này không là bạn bè!");
+                throw new MojiBadRequestException(ErrorCodes.Conversation.NotIsFriend);
 
         Conversation conversation;
         await using var transaction = await _txManager.BeginTransactionAsync();
@@ -97,7 +98,7 @@ public class ConversationService : IConversationService
     public async Task<List<string>> GetConversationMemberIds(Guid conversationId)
     {
         var conversation = await _conversationRepository.FindByIdAsync(conversationId);
-        if (conversation == null) throw new MojiNotFoundException("Không tìm thấy đoạn hội thoại");
+        if (conversation == null) throw new MojiNotFoundException(ErrorCodes.Conversation.NotFound);
 
         return conversation.Members.Select(x => x.UserId.ToString()).ToList();
     }

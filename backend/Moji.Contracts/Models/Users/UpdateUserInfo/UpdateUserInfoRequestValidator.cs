@@ -10,7 +10,7 @@ public class UpdateUserInfoRequestValidator : AbstractValidator<UpdateUserInfoRe
             .WithMessage("Tên hiển thị không được vượt quá 100 ký tự");
         RuleFor(x => x.Email).EmailAddress()
             .WithMessage("Email không hợp lệ!").MaximumLength(50).WithMessage("Email không được vượt quá 50 ký tự");
-        RuleFor(x => x.Bio).MaximumLength(500)
-            .WithMessage("Bio không vượt quá 500 kí tự.");
+        RuleFor(x => x.Bio).MaximumLength(101)
+            .WithMessage("Bio không vượt quá 101 kí tự.");
     }
 }

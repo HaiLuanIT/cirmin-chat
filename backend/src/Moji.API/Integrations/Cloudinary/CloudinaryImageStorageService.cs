@@ -3,6 +3,7 @@ using CloudinaryDotNet.Actions;
 using Microsoft.Extensions.Options;
 using Moji.BusinessLogic.Exceptions;
 using Moji.BusinessLogic.Services.Storage;
+using Moji.Contracts.Errors;
 using ImageUploadResult = Moji.BusinessLogic.Services.Storage.ImageUploadResult;
 
 namespace Moji.API.Integrations.Cloudinary;
@@ -45,10 +46,12 @@ public class CloudinaryImageStorageService : IImageStorageService
         {
             var uploadResult = await _cloudinary.UploadAsync(uploadParam, cancellationToken);
             if (uploadResult == null)
-                throw new MediaStorageException("Cloudinary returned an empty upload response.");
+                throw new MediaStorageException(ErrorCodes.Media.StorageUnavailable,
+                    new InvalidOperationException("Cloudinary upload result is null"));
 
             if (uploadResult.Error is not null)
-                throw new MediaStorageException($"Cloudinary upload error: {uploadResult.Error.Message}");
+                throw new MediaStorageException(ErrorCodes.Media.StorageUnavailable,
+                    new InvalidOperationException($"Cloudinary upload error: {uploadResult.Error.Message}"));
 
             // map to ImageUploadResult and return
 
@@ -65,7 +68,7 @@ public class CloudinaryImageStorageService : IImageStorageService
         }
         catch (Exception e)
         {
-            throw new MediaStorageException($"Cloudinary upload error: {e.Message}", e);
+            throw new MediaStorageException(ErrorCodes.Media.StorageUnavailable, e);
         }
     }
 
