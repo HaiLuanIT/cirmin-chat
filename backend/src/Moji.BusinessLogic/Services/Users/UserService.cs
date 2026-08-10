@@ -225,7 +225,7 @@ public class UserService : IUserService
     private static string? ResolveUserRelationStatus(Guid currentUserId, UserRelationShipProjection? relationStatus)
     {
         string userRelationStatus = null;
-        switch (relationStatus.Status)
+        switch (relationStatus?.Status)
         {
             case "accept":
             {
