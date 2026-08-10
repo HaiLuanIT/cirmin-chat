@@ -8,6 +8,10 @@ import viFriend from "./locales/vi/friends.json";
 import enFriend from "./locales/en/friends.json";
 import viProfile from "./locales/vi/profile.json";
 import enProfile from "./locales/en/profile.json";
+import viErrors from "./locales/vi/errors.json";
+import enErrors from "./locales/en/errors.json";
+import viChat from "./locales/vi/chat.json";
+import enChat from "./locales/en/chat.json";
 
 const resources = {
   vi: {
@@ -15,12 +19,16 @@ const resources = {
     auth: viAuth,
     friends: viFriend,
     profile: viProfile,
+    errors: viErrors,
+    chat: viChat,
   },
   en: {
     common: enCommon,
     auth: enAuth,
     friends: enFriend,
     profile: enProfile,
+    errors: enErrors,
+    chat: enChat,
   },
 };
 void i18n.use(initReactI18next).init({

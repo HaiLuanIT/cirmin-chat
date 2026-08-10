@@ -18,6 +18,7 @@ import SelectedUsersList from "../newGroupChat/SelectedUsersList";
 import { toast } from "sonner";
 import { useChatStore } from "@/stores/useChatStore";
 import { useTranslation } from "react-i18next";
+import { getApiErrorMessage, translateApiErrorCode } from "@/lib/api-error";
 
 const NewGroupChatModal = () => {
   const [groupName, setGroupName] = useState("");
@@ -44,7 +45,7 @@ const NewGroupChatModal = () => {
     try {
       e.preventDefault();
       if (invitedUsers.length < 2) {
-        toast.warning("Bạn phải mời ít nhất 1 thành viên vào nhóm");
+        toast.warning(t("CONVERSATION.MIN_MEMBERS", { ns: "errors", min: 2 }));
         return;
       }
       await createConversation(
@@ -55,7 +56,7 @@ const NewGroupChatModal = () => {
       setInvitedUsers([]);
     } catch (error) {
       console.error("Lỗi xảy ra khi tạo mới group chat", error);
-      toast.error("Lỗi xảy ra khi tạo mới group chat");
+      toast.error(getApiErrorMessage(error));
     }
   };
   const filterFriends = friends.filter(
@@ -84,7 +85,7 @@ const NewGroupChatModal = () => {
             {/* name group */}
             <div className="space-y-2">
               <Label htmlFor="groupName" className="text-sm font-semibold">
-                {t("sidebar.groups.form.nameGroupField")}
+                {t("sidebar.groups.form.nameGroup")}
               </Label>
               <Input
                 id="groupName"
@@ -98,7 +99,7 @@ const NewGroupChatModal = () => {
             {/* invite member */}
             <div className="space-y-2">
               <Label htmlFor="invite" className="text-sm font-semibold">
-                {t("sidebar.groups.form.inviteField")}
+                {t("sidebar.groups.form.invite")}
               </Label>
               <Input
                 id="invite"

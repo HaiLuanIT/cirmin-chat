@@ -9,36 +9,104 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuthStore } from "../../stores/useAuthStore";
 import { useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
+import { getApiProblemDetails, translateApiErrorCode } from "@/lib/api-error";
+import type { TFunction } from "i18next";
+import { useMemo } from "react";
 
-const signUpSchema = z.object({
-  firstName: z.string().min(1, "Họ bắt buộc phải có"),
-  lastName: z.string().min(1, "Tên bắt buộc phải có"),
-  username: z.string().min(3, "Tên đăng nhập phải có ít nhất 3 kí tự"),
-  email: z.email("Email không hợp lệ"),
-  password: z.string().min(6, "Mật khẩu phải có ít nhất 6 kí tự"),
-});
+export function createSignUpSchema(t: TFunction) {
+  return z.object({
+    firstName: z.string().min(1, t("VALIDATION.REQUIRED", { ns: "errors" })),
+    lastName: z.string().min(1, t("VALIDATION.REQUIRED", { ns: "errors" })),
+    username: z
+      .string()
+      .min(3, t("VALIDATION.MIN_LENGTH", { ns: "errors", min: 3 })),
+    email: z.email(t("VALIDATION.INVALID_EMAIL", { ns: "errors" })),
+    password: z
+      .string()
+      .min(8, t("VALIDATION.MIN_LENGTH", { ns: "errors", min: 8 })),
+  });
+}
 
-type SignUpFormValues = z.infer<typeof signUpSchema>;
-
+export type SignUpFormValues = z.infer<ReturnType<typeof createSignUpSchema>>;
 export function SignupForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
   const { signUp } = useAuthStore();
   const navigate = useNavigate();
-  const { t } = useTranslation("auth");
+  const { t } = useTranslation(["auth", "errors"]);
+
+  const signUpSchema = useMemo(() => createSignUpSchema(t), [t]);
 
   const {
     register,
     handleSubmit,
+    setError,
+    clearErrors,
     formState: { errors, isSubmitting },
   } = useForm<SignUpFormValues>({
     resolver: zodResolver(signUpSchema),
   });
+
+  const businessErrorFields: Partial<Record<string, keyof SignUpFormValues>> = {
+    "USER.USERNAME_ALREADY_EXISTS": "username",
+    "USER.EMAIL_ALREADY_EXISTS": "email",
+  };
   const onSubmit = async (data: SignUpFormValues) => {
-    const { firstName, lastName, username, password, email } = data;
-    await signUp(username, password, email, firstName, lastName);
-    navigate("/signin");
+    clearErrors();
+    try {
+      const { firstName, lastName, username, password, email } = data;
+      await signUp(username, password, email, firstName, lastName);
+      navigate("/signin");
+    } catch (error) {
+      const problem = getApiProblemDetails(error);
+      if (!problem) {
+        setError("root.server", {
+          type: "server",
+          message: translateApiErrorCode("SYSTEM.INTERNAL_ERROR"),
+        });
+        return;
+      }
+
+      if (problem.errors) {
+        for (const [field, fieldErrors] of Object.entries(problem.errors)) {
+          const firstError = fieldErrors[0];
+          if (!firstError) {
+            continue;
+          }
+          if (
+            field === "username" ||
+            field === "password" ||
+            field === "email" ||
+            field === "firstName" ||
+            field === "lastName"
+          ) {
+            setError(field, {
+              type: "server",
+              message: translateApiErrorCode(
+                firstError.code,
+                firstError.params,
+              ),
+            });
+          }
+        }
+        return;
+      }
+      const businessField = businessErrorFields[problem.code];
+
+      if (businessField) {
+        setError(businessField, {
+          type: "server",
+          message: translateApiErrorCode(problem.code, problem.params),
+        });
+        return;
+      }
+
+      setError("root.server", {
+        type: "server",
+        message: translateApiErrorCode(problem.code, problem.params),
+      });
+    }
   };
 
   return (
@@ -128,6 +196,9 @@ export function SignupForm({
                 )}
               </div>
               {/* nút đăng ký */}
+              {errors.root?.server && (
+                <p className="error-message">{errors.root.server.message}</p>
+              )}
               <Button type="submit" className="w-full" disabled={isSubmitting}>
                 {t("signUp.submit")}
               </Button>

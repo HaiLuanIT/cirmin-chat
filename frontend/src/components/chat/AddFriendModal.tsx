@@ -15,6 +15,11 @@ import SearchForm from "../addFriendModal/SearchForm";
 import SendFriendRequestForm from "../addFriendModal/SendFriendRequestForm";
 import SearchUserList from "../addFriendModal/SearchUserList";
 import { useTranslation } from "react-i18next";
+import {
+  getApiErrorMessage,
+  getApiProblemDetails,
+  translateApiErrorCode,
+} from "@/lib/api-error";
 
 export interface IFromValues {
   username: string;
@@ -38,6 +43,8 @@ const AddFriendModal = () => {
     watch,
     reset,
     setValue,
+    setError,
+    clearErrors,
     formState: { errors },
   } = useForm<IFromValues>({
     defaultValues: { username: "", message: "" },
@@ -57,7 +64,7 @@ const AddFriendModal = () => {
     } catch (error) {
       console.error("Không thể tìm người dùng", error);
       setSearchResult(null);
-      toast.error("Không thể tìm người dùng. Hãy thử lại");
+      toast.error(getApiErrorMessage(error));
     }
   };
   const handleSearch = handleSubmit(async (data) => {
@@ -81,6 +88,7 @@ const AddFriendModal = () => {
 
   const handleSend = handleSubmit(async (data) => {
     if (!selectedUser) return;
+    clearErrors();
 
     try {
       const message = await addFriend(selectedUser.id, data.message.trim());
@@ -88,12 +96,39 @@ const AddFriendModal = () => {
 
       handleCancel();
     } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : "Không thể gửi lời mời kết bạn.";
+      const problem = getApiProblemDetails(error);
 
-      toast.error(message);
+      if (!problem) {
+        setError("root.server", {
+          message: translateApiErrorCode("SYSTEM.INTERNAL_ERROR"),
+        });
+      }
+
+      if (problem.errors) {
+        for (const [field, fieldErrors] of Object.entries(problem.errors)) {
+          const firstError = fieldErrors[0];
+
+          if (!firstError) {
+            continue;
+          }
+
+          if (field === "message") {
+            setError(field, {
+              type: "server",
+              message: translateApiErrorCode(
+                firstError.code,
+                firstError.params,
+              ),
+            });
+          }
+        }
+        return;
+      }
+
+      setError("root.server", {
+        type: "server",
+        message: translateApiErrorCode(problem.code, problem.params),
+      });
     }
   });
 
@@ -154,6 +189,7 @@ const AddFriendModal = () => {
             searchedAvataUrl={selectedUser.avatarUrl}
             onSubmit={handleSend}
             onBack={handleBackToResults}
+            errors={errors}
           />
         )}
       </DialogContent>

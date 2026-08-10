@@ -5,9 +5,11 @@ import React from "react";
 import ChatCard from "./ChatCard";
 import UnreadCountBadge from "./UnreadCountBadge";
 import GroupChatAvatar from "./GroupChatAvatar";
+import { useTranslation } from "react-i18next";
 
 const GroupChatCard = ({ convo }: { convo: Conversation }) => {
   const { user } = useAuthStore();
+  const { t } = useTranslation("chat");
   const {
     activeConversationId,
     setActiveConversation,
@@ -46,7 +48,7 @@ const GroupChatCard = ({ convo }: { convo: Conversation }) => {
       }
       subtile={
         <p className="text-sm truncate text-muted-foreground">
-          {convo.members.length} thành viên
+          {convo.members.length} {t("conversations.group.member")}
         </p>
       }
     />

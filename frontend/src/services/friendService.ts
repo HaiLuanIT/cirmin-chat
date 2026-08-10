@@ -35,6 +35,7 @@ export const friendService = {
       return res.data;
     } catch (error) {
       console.error("Lỗi khi gửi accept request", error);
+      throw error;
     }
   },
   async rejectFriendRequest(requestId: string) {
@@ -42,6 +43,7 @@ export const friendService = {
       await api.post(`/friends/requests/${requestId}/reject`);
     } catch (error) {
       console.error("Lỗi khi gửi reject request", error);
+      throw error;
     }
   },
 

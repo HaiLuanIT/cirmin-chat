@@ -1,0 +1,56 @@
+{
+  "fallback": "Đã xảy ra lỗi. Vui lòng thử lại.",
+  "VALIDATION": {
+    "FAILED": "Dữ liệu không hợp lệ.",
+    "REQUIRED": "Trường này là bắt buộc.",
+    "INVALID": "Giá trị không hợp lệ.",
+    "INVALID_EMAIL": "Email không hợp lệ.",
+    "MIN_LENGTH": "Phải có ít nhất {{min}} ký tự.",
+    "MAX_LENGTH": "Không được vượt quá {{max}} ký tự.",
+    "INVALID_FORMAT": "Định dạng không hợp lệ.",
+    "NOT_ONLY_WHITESPACE": "Không được chỉ chứa khoảng trắng."
+  },
+  "AUTH": {
+    "INVALID_CREDENTIALS": "Tên đăng nhập hoặc mật khẩu không chính xác.",
+    "INVALID_SESSION": "Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại.",
+    "SESSION_EXPIRED": "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.",
+    "OLD_PASSWORD_INCORRECT": "Mật khẩu hiện tại không chính xác.",
+    "NEW_PASSWORD_SAME_AS_OLD": "Mật khẩu mới không được trùng với mật khẩu hiện tại.",
+    "FORBIDDEN": "Bạn không có quyền thực hiện thao tác này.",
+    "PASSWORD_MISMATCH": "Mật khẩu nhập lại không trùng khớp."
+  },
+  "USER": {
+    "NOT_FOUND": "Không tìm thấy người dùng.",
+    "USERNAME_ALREADY_EXISTS": "Tên đăng nhập này đã được sử dụng.",
+    "EMAIL_ALREADY_EXISTS": "Email này đã được sử dụng."
+  },
+  "CONVERSATION": {
+    "MIN_MEMBERS": "Nhóm chat phải có tối thiểu {{min}} thành viên khác bạn.",
+    "NOT_DUPLICATED_MEMBER": "Danh sách thành viên không được trùng nhau.",
+    "CANNOT_INVITE_SELF": "Bạn không thể mời chính mình vào nhóm.",
+    "NOT_IS_FRIEND": "Bạn chỉ có thể tạo cuộc trò chuyện với bạn bè.",
+    "NOT_FOUND": "Không tìm thấy cuộc trò chuyện.",
+    "FORBIDDEN": "Bạn không có quyền truy cập cuộc trò chuyện này."
+  },
+  "FRIENDSHIP": {
+    "ALREADY_FRIEND": "Hai người đã là bạn bè.",
+    "CANNOT_MAKE_FRIEND_WITH_SELF": "Bạn không thể kết bạn với chính mình.",
+    "HAS_ALREADY_REQUESTED_OR_IS_FRIEND": "Lời mời kết bạn hoặc mối quan hệ đã tồn tại.",
+    "FRIEND_REQUEST_NOT_FOUND": "Không tìm thấy lời mời kết bạn.",
+    "FRIEND_REQUEST_PROCESSED": "Lời mời kết bạn này đã được xử lý."
+  },
+  "MEDIA": {
+    "IMAGE_REQUIRED": "Vui lòng chọn một ảnh.",
+    "EMPTY_IMAGE": "Ảnh không được rỗng.",
+    "IMAGE_TOO_LARGE": "Ảnh không được vượt quá {{max}} MB.",
+    "UNSUPPORTED_IMAGE_TYPE": "Chỉ hỗ trợ các định dạng {{formats}}.",
+    "UNSUPPORTED_IMAGE_FORMAT": "File không phải định dạng ảnh được hỗ trợ.",
+    "STORAGE_UNAVAILABLE": "Không thể tải ảnh lên lúc này. Vui lòng thử lại sau."
+  },
+  "CONCURRENCY": {
+    "CONFLICT": "Dữ liệu đã được thay đổi. Vui lòng tải lại và thử lại."
+  },
+  "SYSTEM": {
+    "INTERNAL_ERROR": "Đã xảy ra lỗi hệ thống. Vui lòng thử lại sau."
+  }
+}

@@ -3,6 +3,47 @@
     "noResults": {
       "title": "Account not found",
       "description": "Sorry, we couldn't find any results for <username>@{{username}}</username>. Please check the spelling."
+    },
+    "actions": {
+      "clearInput": "Clear search"
+    },
+    "states": {
+      "searchLoading": "Searching..."
+    }
+  },
+  "friendRequest": {
+    "dialog": {
+      "title": "Friend Request",
+      "received": {
+        "title": "Received",
+        "empty": "You don't have any friend requests yet."
+      },
+      "sent": {
+        "title": "Sent",
+        "empty": "You haven't sent any friend requests yet.",
+        "status": {
+          "waiting": "Waiting for a response...",
+          "sending": "Sending..."
+        },
+        "messageTitle": "Introduction message",
+        "suggestTitle": "Quick greeting suggestions:",
+        "placeHolder": "Hi! Would you like to be friends?"
+      }
+    },
+    "toasts": {
+      "accept": "Friend request accepted successfully!",
+      "reject": "Friend request declined successfully!"
+    },
+    "actions": {
+      "accept": "Accept",
+      "reject": "Reject",
+      "back": "Back",
+      "add": "Add Friend"
+    },
+    "presetMessage": {
+      "1": "Hi! 👋",
+      "2": "Let’s be friends! ✨",
+      "3": "Nice to meet you! 😊"
     }
   }
 }

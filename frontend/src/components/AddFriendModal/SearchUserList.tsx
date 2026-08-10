@@ -1,8 +1,7 @@
 import type { SearchUser, SearchUserResponse } from "@/types/user";
-import React from "react";
 import { Button } from "../ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { ChevronLast, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 interface SearchUserListProps {

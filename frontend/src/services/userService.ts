@@ -5,9 +5,6 @@ export const userService = {
     const res = await api.put("/users/me/avatar", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
-    if (res.status === 400 || res.status === 409) {
-      throw new Error(res.data.message);
-    }
     return res.data;
   },
   updateUserInfor: async (

@@ -1,5 +1,4 @@
 import { useChatStore } from "@/stores/useChatStore";
-import React from "react";
 import ChatWelcomeScreen from "./ChatWelcomeScreen";
 import ChatWindowSkeleton from "./ChatWindowSkeleton";
 import { SidebarInset } from "../ui/sidebar";

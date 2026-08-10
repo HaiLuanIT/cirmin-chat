@@ -15,15 +15,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import type { User } from "@/types/user";
-import {
-  ChevronsUpDownIcon,
-  SparklesIcon,
-  BadgeCheckIcon,
-  CreditCardIcon,
-  BellIcon,
-  UserIcon,
-  Bell,
-} from "lucide-react";
+import { ChevronsUpDownIcon, UserIcon, Bell } from "lucide-react";
 import SignOut from "../auth/signout";
 import { useState } from "react";
 import FriendRequestDialog from "../friendRequest/FriendRequestDialog";
@@ -85,11 +77,11 @@ export function NavUser({ user }: { user: User }) {
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
                 <DropdownMenuItem onClick={() => setProfileOpen(true)}>
-                  <UserIcon className="text-muted-foreground dark:group-focus:!text-accent-foreground" />
+                  <UserIcon className="text-muted-foreground dark:group-focus:text-accent-foreground!" />
                   {t("sidebar.navUser.profileLabel")}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setFriendRequestOpen(true)}>
-                  <Bell className="text-muted-foreground dark:group-focus:!text-accent-foreground" />
+                  <Bell className="text-muted-foreground dark:group-focus:text-accent-foreground!" />
                   {t("sidebar.navUser.notifyLabel")}
                 </DropdownMenuItem>
               </DropdownMenuGroup>

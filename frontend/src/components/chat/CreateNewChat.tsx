@@ -34,7 +34,7 @@ const CreateNewChat = () => {
     );
 
     if (!directConversation) {
-      toast.error("Không tìm thấy cuộc trò chuyện với người bạn này.");
+      toast.error(t("conversations.direct.notFound", { ns: "chat" }));
       return;
     }
 

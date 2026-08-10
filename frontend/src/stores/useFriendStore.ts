@@ -31,9 +31,7 @@ export const useFriendStore = create<FriendState>((set) => ({
       return resultMessage;
     } catch (error) {
       console.error("Lỗi xảy ra khi gửi kết bạn", error);
-      throw new Error(
-        getApiErrorMessage(error, "Không thể gửi lời mời kết bạn."),
-      );
+      throw error;
     } finally {
       set({ loading: false });
     }
@@ -64,6 +62,7 @@ export const useFriendStore = create<FriendState>((set) => ({
       }));
     } catch (error) {
       console.error("Lỗi xảy ra khi acceptFriendRequest", error);
+      throw error;
     } finally {
       set({ loading: false });
     }
