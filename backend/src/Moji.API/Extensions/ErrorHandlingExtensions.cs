@@ -130,9 +130,7 @@ public static class ErrorHandlingExtensions
                 problemDetails.Extensions["traceId"] = traceId;
                 context.Response.StatusCode = statusCode;
                 context.Response.ContentType = MediaTypeNames.Application.ProblemJson;
-
-                if (validationErrors != null) problemDetails.Extensions.Add("errors", validationErrors);
-
+ 
                 if (app.Environment.IsDevelopment() && stackTrace != null)
                     problemDetails.Extensions.Add("stackTrace", stackTrace);
 
