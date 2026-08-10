@@ -15,6 +15,7 @@ import { Loader2, Save } from "lucide-react";
 import { useForm, useWatch } from "react-hook-form";
 import { useUserStore } from "@/stores/useUserStore";
 import { useTranslation } from "react-i18next";
+import { getApiProblemDetails, translateApiErrorCode } from "@/lib/api-error";
 interface PersonalInfoCardProps {
   user: User;
 }
@@ -36,7 +37,9 @@ const PersonalInfoCard = ({ user }: PersonalInfoCardProps) => {
   const {
     register,
     handleSubmit,
+    setError,
     reset,
+    clearErrors,
     control,
     formState: { errors, isDirty, isSubmitting },
   } = useForm<PersonalInfoFormValues>({
@@ -47,7 +50,6 @@ const PersonalInfoCard = ({ user }: PersonalInfoCardProps) => {
       bio: user.bio ?? "",
     },
   });
-
   // useWatch chỉ đăng ký theo dõi field bio cho bộ đếm ký tự.
   const bioValue = useWatch({ control, name: "bio" });
 
@@ -58,6 +60,7 @@ const PersonalInfoCard = ({ user }: PersonalInfoCardProps) => {
       bio: formValues.bio.trim(),
     };
 
+    clearErrors();
     try {
       await updateUserInfo(
         normalizedValues.displayName,
@@ -67,8 +70,49 @@ const PersonalInfoCard = ({ user }: PersonalInfoCardProps) => {
 
       // Sau khi lưu thành công, reset dùng dữ liệu mới làm mốc để isDirty trở về false.
       reset(normalizedValues);
-    } catch {
-      // Store đã hiển thị toast lỗi; giữ nguyên form để người dùng có thể thử lại.
+    } catch (error) {
+      const problem = getApiProblemDetails(error);
+
+      if (!problem) {
+        setError("root.server", {
+          message: translateApiErrorCode("SYSTEM.INTERNAL_ERROR"),
+        });
+        return;
+      }
+
+      if (problem.errors) {
+        for (const [field, fieldErrors] of Object.entries(problem.errors)) {
+          const firstError = fieldErrors[0];
+
+          if (
+            (firstError && field === "displayName") ||
+            field === "email" ||
+            field === "bio"
+          ) {
+            setError(field, {
+              type: "server",
+              message: translateApiErrorCode(
+                firstError.code,
+                firstError.params,
+              ),
+            });
+          }
+        }
+        return;
+      }
+
+      if (problem.code === "USER.EMAIL_ALREADY_EXISTS") {
+        setError("email", {
+          type: "server",
+          message: translateApiErrorCode(problem.code, problem.params),
+        });
+        return;
+      }
+
+      setError("root.server", {
+        type: "server",
+        message: translateApiErrorCode(problem.code, problem.params),
+      });
     }
   });
 
@@ -84,12 +128,6 @@ const PersonalInfoCard = ({ user }: PersonalInfoCardProps) => {
         </CardHeader>
 
         <CardContent className="px-5">
-          {/*
-            Wrapper này chỉ quản lý layout giữa các field:
-            - Mobile: một cột.
-            - Từ md: hai cột.
-            Mỗi Field bên trong vẫn tự xếp label, input và lỗi theo chiều dọc.
-          */}
           <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
             <Field data-invalid={Boolean(errors.displayName)}>
               <FieldLabel htmlFor="displayName">
@@ -100,14 +138,17 @@ const PersonalInfoCard = ({ user }: PersonalInfoCardProps) => {
                 autoComplete="name"
                 aria-invalid={Boolean(errors.displayName)}
                 {...register("displayName", {
-                  required: "Tên hiển thị không được để trống.",
+                  required: t("VALIDATION.REQUIRED", { ns: "errors" }),
                   maxLength: {
                     value: DISPLAY_NAME_MAX_LENGTH,
-                    message: `Tên hiển thị không được vượt quá ${DISPLAY_NAME_MAX_LENGTH} ký tự.`,
+                    message: t("VALIDATION.MAX_LENGTH", {
+                      ns: "errors",
+                      max: DISPLAY_NAME_MAX_LENGTH,
+                    }),
                   },
                   validate: (value) =>
                     value.trim().length > 0 ||
-                    "Tên hiển thị không được chỉ chứa khoảng trắng.",
+                    t("VALIDATION.NOT_ONLY_WHITESPACE", { ns: "errors" }),
                 })}
               />
               <FieldError errors={[errors.displayName]} />
@@ -143,14 +184,17 @@ const PersonalInfoCard = ({ user }: PersonalInfoCardProps) => {
                 autoComplete="email"
                 aria-invalid={Boolean(errors.email)}
                 {...register("email", {
-                  required: "Email không được để trống.",
+                  required: t("VALIDATION.REQUIRED", { ns: "errors" }),
                   maxLength: {
                     value: EMAIL_MAX_LENGTH,
-                    message: `Email không được vượt quá ${EMAIL_MAX_LENGTH} ký tự.`,
+                    message: t("VALIDATION.MAX_LENGTH", {
+                      ns: "errors",
+                      max: EMAIL_MAX_LENGTH,
+                    }),
                   },
                   pattern: {
                     value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                    message: "Email không đúng định dạng.",
+                    message: t("VALIDATION.INVALID_FORMAT", { ns: "errors" }),
                   },
                 })}
               />
@@ -196,6 +240,11 @@ const PersonalInfoCard = ({ user }: PersonalInfoCardProps) => {
               : t("profile:account.status.saved")}
           </p>
 
+          {errors.root?.server && (
+            <p className="error-message text-center">
+              {errors.root.server.message}
+            </p>
+          )}
           <Button
             type="submit"
             disabled={!isDirty || isSubmitting}

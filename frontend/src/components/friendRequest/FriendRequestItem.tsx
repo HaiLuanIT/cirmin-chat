@@ -13,7 +13,6 @@ const FriendRequestItem = ({
   action,
   type,
 }: FriendRequestItemProps) => {
-  const { user } = useAuthStore();
   if (!requestInfo) return;
 
   return (

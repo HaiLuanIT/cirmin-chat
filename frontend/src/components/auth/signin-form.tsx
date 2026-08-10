@@ -9,34 +9,52 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuthStore } from "../../stores/useAuthStore";
 import { useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
+import { useMemo } from "react";
+import { getApiProblemDetails, translateApiErrorCode } from "@/lib/api-error";
 
-const signInSchema = z.object({
-  username: z.string().nonempty("Tên đăng nhập không được để trống"),
-  password: z.string().nonempty("Mật khẩu không được để trống"),
-});
+function createSignInSchema(t: TFunction) {
+  return z.object({
+    username: z.string().nonempty(t("VALIDATION.REQUIRED", { ns: "errors" })),
+    password: z.string().nonempty(t("VALIDATION.REQUIRED", { ns: "errors" })),
+  });
+}
 
-type SignInFormValues = z.infer<typeof signInSchema>;
+type SignInFormValues = z.infer<ReturnType<typeof createSignInSchema>>;
 export function SigninForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
   const { signIn } = useAuthStore();
   const navigate = useNavigate();
-  const { t } = useTranslation("auth");
+  const { t } = useTranslation(["auth", "errors"]);
+
+  const signInSchema = useMemo(() => createSignInSchema(t), [t]);
   const {
     register,
     handleSubmit,
+    setError,
+    clearErrors,
     formState: { errors, isSubmitting },
   } = useForm<SignInFormValues>({
     resolver: zodResolver(signInSchema),
   });
   const onSubmit = async (data: SignInFormValues) => {
+    clearErrors();
     try {
       const { username, password } = data;
-      //gọi backend
       await signIn(username, password);
       navigate("/");
-    } catch (error) {}
+    } catch (error) {
+      const problem = getApiProblemDetails(error);
+
+      setError("root.server", {
+        type: "server",
+        message: problem
+          ? translateApiErrorCode(problem.code, problem.params)
+          : translateApiErrorCode("SYSTEM.INTERNAL_ERROR"),
+      });
+    }
   };
 
   return (
@@ -85,6 +103,11 @@ export function SigninForm({
                   <p className="error-message">{errors.password.message}</p>
                 )}
               </div>
+              {errors.root?.server && (
+                <p className="error-message text-center">
+                  {errors.root.server.message}
+                </p>
+              )}
               {/* nút đăng nhập */}
               <Button type="submit" className="w-full" disabled={isSubmitting}>
                 {t("signIn.submit")}

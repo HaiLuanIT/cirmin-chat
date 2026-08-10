@@ -4,36 +4,38 @@ import React from "react";
 import FriendRequestItem from "./FriendRequestItem";
 import { Button } from "../ui/button";
 import { toast } from "sonner";
+import { getApiErrorMessage } from "@/lib/api-error";
+import { useTranslation } from "react-i18next";
 
 const ReceivedRequest = () => {
   const { acceptFriendRequest, rejectFriendRequest, loading, receivedList } =
     useFriendStore();
+  const { t } = useTranslation("friends");
 
   if (!receivedList || receivedList.length === 0) {
     return (
       <p className="text-sm text-muted-foreground">
-        Bạn chưa có lời mời kết bạn nào.
+        {t("friendRequest.dialog.received.empty")}
       </p>
     );
   }
 
   const handleAccept = async (requestId: string) => {
     try {
-      await friendService.acceptFriendRequest(requestId);
-      toast.success("Đã chấp nhận lời mời kết bạn thành công!");
+      await acceptFriendRequest(requestId);
+      toast.success(t("friendRequest.toasts.accept"));
     } catch (error) {
-      console.error(error);
-      toast.error("Lỗi khi chấp nhận lời mới kết bạn.");
+      toast.error(getApiErrorMessage(error));
     }
   };
 
   const handleReject = async (requestId: string) => {
     try {
-      await friendService.rejectFriendRequest(requestId);
-      toast.success("Đã từ chối lời mời kết bạn thành công!");
+      await rejectFriendRequest(requestId);
+      toast.success(t("friendRequest.toasts.reject"));
     } catch (error) {
       console.error(error);
-      toast.error("Lỗi khi từ chối lời mới kết bạn.");
+      toast.error(getApiErrorMessage(error));
     }
   };
   return (
@@ -50,7 +52,7 @@ const ReceivedRequest = () => {
                 onClick={() => handleAccept(req.id)}
                 disabled={loading}
               >
-                Chấp nhận
+                {t("friendRequest.actions.accept")}
               </Button>
               <Button
                 size="sm"
@@ -58,7 +60,7 @@ const ReceivedRequest = () => {
                 onClick={() => handleReject(req.id)}
                 disabled={loading}
               >
-                Từ chối
+                {t("friendRequest.actions.reject")}
               </Button>
             </div>
           }

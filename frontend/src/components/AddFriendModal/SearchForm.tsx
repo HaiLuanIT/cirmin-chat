@@ -61,7 +61,7 @@ const SearchForm = ({
             placeholder={t("common:sidebar.directs.form.searchPlaceholder")}
             className="pl-10 pr-9 h-11 rounded-xl glass border-border/60 focus-visible:border-primary/60 focus-visible:ring-2 focus-visible:ring-primary/20 transition-all text-sm shadow-xs"
             {...register("username", {
-              required: "Username không được bỏ trống",
+              required: t("VALIDATION.REQUIRED", { ns: "errors" }),
             })}
           />
 
@@ -70,7 +70,7 @@ const SearchForm = ({
               type="button"
               onClick={handleClear}
               className="absolute right-3 p-1 rounded-full text-muted-foreground/60 hover:text-foreground hover:bg-muted/60 transition-colors"
-              title="Xóa tìm kiếm"
+              title={t("search.actions.clearInput", { ns: "friends" })}
             >
               <X className="size-3.5" />
             </button>
@@ -130,7 +130,7 @@ const SearchForm = ({
           {loading ? (
             <div className="flex items-center justify-center gap-2">
               <Loader2 className="size-4 animate-spin" />
-              <span>Đang tìm...</span>
+              <span>{t("search.states.searchLoading", { ns: "friends" })}</span>
             </div>
           ) : (
             <div className="flex items-center justify-center gap-2">

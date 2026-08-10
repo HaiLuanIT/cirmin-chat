@@ -1,11 +1,13 @@
 import { Navigate, Outlet } from "react-router";
 import { useAuthStore } from "../../stores/useAuthStore";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 const ProtectedRoute = () => {
   const accessToken = useAuthStore((state) => state.accessToken);
   const loading = useAuthStore((state) => state.loading);
   const [starting, setStarting] = useState(true);
+  const { t } = useTranslation("common");
 
   useEffect(() => {
     let active = true;
@@ -35,7 +37,7 @@ const ProtectedRoute = () => {
   if (starting || loading) {
     return (
       <div className="flex h-screen items-center justify-center">
-        Đang tải trang...
+        {t("states.loading")}
       </div>
     );
   }

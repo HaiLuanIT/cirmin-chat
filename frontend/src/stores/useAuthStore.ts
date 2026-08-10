@@ -41,7 +41,7 @@ export const useAuthStore = create<AuthState>()(
           );
         } catch (error) {
           console.log(error);
-          toast.error("Đăng ký không thành công");
+          throw error;
         } finally {
           set({ loading: false });
         }
@@ -66,7 +66,6 @@ export const useAuthStore = create<AuthState>()(
           toast.success("Chào mừng bạn quay lại với Moji!");
         } catch (error) {
           console.log(error);
-          toast.error("Đăng nhập không thành công");
           throw error;
         } finally {
           set({ loading: false });

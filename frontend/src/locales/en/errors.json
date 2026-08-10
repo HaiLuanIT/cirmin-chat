@@ -1,0 +1,56 @@
+{
+  "fallback": "Something went wrong. Please try again.",
+  "VALIDATION": {
+    "FAILED": "The submitted data is invalid.",
+    "REQUIRED": "This field is required.",
+    "INVALID": "The value is invalid.",
+    "INVALID_EMAIL": "The email address is invalid.",
+    "MIN_LENGTH": "Must contain at least {{min}} characters.",
+    "MAX_LENGTH": "Must not exceed {{max}} characters.",
+    "INVALID_FORMAT": "The format is invalid.",
+    "NOT_ONLY_WHITESPACE": "Must not consist only of whitespace."
+  },
+  "AUTH": {
+    "INVALID_CREDENTIALS": "The username or password is incorrect.",
+    "INVALID_SESSION": "Your session is invalid. Please sign in again.",
+    "SESSION_EXPIRED": "Your session has expired. Please sign in again.",
+    "OLD_PASSWORD_INCORRECT": "The current password is incorrect.",
+    "NEW_PASSWORD_SAME_AS_OLD": "The new password must be different from the current password.",
+    "FORBIDDEN": "You are not allowed to perform this action.",
+    "PASSWORD_MISMATCH": "Confirm password does not match the password."
+  },
+  "USER": {
+    "NOT_FOUND": "User not found.",
+    "USERNAME_ALREADY_EXISTS": "This username is already in use.",
+    "EMAIL_ALREADY_EXISTS": "This email address is already in use."
+  },
+  "CONVERSATION": {
+    "MIN_MEMBERS": "A group chat must have at least {{min}} other members.",
+    "NOT_DUPLICATED_MEMBER": "The member list must not contain duplicates.",
+    "CANNOT_INVITE_SELF": "You cannot invite yourself to the group.",
+    "NOT_IS_FRIEND": "You can only start conversations with friends.",
+    "NOT_FOUND": "Conversation not found.",
+    "FORBIDDEN": "You do not have access to this conversation."
+  },
+  "FRIENDSHIP": {
+    "ALREADY_FRIEND": "You are already friends.",
+    "CANNOT_MAKE_FRIEND_WITH_SELF": "You cannot send a friend request to yourself.",
+    "HAS_ALREADY_REQUESTED_OR_IS_FRIEND": "A friend request or friendship already exists.",
+    "FRIEND_REQUEST_NOT_FOUND": "Friend request not found.",
+    "FRIEND_REQUEST_PROCESSED": "This friend request has already been processed."
+  },
+  "MEDIA": {
+    "IMAGE_REQUIRED": "Please select an image.",
+    "EMPTY_IMAGE": "The image must not be empty.",
+    "IMAGE_TOO_LARGE": "The image must not exceed {{max}} MB.",
+    "UNSUPPORTED_IMAGE_TYPE": "Only {{formats}} formats are supported.",
+    "UNSUPPORTED_IMAGE_FORMAT": "The file is not a supported image format.",
+    "STORAGE_UNAVAILABLE": "The image cannot be uploaded right now. Please try again later."
+  },
+  "CONCURRENCY": {
+    "CONFLICT": "The data was changed elsewhere. Reload and try again."
+  },
+  "SYSTEM": {
+    "INTERNAL_ERROR": "A system error occurred. Please try again later."
+  }
+}

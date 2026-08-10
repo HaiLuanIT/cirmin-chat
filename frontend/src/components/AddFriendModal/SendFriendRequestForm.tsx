@@ -1,18 +1,17 @@
 import React from "react";
-import type { UseFormRegister, UseFormSetValue } from "react-hook-form";
+import type {
+  FieldErrors,
+  UseFormRegister,
+  UseFormSetValue,
+} from "react-hook-form";
 import type { IFromValues } from "../chat/AddFriendModal";
 import { Label } from "../ui/label";
 import { Textarea } from "../ui/textarea";
 import { DialogFooter } from "../ui/dialog";
 import { Button } from "../ui/button";
-import {
-  UserPlus,
-  ArrowLeft,
-  Sparkles,
-  MessageSquare,
-  Loader2,
-} from "lucide-react";
+import { UserPlus, ArrowLeft, MessageSquare, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { useTranslation } from "react-i18next";
 
 interface SendFriendRequestProps {
   register: UseFormRegister<IFromValues>;
@@ -21,15 +20,10 @@ interface SendFriendRequestProps {
   searchedUsername: string;
   searchedDisplayName: string;
   searchedAvataUrl: string;
+  errors?: FieldErrors<IFromValues> | null;
   onSubmit?: (e?: React.FormEvent<HTMLFormElement>) => void;
   onBack: () => void;
 }
-
-const PRESET_MESSAGES = [
-  "Chào bạn! 👋",
-  "Kết bạn với mình nhé! ✨",
-  "Rất vui được làm quen! 😊",
-];
 
 const SendFriendRequestForm = ({
   register,
@@ -38,9 +32,16 @@ const SendFriendRequestForm = ({
   searchedUsername,
   searchedDisplayName,
   searchedAvataUrl,
+  errors,
   onSubmit,
   onBack,
 }: SendFriendRequestProps) => {
+  const { t } = useTranslation("friends");
+  const PRESET_MESSAGES = [
+    t("friendRequest.presetMessage.1"),
+    t("friendRequest.presetMessage.2"),
+    t("friendRequest.presetMessage.3"),
+  ];
   const handleSelectPreset = (text: string) => {
     if (setValue) {
       setValue("message", text, { shouldValidate: true });
@@ -82,14 +83,14 @@ const SendFriendRequestForm = ({
             className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5"
           >
             <MessageSquare className="size-3.5 text-primary" />
-            Lời nhắn giới thiệu
+            {t("friendRequest.dialog.sent.messageTitle")}
           </Label>
         </div>
 
         <Textarea
           id="message"
           rows={3}
-          placeholder="Chào bạn! Có thể kết bạn với mình được không?..."
+          placeholder={t("friendRequest.dialog.sent.placeHolder")}
           className="rounded-xl glass border-border/60 focus-visible:border-primary/60 focus-visible:ring-2 focus-visible:ring-primary/20 transition-all text-sm resize-none shadow-xs p-3"
           {...register("message")}
         />
@@ -98,7 +99,7 @@ const SendFriendRequestForm = ({
         {setValue && (
           <div className="space-y-1.5">
             <p className="text-[11px] text-muted-foreground/80 font-medium">
-              Gợi ý câu chào nhanh:
+              {t("friendRequest.dialog.sent.suggestTitle")}
             </p>
             <div className="flex flex-wrap gap-1.5">
               {PRESET_MESSAGES.map((msg) => (
@@ -117,6 +118,9 @@ const SendFriendRequestForm = ({
       </div>
 
       {/* Action Buttons */}
+      {errors.root?.server && (
+        <p className="error-message">{errors.root.server.message}</p>
+      )}
       <DialogFooter className="gap-2 sm:gap-2 sm:flex-row border-t-0 bg-transparent p-0 mx-0 mb-0 pt-1">
         <Button
           type="button"
@@ -125,7 +129,7 @@ const SendFriendRequestForm = ({
           onClick={onBack}
         >
           <ArrowLeft className="size-4 mr-1.5" />
-          Quay lại
+          {t("friendRequest.actions.back")}
         </Button>
 
         <Button
@@ -136,12 +140,12 @@ const SendFriendRequestForm = ({
           {loading ? (
             <div className="flex items-center justify-center gap-2">
               <Loader2 className="size-4 animate-spin" />
-              <span>Đang gửi...</span>
+              <span>{t("friendRequest.dialog.sent.status.sending")}</span>
             </div>
           ) : (
             <div className="flex items-center justify-center gap-2">
               <UserPlus className="size-4" />
-              <span>Kết bạn</span>
+              <span>{t("friendRequest.actions.add")}</span>
             </div>
           )}
         </Button>
