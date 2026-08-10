@@ -15,7 +15,7 @@ const ProfileCard = ({ user }: ProfileCardProps) => {
   // Không mutate object user từ store ngay trong quá trình render.
   const displayedBio = user.bio || "Default bio ^.^";
   return (
-    <Card className="overflow-hidden p-0 h-52 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
+    <Card className="overflow-hidden p-0 h-52 bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500">
       <CardContent className="mt-20 pb-8 flex flex-col sm:flex-row items-center sm:items-end gap-6">
         <div className="relative">
           <UserAvatar
@@ -28,12 +28,12 @@ const ProfileCard = ({ user }: ProfileCardProps) => {
           <AvatarUploader />
         </div>
         {/* user info */}
-        <div className="text-center sm:text-left flex-1">
+        <div className="min-w-0 text-center sm:text-left flex-1">
           <h1 className="text-2xl font-semibold tracking-tight text-white">
             {user.displayName}
           </h1>
           {displayedBio && (
-            <p className="text-white/70 text-sm mt-2 maw-w-lg line-clamp-2">
+            <p className="text-white/70 text-sm mt-2 max-w-lg line-clamp-2 wrap-anywhere">
               {displayedBio}
             </p>
           )}

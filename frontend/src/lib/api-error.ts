@@ -1,25 +1,74 @@
+import i18n from "@/i18n";
 import axios from "axios";
 
+export type ApiErrorParams = Record<string, unknown>;
+
+export interface ApiFieldError {
+  code: string;
+  params: ApiErrorParams;
+}
 export interface ApiProblemDetails {
-  title?: string;
-  status?: number;
-  detail?: string;
-  instance?: string;
-  errors?: Record<string, string[]>;
+  title: string;
+  status: number;
+  code: string;
+  params?: ApiErrorParams;
+  errors?: Record<string, ApiFieldError[]>;
+  traceId: string;
 }
 
-export const getApiErrorMessage = (
-  error: unknown,
-  fallbackMessage = "Đã xảy ra lỗi. Vui lòng thử lại.",
-): string => {
-  if (!axios.isAxiosError<ApiProblemDetails>(error)) {
-    return fallbackMessage;
+export function getApiErrorMessage(error: unknown): string {
+  const problem = getApiProblemDetails(error);
+
+  if (!problem) return i18n.t("fallback", { ns: "errors" });
+
+  if (problem.errors) {
+    for (const fieldErrors of Object.values(problem.errors)) {
+      const firstError = fieldErrors[0];
+
+      if (firstError) {
+        return translateApiErrorCode(firstError.code, firstError.params);
+      }
+    }
+  }
+  return translateApiErrorCode(problem.code, problem.params);
+};
+
+export function getApiProblemDetails(error: unknown): ApiProblemDetails | null {
+  if (!axios.isAxiosError(error)) {
+    return null;
   }
 
-  const problem = error?.response.data;
-  const validationMessage = problem?.errors
-    ? Object.values(problem.errors).flat().find(Boolean)
-    : undefined;
+  const data: unknown = error.response.data;
 
-  return validationMessage ?? problem?.detail ?? fallbackMessage;
-};
+  if (
+    typeof data !== "object" ||
+    data === null ||
+    !("code" in data) ||
+    typeof data.code !== "string"
+  ) {
+    return null;
+  }
+  return data as ApiProblemDetails;
+}
+
+function normalizeParams(params: ApiErrorParams = {}): ApiErrorParams {
+  return Object.fromEntries(
+    Object.entries(params).map(([key, value]) => [
+      key,
+      Array.isArray(value) ? value.join(", ") : value,
+    ]),
+  );
+}
+
+export function translateApiErrorCode(
+  code: string,
+  params: ApiErrorParams = {},
+): string {
+  const fallback = i18n.t("fallback", { ns: "errors" });
+
+  return i18n.t(code, {
+    ns: "errors",
+    ...normalizeParams(params),
+    defaultValue: fallback,
+  });
+}

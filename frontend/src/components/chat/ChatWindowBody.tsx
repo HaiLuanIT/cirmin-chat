@@ -4,6 +4,7 @@ import ChatWelcomeScreen from "./ChatWelcomeScreen";
 import MessageItem from "./MessageItem";
 import { useChatRoom } from "@/hooks/useChatRoom";
 import InfiniteScroll from "react-infinite-scroll-component";
+import { useTranslation } from "react-i18next";
 
 const ChatWindowBody = () => {
   const {
@@ -14,6 +15,7 @@ const ChatWindowBody = () => {
   } = useChatStore();
 
   const messages = allMessages[activeConversationId!]?.items ?? [];
+  const { t } = useTranslation("chat");
   const hasMore = allMessages[activeConversationId]?.hasMore ?? false;
   const { fetchMessages } = useChatStore();
   const key = `chat-scroll-${activeConversationId}`;
@@ -56,7 +58,7 @@ const ChatWindowBody = () => {
   if (!messages?.length) {
     return (
       <div className="flex h-full items-center justify-center text-muted-foreground">
-        Chưa có tin nhắn nào trong cuộc trò chuyện này
+        {t("message.empty")}
       </div>
     );
   }

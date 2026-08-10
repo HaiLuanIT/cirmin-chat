@@ -2,6 +2,8 @@ import { useUserStore } from "@/stores/useUserStore";
 import React, { useRef } from "react";
 import { Button } from "../ui/button";
 import { Camera } from "lucide-react";
+import { toast } from "sonner";
+import { getApiErrorMessage } from "@/lib/api-error";
 
 const AvatarUploader = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -10,14 +12,19 @@ const AvatarUploader = () => {
   const handleClick = () => {
     fileInputRef.current?.click();
   };
-
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     const formData = new FormData();
     formData.append("image", file);
-    await uploadAvatarUrl(formData);
+    try {
+      await uploadAvatarUrl(formData);
+    } catch (error) {
+      toast.error(getApiErrorMessage(error));
+    } finally {
+      e.target.value = "";
+    }
   };
   return (
     <>

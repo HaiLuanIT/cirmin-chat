@@ -1,1 +1,18 @@
-{}
+{
+  "welcome": {
+    "title": "Chào mừng bạn đến với Moji!",
+    "description": "Chọn một cuộc hội thoại để bắt đầu chat"
+  },
+  "message": {
+    "empty": "Chưa có tin nhắn nào trong cuộc trò chuyện này",
+    "placeHolder": "Soạn tin nhắn..."
+  },
+  "conversations": {
+    "direct": {
+      "notFound": "Không tìm thấy cuộc trò chuyện với người bạn này"
+    },
+    "group": {
+      "member": "thành viên"
+    }
+  }
+}

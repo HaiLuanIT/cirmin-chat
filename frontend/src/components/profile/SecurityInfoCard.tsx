@@ -10,11 +10,10 @@ import {
 } from "../ui/card";
 import { Field, FieldLabel } from "../ui/field";
 import { Input } from "../ui/input";
-import { Loader, Loader2, Save } from "lucide-react";
-import { useAuthStore } from "@/stores/useAuthStore";
+import { Loader2, Save } from "lucide-react";
 import { useUserStore } from "@/stores/useUserStore";
-import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { getApiProblemDetails, translateApiErrorCode } from "@/lib/api-error";
 
 interface IFormValue {
   password: string;
@@ -28,7 +27,9 @@ const SecurityInfoCard = () => {
     register,
     handleSubmit,
     reset,
-    formState: { isSubmitting },
+    setError,
+    clearErrors,
+    formState: { errors, isSubmitting },
   } = useForm<IFormValue>({
     defaultValues: {
       password: "",
@@ -37,13 +38,74 @@ const SecurityInfoCard = () => {
     },
   });
 
+  const backendFieldMap: Record<string, keyof IFormValue> = {
+    oldPassword: "password",
+    newPassword: "newPassword",
+  };
+
+  const businessFieldMap: Partial<Record<string, keyof IFormValue>> = {
+    "AUTH.OLD_PASSWORD_INCORRECT": "password",
+    "AUTH.NEW_PASSWORD_SAME_AS_OLD": "newPassword",
+  };
+
   const handleChangePassword = handleSubmit(async (data) => {
     if (data.newPassword != data.confirmNewPassword) {
-      toast.error("Mật khẩu nhập lại không trùng khớp.");
+      setError("confirmNewPassword", {
+        type: "validate",
+        message: t("AUTH.PASSWORD_MISMATCH"),
+      });
       return;
     }
-    await changePassword(data.password, data.newPassword);
-    reset();
+    clearErrors();
+    try {
+      await changePassword(data.password, data.newPassword);
+    } catch (error) {
+      const problem = getApiProblemDetails(error);
+
+      if (!problem) {
+        setError("root.server", {
+          message: translateApiErrorCode("SYSTEM.INTERNAL_ERROR"),
+        });
+        return;
+      }
+
+      if (problem.errors) {
+        for (const [backendField, fieldErrors] of Object.entries(
+          problem.errors,
+        )) {
+          const firstError = fieldErrors[0];
+
+          if (!firstError) {
+            continue;
+          }
+          const frontendField = backendFieldMap[backendField];
+
+          if (!frontendField) {
+            continue;
+          }
+          setError(frontendField, {
+            type: "server",
+            message: translateApiErrorCode(firstError.code, firstError.params),
+          });
+        }
+        return;
+      }
+      const businessField = businessFieldMap[problem.code];
+      if (businessField) {
+        setError(businessField, {
+          type: "server",
+          message: translateApiErrorCode(problem.code, problem.params),
+        });
+        return;
+      }
+
+      setError("root.server", {
+        type: "server",
+        message: translateApiErrorCode(problem.code, problem.params),
+      });
+    } finally {
+      reset();
+    }
   });
   return (
     <>
@@ -93,6 +155,11 @@ const SecurityInfoCard = () => {
             </div>
           </CardContent>
           <CardFooter className="justify-end border-0 bg-card/80">
+            {errors.root?.server && (
+              <p className="error-message text-center">
+                {errors.root.server.message}
+              </p>
+            )}
             <Button
               type="submit"
               disabled={isSubmitting}

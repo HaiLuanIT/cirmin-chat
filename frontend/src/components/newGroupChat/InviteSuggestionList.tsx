@@ -1,5 +1,4 @@
 import type { Friend } from "@/types/user";
-import React from "react";
 import UserAvatar from "../chat/UserAvatar";
 
 interface InviteSuggestionListProps {

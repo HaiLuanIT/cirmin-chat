@@ -4,7 +4,8 @@
     "saving": "Saving..."
   },
   "states": {
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "createLoading": "Creating..."
   },
   "language": {
     "selectLabel": "Choose language",

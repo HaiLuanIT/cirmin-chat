@@ -110,6 +110,7 @@ export const useChatStore = create<ChatState>()(
           }));
         } catch (error) {
           console.error("Lỗi xảy ra khi gửi tin nhắn", error);
+          throw error;
         }
       },
       addMessage: async (message) => {
@@ -255,6 +256,7 @@ export const useChatStore = create<ChatState>()(
           await chatService.createConversation(name, userIds);
         } catch (error) {
           console.error("Lỗi xảy ra khi tạo mới group chat", error);
+          throw error;
         } finally {
           set({ loading: false });
         }
