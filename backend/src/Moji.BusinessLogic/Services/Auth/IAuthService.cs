@@ -13,9 +13,9 @@ public interface IAuthService
 
     Task RevokeRefreshToken(string token);
 
-    Task<UserModel> GetUser(Guid id);
+    Task<UserModel> GetUser(Guid id, CancellationToken cancellationToken);
 
-    Task<AuthResponse> RefreshToken(string oldToken);
+    Task<AuthResponse> RefreshToken(string oldToken, CancellationToken cancellationToken);
 
     Task ChangePassword(Guid userId, ChangePasswordRequest request, CancellationToken cancellationToken);
 }

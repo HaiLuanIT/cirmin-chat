@@ -9,6 +9,7 @@ using Moji.Contracts.Models.Users.UpdateUserInfo;
 using Moji.Contracts.Models.Users.UploadAvatar;
 using Moji.DataAccess.Commons.Constants;
 using Moji.DataAccess.Commons.DbTransactionManagers;
+using Moji.DataAccess.Entities;
 using Moji.DataAccess.Models;
 using Moji.DataAccess.Repositories;
 
@@ -177,7 +178,7 @@ public class UserService : IUserService
         if (!validationResult.IsValid) throw new MojiValidationException(validationResult.Errors);
 
         //validate user exist
-        var user = await _userRepository.GetTrackedUser(currentUserId, cancellationToken);
+        var user = await _userRepository.FindByIdAsync(currentUserId, cancellationToken);
         if (user == null) throw new MojiNotFoundException(ErrorCodes.User.NotFound);
 
         //update
@@ -199,21 +200,110 @@ public class UserService : IUserService
             };
 
         //update user info
-        var result = await _userRepository.UpdateUserInfo(user, normalizeRequest.DisplayName, normalizeRequest.Bio,
-            normalizeRequest.Email, cancellationToken);
-        if (result == UpdatedResult.ConcurrencyConflict)
-            throw new MojiConflictException(ErrorCodes.Concurrency.Conflict);
-        if (result == UpdatedResult.DuplicatedEmail)
-            throw new MojiConflictException(ErrorCodes.User.EmailAlreadyExists);
-
-        //map
-        var model = new UpdateUserInfoResponse
+        var originalUser = new UpdateUserInfoSnapShot
         {
             DisplayName = user.FullName,
             Bio = user.Bio,
             Email = user.Email
         };
+        var result = await _userRepository.UpdateUserInfo(user, normalizeRequest.DisplayName, normalizeRequest.Bio,
+            normalizeRequest.Email, cancellationToken);
+        var updatedResultSnapshot = new UpdateUserInfoSnapShot();
+        if (result.Item1 == UpdatedResult.DuplicatedEmail)
+            throw new MojiConflictException(ErrorCodes.User.EmailAlreadyExists);
+        if (result.Item1 == UpdatedResult.Updated)
+        {
+            updatedResultSnapshot =
+                result.Item2 ?? throw new InvalidOperationException("Success update must contain snapshot");
+        }
+        // if conflict retry 2 times
+        else if (result.Item1 == UpdatedResult.ConcurrencyConflict)
+        {
+            var isUpdated = false;
+            for (var i = 0; i < 2; i++)
+            {
+                var currentUser = await _userRepository.FindByIdAsync(currentUserId, cancellationToken);
+                if (currentUser == null) throw new MojiNotFoundException(ErrorCodes.User.NotFound);
+                if (currentUser.RowVersion != user.RowVersion)
+                {
+                    //check if field need update not be changed by other user
+                    var hasSemanticConflict =
+                        RequestedDisplayNameChangedDifferently(currentUser, originalUser, normalizeRequest) ||
+                        RequestedBioChangedDifferently(currentUser, originalUser, normalizeRequest) ||
+                        RequestedEmailChangedDifferently(currentUser, originalUser, normalizeRequest);
+
+                    if (hasSemanticConflict) throw new MojiConflictException(ErrorCodes.Concurrency.Conflict);
+
+                    //check if operation already satisfied/duplicate request
+                    var operationAlreadySatisfied =
+                        (normalizeRequest.DisplayName == null ||
+                         normalizeRequest.DisplayName == currentUser.FullName) &&
+                        (normalizeRequest.Bio == null || normalizeRequest.Bio == currentUser.Bio) &&
+                        (normalizeRequest.Email == null || normalizeRequest.Email == currentUser.Email);
+                    if (operationAlreadySatisfied)
+                    {
+                        isUpdated = true;
+                        updatedResultSnapshot = new UpdateUserInfoSnapShot
+                        {
+                            DisplayName = currentUser.FullName,
+                            Bio = currentUser.Bio,
+                            Email = currentUser.Email
+                        };
+                        break;
+                    }
+
+                    var retryUpdateResult = await _userRepository.UpdateUserInfo(currentUser,
+                        normalizeRequest.DisplayName,
+                        normalizeRequest.Bio,
+                        normalizeRequest.Email, cancellationToken);
+                    if (retryUpdateResult.Item1 == UpdatedResult.Updated)
+                    {
+                        isUpdated = true;
+                        updatedResultSnapshot = retryUpdateResult.Item2 ??
+                                                throw new InvalidOperationException(
+                                                    "Success update must contain snapshot");
+                        break;
+                    }
+
+                    if (retryUpdateResult.Item1 == UpdatedResult.DuplicatedEmail)
+                        throw new MojiConflictException(ErrorCodes.User.EmailAlreadyExists);
+                }
+            }
+
+            if (!isUpdated)
+                throw new MojiConflictException(ErrorCodes.Concurrency.Conflict);
+        }
+
+
+        //map
+        var model = new UpdateUserInfoResponse
+        {
+            DisplayName = updatedResultSnapshot.DisplayName,
+            Bio = updatedResultSnapshot.Bio,
+            Email = updatedResultSnapshot.Email
+        };
         return model;
+    }
+
+    private bool RequestedDisplayNameChangedDifferently(User currentUser, UpdateUserInfoSnapShot originalUser,
+        UpdateUserInfoRequest normalizeRequest)
+    {
+        return normalizeRequest.DisplayName is not null && currentUser.FullName != originalUser.DisplayName &&
+               currentUser.FullName != normalizeRequest.DisplayName;
+    }
+
+    private bool RequestedBioChangedDifferently(User currentUser, UpdateUserInfoSnapShot originalUser,
+        UpdateUserInfoRequest normalizeRequest)
+    {
+        return normalizeRequest.Bio is not null &&
+               currentUser.Bio != originalUser.Bio && currentUser.Bio != normalizeRequest.Bio;
+    }
+
+    private bool RequestedEmailChangedDifferently(User currentUser, UpdateUserInfoSnapShot originalUser,
+        UpdateUserInfoRequest normalizeRequest)
+    {
+        return normalizeRequest.Email is not null && currentUser.Email != originalUser.Email &&
+               currentUser.Email != normalizeRequest.Email;
     }
 
     //helper

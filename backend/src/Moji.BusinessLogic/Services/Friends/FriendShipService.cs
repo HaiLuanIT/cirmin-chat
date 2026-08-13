@@ -29,7 +29,7 @@ public class FriendShipService : IFriendShipService
         _dbTransactionManager = dbTransactionManager;
     }
 
-    public async Task AddFriend(Guid currentUserId, AddFriendRequest request)
+    public async Task AddFriend(Guid currentUserId, AddFriendRequest request, CancellationToken cancellationToken)
     {
         var validationResult = await _friendRequestValidator.ValidateAsync(request);
         if (!validationResult.IsValid) throw new MojiValidationException(validationResult.Errors);
@@ -37,7 +37,7 @@ public class FriendShipService : IFriendShipService
         if (currentUserId == request.ReceiverId)
             throw new MojiBadRequestException(ErrorCodes.Friendship.CannotMakeFriendWithSelf);
         //check receiver exist
-        var receiver = await _userRepository.FindByIdAsync(request.ReceiverId);
+        var receiver = await _userRepository.FindByIdAsync(request.ReceiverId, cancellationToken);
         if (receiver == null) throw new MojiNotFoundException(ErrorCodes.User.NotFound);
 
         //check friend request is exist or not

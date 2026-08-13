@@ -129,9 +129,9 @@ public class AuthService : IAuthService
         await _txManager.SaveChangesAsync();
     }
 
-    public async Task<UserModel> GetUser(Guid id)
+    public async Task<UserModel> GetUser(Guid id, CancellationToken cancellationToken)
     {
-        var user = await _userRepository.FindByIdAsync(id);
+        var user = await _userRepository.FindByIdAsync(id, cancellationToken);
         if (user == null) throw new MojiNotFoundException(ErrorCodes.User.NotFound);
 
         var userModel = new UserModel
@@ -148,7 +148,7 @@ public class AuthService : IAuthService
         return userModel;
     }
 
-    public async Task<AuthResponse> RefreshToken(string oldToken)
+    public async Task<AuthResponse> RefreshToken(string oldToken, CancellationToken cancellationToken)
     {
         //1. Find token in db
         var token = await _userTokenRepository.FindByTokenAsync(oldToken);
@@ -159,7 +159,7 @@ public class AuthService : IAuthService
             throw new MojiUnauthorizedException(ErrorCodes.Auth.SessionExpired);
 
         // check user exist and auth version is same
-        var user = await _userRepository.FindByIdAsync(token.UserId);
+        var user = await _userRepository.FindByIdAsync(token.UserId, cancellationToken);
         if (user == null || user.AuthVersion != token.AuthVersion)
             throw new MojiUnauthorizedException(ErrorCodes.Auth.SessionExpired);
 
