@@ -10,7 +10,7 @@ public interface IUserRepository
 
     Task<User?> FindByUsernameAsync(string username);
 
-    Task<User?> FindByIdAsync(Guid id);
+    Task<User?> FindByIdAsync(Guid id, CancellationToken cancellationToken);
 
     Task<bool> IsEmailUniqueAsync(string email);
 
@@ -23,7 +23,8 @@ public interface IUserRepository
     Task<(UpdatedResult, DateTimeOffset)> TryUpdateAvatar(Guid userId, uint expectedVersion, string newAvatarUrl,
         string newAvatarId, CancellationToken cancellationToken);
 
-    Task<UpdatedResult> UpdateUserInfo(User user, string? newDisplayName, string? newBio, string? newEmail,
+    Task<(UpdatedResult, UpdateUserInfoSnapShot?)> UpdateUserInfo(User user, string? newDisplayName, string? newBio,
+        string? newEmail,
         CancellationToken cancellationToken);
 
     Task<User?> GetTrackedUser(Guid userId, CancellationToken cancellationToken);

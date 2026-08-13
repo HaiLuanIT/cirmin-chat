@@ -26,9 +26,10 @@ public class UserRepository : IUserRepository
         return await _context.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Username == username);
     }
 
-    public async Task<User?> FindByIdAsync(Guid id)
+    public async Task<User?> FindByIdAsync(Guid id, CancellationToken cancellationToken)
     {
-        return await _context.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted);
+        return await _context.Users.AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted, cancellationToken);
     }
 
     public async Task<bool> IsEmailUniqueAsync(string email)
@@ -94,25 +95,35 @@ public class UserRepository : IUserRepository
         return (result == 1 ? UpdatedResult.Updated : UpdatedResult.ConcurrencyConflict, now);
     }
 
-    public async Task<UpdatedResult> UpdateUserInfo(User user, string? newDisplayName, string? newBio, string? newEmail,
+    public async Task<(UpdatedResult, UpdateUserInfoSnapShot?)> UpdateUserInfo(User user, string? newDisplayName,
+        string? newBio, string? newEmail,
         CancellationToken cancellationToken)
     {
         try
         {
-            user.FullName = newDisplayName ?? user.FullName;
-            user.Bio = newBio ?? user.Bio;
-            user.Email = newEmail ?? user.Email;
-            user.UpdatedAt = DateTimeOffset.UtcNow;
-            await _context.SaveChangesAsync(cancellationToken);
-            return UpdatedResult.Updated;
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            return UpdatedResult.ConcurrencyConflict;
+            var resultSnapshot = new UpdateUserInfoSnapShot
+            {
+                DisplayName = newDisplayName ?? user.FullName,
+                Bio = newBio ?? user.Bio,
+                Email = newEmail ?? user.Email
+            };
+            var now = DateTimeOffset.UtcNow;
+            var updateResult = await _context.Users
+                .Where(u => u.Id == user.Id && u.RowVersion == user.RowVersion)
+                .ExecuteUpdateAsync(setters =>
+                        setters.SetProperty(u => u.FullName, resultSnapshot.DisplayName)
+                            .SetProperty(u => u.Bio, resultSnapshot.Bio)
+                            .SetProperty(u => u.Email, resultSnapshot.Email)
+                            .SetProperty(u => u.UpdatedAt, now), cancellationToken
+                );
+
+            return updateResult == 1
+                ? (UpdatedResult.Updated, resultSnapshot)
+                : (UpdatedResult.ConcurrencyConflict, null);
         }
         catch (DbUpdateException ex) when (ex.InnerException is PostgresException pgEx && pgEx.SqlState == "23505")
         {
-            return UpdatedResult.DuplicatedEmail;
+            return (UpdatedResult.DuplicatedEmail, null);
         }
     }
 

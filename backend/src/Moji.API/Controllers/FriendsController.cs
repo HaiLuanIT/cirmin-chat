@@ -30,9 +30,9 @@ public class FriendsController : BaseApiController
     }
 
     [HttpPost("requests")]
-    public async Task<IActionResult> AddFriend([FromBody] AddFriendRequest request)
+    public async Task<IActionResult> AddFriend([FromBody] AddFriendRequest request, CancellationToken cancellationToken)
     {
-        await _friendShipService.AddFriend(CurrentUserId, request);
+        await _friendShipService.AddFriend(CurrentUserId, request, cancellationToken);
         return StatusCode(201, "Gửi lời mời kết bạn thành công");
     }
 
