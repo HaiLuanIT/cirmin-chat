@@ -55,3 +55,7 @@ app.MapHub<ChatHub>("/hubs/chat", options => { options.CloseOnAuthenticationExpi
 app.MapControllers();
 
 app.Run();
+
+public partial class Program
+{
+}
