@@ -1,0 +1,6 @@
+@CirMin.API_HostAddress = http://localhost:5008
+
+GET {{CirMin.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
