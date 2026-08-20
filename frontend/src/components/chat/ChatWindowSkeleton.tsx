@@ -30,7 +30,7 @@ const ChatWindowSkeleton = () => {
         </div>
       </header>
 
-      <div className="flex flex-1 flex-col justify-end gap-5 overflow-hidden bg-primary-foreground p-4">
+      <div className="flex flex-1 flex-col justify-end gap-5 overflow-hidden bg-background p-4">
         {messageSkeletons.map((message, index) => (
           <div
             className={`flex items-end gap-2 ${

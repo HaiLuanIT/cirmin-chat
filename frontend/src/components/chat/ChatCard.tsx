@@ -27,9 +27,9 @@ const ChatCard = ({
     <Card
       key={convoId}
       className={cn(
-        "border-none p-3 cursor-pointer trasition-smooth glass hover:bg-muted/30",
+        "border-none p-3 cursor-pointer transition-smooth glass hover:bg-muted/30",
         isActive &&
-          "ring-2 ring-primary/50 bg-gradient-to-tr from-primary-glow/10 to-primary-foreground",
+          "chat-card-active ring-2 ring-primary/50 dark:ring-primary/60",
       )}
       onClick={() => onSelect(convoId)}
     >

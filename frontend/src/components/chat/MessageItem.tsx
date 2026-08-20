@@ -1,11 +1,10 @@
 import { cn, formatMessageTime } from "@/lib/utils";
 import type { Conversation, ConversationMember, Message } from "@/types/chat";
-import React from "react";
 import UserAvatar from "./UserAvatar";
 import { Card } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { useAuthStore } from "@/stores/useAuthStore";
-import { sendMessage } from "@microsoft/signalr/dist/esm/Utils";
+import { useTranslation } from "react-i18next";
 
 interface MessageItemProps {
   message: Message;
@@ -22,6 +21,7 @@ const MessageItem = ({
   lastMessageStatus,
 }: MessageItemProps) => {
   const { user } = useAuthStore();
+  const { t } = useTranslation("chat");
   const prev = index + 1 < messages.length ? messages[index + 1] : undefined;
   const isShowTime =
     index === 0 ||
@@ -66,7 +66,7 @@ const MessageItem = ({
             {isGroupBreak && (
               <UserAvatar
                 type="chat"
-                name={participant.displayName ?? "Moji"}
+                name={participant.displayName ?? "CirMin"}
                 avatarUrl={participant?.avatarUrl ?? undefined}
               />
             )}
@@ -91,7 +91,7 @@ const MessageItem = ({
               {message.content}
             </p>
           </Card>
-          {/* seen/deliverd */}
+          {/* seen/delivered */}
           {!selectedConvo.isGroup
             ? message.isOwn &&
               message.id === selectedConvo.lastMessage?.id && (
@@ -104,17 +104,22 @@ const MessageItem = ({
                       : "bg-muted text-muted-foreground",
                   )}
                 >
-                  {lastMessageStatus}
+                  {t(`message.status.${lastMessageStatus}`)}
                 </Badge>
               )
             : message.isOwn &&
               (seenByUsers.length > 0 ? (
                 <div className="flex items-center gap-1 mt-1 px-1">
                   {seenByUsers.map((user) => (
-                    <div key={user.userId} title={`${user.displayName} đã xem`}>
+                    <div
+                      key={user.userId}
+                      title={t("message.status.seenBy", {
+                        name: user.displayName,
+                      })}
+                    >
                       <UserAvatar
                         type="chat"
-                        name={user.displayName ?? "Moji"}
+                        name={user.displayName ?? "CirMin"}
                         avatarUrl={user?.avatarUrl ?? undefined}
                       />
                     </div>
@@ -127,7 +132,7 @@ const MessageItem = ({
                     variant="outline"
                     className="text-xs px-1.5 py-0.5 h-4 border-0 select-none bg-muted text-muted-foreground transition-all duration-200"
                   >
-                    delivered
+                    {t("message.status.delivered")}
                   </Badge>
                 )
               ))}

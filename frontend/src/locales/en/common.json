@@ -31,7 +31,7 @@
       "form": {
         "title": "Add Friend",
         "searchField": "Search by username",
-        "searchPlaceholder": "Enter a username (e.g., alex_moji)..",
+        "searchPlaceholder": "Enter a username (e.g., cirmin)..",
         "submit": "Search",
         "cancel": "Cancel"
       }

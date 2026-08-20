@@ -82,7 +82,7 @@ export function SigninForm({
                 <Input
                   type="text"
                   id="username"
-                  placeholder="moji"
+                  placeholder="cirmin"
                   {...register("username")}
                 />
                 {errors.username && (
@@ -121,9 +121,9 @@ export function SigninForm({
               </div>
             </div>
           </form>
-          <div className="relative hidden bg-muted md:block">
+          <div className="relative hidden bg-[#F8FAFC] dark:bg-slate-800 md:block">
             <img
-              src="/placeholderSignUp.png"
+              src="/placeholder.svg"
               alt="Image"
               className="absolute top-1/2 -translate-y-1/2 object-cover"
             />
