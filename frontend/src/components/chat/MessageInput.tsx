@@ -53,7 +53,7 @@ const MessageInput = () => {
           value={value}
           onChange={(e) => setVallue(e.target.value)}
           placeholder={t("message.placeHolder")}
-          className="pr-20 bg-white h-9 border-border/50 focus:border-primary/50 transition-smooth resize-none"
+          className="pr-20 bg-card text-card-foreground h-9 border-border/50 focus:border-primary/50 transition-smooth resize-none"
         ></Input>
         <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
           <Button

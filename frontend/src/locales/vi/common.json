@@ -19,9 +19,9 @@
       "label": "nhóm chat",
       "form": {
         "title": "tạo nhóm chat mới",
-        "nameGroupField": "Tên nhóm",
+        "nameGroup": "Tên nhóm",
         "nameGroupPlaceholder": "Gõ tên nhóm vào đây...",
-        "inviteField": "Mời thành viên",
+        "invite": "Mời thành viên",
         "invitePlaceholder": "Tìm theo tên hiển thị...",
         "submit": "Tạo nhóm"
       }
@@ -31,7 +31,7 @@
       "form": {
         "title": "Kết bạn",
         "searchField": "tìm kiếm theo username",
-        "searchPlaceholder": "Nhập tên tài khoản (ví dụ: alex_moji)..",
+        "searchPlaceholder": "Nhập tên tài khoản (ví dụ: alex_cirmin)..",
         "submit": "Tìm kiếm",
         "cancel": "Hủy"
       }

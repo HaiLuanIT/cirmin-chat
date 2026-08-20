@@ -15,7 +15,7 @@ const ProfileCard = ({ user }: ProfileCardProps) => {
   // Không mutate object user từ store ngay trong quá trình render.
   const displayedBio = user.bio || "Default bio ^.^";
   return (
-    <Card className="overflow-hidden p-0 h-52 bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500">
+    <Card className="overflow-hidden p-0 h-52 bg-gradient-primary">
       <CardContent className="mt-20 pb-8 flex flex-col sm:flex-row items-center sm:items-end gap-6">
         <div className="relative">
           <UserAvatar

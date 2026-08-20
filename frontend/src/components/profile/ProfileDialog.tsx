@@ -32,14 +32,14 @@ const ProfileDialog = ({ open, setOpen }: ProfileDialogProps) => {
               <TabsList className="grid w-full grid-cols-2 gap-1 rounded-xl border border-white/30 bg-background/45 p-1.5 shadow-sm backdrop-blur-xl group-data-horizontal/tabs:h-auto dark:border-white/10 dark:bg-background/25">
                 <TabsTrigger
                   value="account"
-                  className="cursor-pointer min-h-11 rounded-lg px-2 py-2.5 text-xs font-semibold transition-smooth hover:bg-background/50 hover:text-foreground data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-fuchsia-500 data-[state=active]:text-white data-[state=active]:shadow-md data-[state=active]:shadow-purple-500/20 sm:text-sm"
+                  className="profile-tab-trigger cursor-pointer min-h-11 rounded-lg px-2 py-2.5 text-xs font-semibold transition-smooth hover:bg-background/50 hover:text-foreground sm:text-sm"
                 >
                   <UserRound className="size-4" />
                   {t("tabs.account")}
                 </TabsTrigger>
                 <TabsTrigger
                   value="security"
-                  className="cursor-pointer min-h-11 rounded-lg px-2 py-2.5 text-xs font-semibold transition-smooth hover:bg-background/50 hover:text-foreground data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-fuchsia-500 data-[state=active]:text-white data-[state=active]:shadow-md data-[state=active]:shadow-purple-500/20 sm:text-sm"
+                  className="profile-tab-trigger cursor-pointer min-h-11 rounded-lg px-2 py-2.5 text-xs font-semibold transition-smooth hover:bg-background/50 hover:text-foreground sm:text-sm"
                 >
                   <ShieldCheck className="size-4" />
                   {t("tabs.security")}

@@ -20,7 +20,7 @@ export const useLocaleStore = create<LocaleState>()(
       },
     }),
     {
-      name: "moji-languages",
+      name: "cirmin-languages",
       onRehydrateStorage: () => (state) => {
         if (!state) return;
 
