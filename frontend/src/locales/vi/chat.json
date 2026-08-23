@@ -1,11 +1,16 @@
 {
   "welcome": {
-    "title": "Chào mừng bạn đến với Moji!",
+    "title": "Chào mừng bạn đến với CirMin!",
     "description": "Chọn một cuộc hội thoại để bắt đầu chat"
   },
   "message": {
     "empty": "Chưa có tin nhắn nào trong cuộc trò chuyện này",
-    "placeHolder": "Soạn tin nhắn..."
+    "placeHolder": "Soạn tin nhắn...",
+    "status": {
+      "delivered": "Đã gửi",
+      "seen": "Đã xem",
+      "seenBy": "{{name}} đã xem"
+    }
   },
   "conversations": {
     "direct": {

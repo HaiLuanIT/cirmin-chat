@@ -1,18 +1,13 @@
 import type { FriendRequest } from "@/types/user";
-import React, { type ReactNode } from "react";
+import { type ReactNode } from "react";
 import UserAvatar from "../chat/UserAvatar";
-import { useAuthStore } from "@/stores/useAuthStore";
 
 interface FriendRequestItemProps {
   requestInfo: FriendRequest;
   action: ReactNode;
   type: "sent" | "received";
 }
-const FriendRequestItem = ({
-  requestInfo,
-  action,
-  type,
-}: FriendRequestItemProps) => {
+const FriendRequestItem = ({ requestInfo, action }: FriendRequestItemProps) => {
   if (!requestInfo) return;
 
   return (

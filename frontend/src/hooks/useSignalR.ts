@@ -1,5 +1,5 @@
 import { usePresenceStore } from "@/stores/usePresenceStore";
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { signalRService } from "@/services/signalRService";
 import * as signalR from "@microsoft/signalr";
 import { useAuthStore } from "@/stores/useAuthStore";
@@ -24,9 +24,7 @@ export const useSignalR = () => {
     if (!token) {
       return;
     }
-    const connection = signalRService.initConnection(
-      useAuthStore.getState().accessToken,
-    );
+    const connection = signalRService.initConnection(token);
 
     const handleSetOnlineUsers = (userIds: string[]) => {
       setOnlineUsers(userIds);
@@ -41,7 +39,7 @@ export const useSignalR = () => {
       addMessage(messageResponse);
       updateLastMessage(messageResponse);
 
-      if (messageResponse?.sender?.senderId !== user.id) {
+      if (messageResponse?.sender?.senderId !== user?.id) {
         if (currentActiveId === messageResponse?.conversationId) {
           connection
             .invoke("MarkConversationAsRead", messageResponse?.conversationId)

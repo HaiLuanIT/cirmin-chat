@@ -10,7 +10,7 @@ export const useChatRoom = (conversationId: string, loading: boolean) => {
 
     if (conversationId === activeConversationId) {
       const connection = signalRService.getConnection();
-      if (connection || signalRService.isConnected) {
+      if (connection && signalRService.isConnected()) {
         clearUnreadCount(conversationId);
         connection
           .invoke("MarkConversationAsRead", conversationId)

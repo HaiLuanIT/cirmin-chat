@@ -5,6 +5,7 @@
     "lib": ["ES2023", "DOM"],
     "module": "esnext",
     "types": ["vite/client"],
+    "skipLibCheck": true,
     "paths": {
       "@/*": ["./src/*"] // Map alias cho tầng ứng dụng (App layer)
     },

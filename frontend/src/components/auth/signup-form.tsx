@@ -159,7 +159,7 @@ export function SignupForm({
                 <Input
                   type="text"
                   id="username"
-                  placeholder="moji"
+                  placeholder="cirmin"
                   {...register("username")}
                 />
                 {errors.username && (
@@ -174,7 +174,7 @@ export function SignupForm({
                 <Input
                   type="email"
                   id="email"
-                  placeholder="moji@gmail.com"
+                  placeholder="cirmin@gmail.com"
                   {...register("email")}
                 />
                 {errors.email && (
@@ -211,9 +211,9 @@ export function SignupForm({
               </div>
             </div>
           </form>
-          <div className="relative hidden bg-muted md:block">
+          <div className="relative hidden bg-[#F8FAFC] dark:bg-slate-800 md:block">
             <img
-              src="/placeholderSignUp.png"
+              src="/placeholderSignUp.svg"
               alt="Image"
               className="absolute top-1/2 -translate-y-1/2 object-cover"
             />

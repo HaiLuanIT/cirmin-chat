@@ -13,9 +13,10 @@ const ProfileCard = ({ user }: ProfileCardProps) => {
   const { isOnline } = usePresenceStore();
   if (!user) return;
   // Không mutate object user từ store ngay trong quá trình render.
+  const userIsOnline = isOnline(user.id);
   const displayedBio = user.bio || "Default bio ^.^";
   return (
-    <Card className="overflow-hidden p-0 h-52 bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500">
+    <Card className="overflow-hidden p-0 h-52 bg-gradient-primary">
       <CardContent className="mt-20 pb-8 flex flex-col sm:flex-row items-center sm:items-end gap-6">
         <div className="relative">
           <UserAvatar
@@ -43,7 +44,7 @@ const ProfileCard = ({ user }: ProfileCardProps) => {
           <Badge
             className={cn(
               "flex items-center gap-1 capitalize",
-              isOnline
+              userIsOnline
                 ? "bg-green-100 text-green-700"
                 : "bg-slate-100 text-slate-700",
             )}
@@ -51,10 +52,10 @@ const ProfileCard = ({ user }: ProfileCardProps) => {
             <div
               className={cn(
                 "size-2 rounded-full",
-                isOnline ? "bg-green-500 animate-pulse" : "bg-slate-500",
+                userIsOnline ? "bg-green-500 animate-pulse" : "bg-slate-500",
               )}
             ></div>
-            {isOnline ? "online" : "offline"}
+            {userIsOnline ? "online" : "offline"}
           </Badge>
         </div>
       </CardContent>
