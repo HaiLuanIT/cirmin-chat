@@ -11,15 +11,15 @@ import type { SearchUser, SearchUserResponse } from "@/types/user";
 import { useFriendStore } from "@/stores/useFriendStore";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import SearchForm from "../addFriendModal/SearchForm";
-import SendFriendRequestForm from "../addFriendModal/SendFriendRequestForm";
-import SearchUserList from "../addFriendModal/SearchUserList";
 import { useTranslation } from "react-i18next";
 import {
   getApiErrorMessage,
   getApiProblemDetails,
   translateApiErrorCode,
 } from "@/lib/api-error";
+import SearchForm from "../AddFriendModal/SearchForm";
+import SearchUserList from "../AddFriendModal/SearchUserList";
+import SendFriendRequestForm from "../AddFriendModal/SendFriendRequestForm";
 
 export interface IFromValues {
   username: string;
@@ -104,8 +104,8 @@ const AddFriendModal = () => {
         });
       }
 
-      if (problem.errors) {
-        for (const [field, fieldErrors] of Object.entries(problem.errors)) {
+      if (problem?.errors) {
+        for (const [field, fieldErrors] of Object.entries(problem?.errors)) {
           const firstError = fieldErrors[0];
 
           if (!firstError) {
@@ -127,7 +127,7 @@ const AddFriendModal = () => {
 
       setError("root.server", {
         type: "server",
-        message: translateApiErrorCode(problem.code, problem.params),
+        message: translateApiErrorCode(problem?.code, problem?.params),
       });
     }
   });

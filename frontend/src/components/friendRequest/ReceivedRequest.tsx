@@ -1,6 +1,4 @@
-import { friendService } from "@/services/friendService";
 import { useFriendStore } from "@/stores/useFriendStore";
-import React from "react";
 import FriendRequestItem from "./FriendRequestItem";
 import { Button } from "../ui/button";
 import { toast } from "sonner";

@@ -1,5 +1,5 @@
 import { useChatStore } from "@/stores/useChatStore";
-import React, { useLayoutEffect, useRef } from "react";
+import { useLayoutEffect, useRef } from "react";
 import ChatWelcomeScreen from "./ChatWelcomeScreen";
 import MessageItem from "./MessageItem";
 import { useChatRoom } from "@/hooks/useChatRoom";
@@ -14,9 +14,12 @@ const ChatWindowBody = () => {
     messageLoading: loading,
   } = useChatStore();
 
-  const messages = allMessages[activeConversationId!]?.items ?? [];
+  const currentMessage = activeConversationId
+    ? allMessages[activeConversationId]
+    : undefined;
+  const messages = currentMessage?.items ?? [];
   const { t } = useTranslation("chat");
-  const hasMore = allMessages[activeConversationId]?.hasMore ?? false;
+  const hasMore = currentMessage?.hasMore ?? false;
   const { fetchMessages } = useChatStore();
   const key = `chat-scroll-${activeConversationId}`;
   //ref

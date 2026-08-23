@@ -38,7 +38,7 @@ const MessageItem = ({
 
   const seenByUsers = selectedConvo.members.filter(
     (member) =>
-      member.userId !== user.id &&
+      member.userId !== user?.id &&
       member.lastMessageId.toString() === message.id.toString(),
   );
 
@@ -66,7 +66,7 @@ const MessageItem = ({
             {isGroupBreak && (
               <UserAvatar
                 type="chat"
-                name={participant.displayName ?? "CirMin"}
+                name={participant?.displayName ?? "CirMin"}
                 avatarUrl={participant?.avatarUrl ?? undefined}
               />
             )}
@@ -127,7 +127,7 @@ const MessageItem = ({
                 </div>
               ) : (
                 message.id.toString() ===
-                  selectedConvo.lastMessage.id.toString() && (
+                  selectedConvo?.lastMessage?.id?.toString() && (
                   <Badge
                     variant="outline"
                     className="text-xs px-1.5 py-0.5 h-4 border-0 select-none bg-muted text-muted-foreground transition-all duration-200"

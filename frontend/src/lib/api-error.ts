@@ -31,14 +31,14 @@ export function getApiErrorMessage(error: unknown): string {
     }
   }
   return translateApiErrorCode(problem.code, problem.params);
-};
+}
 
 export function getApiProblemDetails(error: unknown): ApiProblemDetails | null {
   if (!axios.isAxiosError(error)) {
     return null;
   }
 
-  const data: unknown = error.response.data;
+  const data: unknown = error?.response?.data;
 
   if (
     typeof data !== "object" ||
@@ -61,11 +61,14 @@ function normalizeParams(params: ApiErrorParams = {}): ApiErrorParams {
 }
 
 export function translateApiErrorCode(
-  code: string,
+  code?: string | null,
   params: ApiErrorParams = {},
 ): string {
   const fallback = i18n.t("fallback", { ns: "errors" });
 
+  if (!code) {
+    return fallback;
+  }
   return i18n.t(code, {
     ns: "errors",
     ...normalizeParams(params),

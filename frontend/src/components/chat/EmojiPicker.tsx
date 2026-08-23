@@ -1,5 +1,4 @@
 import { useThemeStore } from "@/stores/useThemeStore";
-import React from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Smile } from "lucide-react";
 import Picker from "@emoji-mart/react";

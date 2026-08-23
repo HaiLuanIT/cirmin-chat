@@ -41,19 +41,21 @@ const ChatWindowHeader = ({ chat }: { chat?: Conversation }) => {
         />
         <div className="p-2 w-full flex items-center gap-3">
           <div className="relative">
-            {!chat.isGroup ? (
+            {chat.isGroup ? (
+              <GroupChatAvatar participants={chat.members} type="sidebar" />
+            ) : otherUser ? (
               <>
                 <UserAvatar
                   type={"sidebar"}
-                  name={otherUser?.displayName}
-                  avatarUrl={otherUser?.avatarUrl || undefined}
+                  name={otherUser.displayName}
+                  avatarUrl={otherUser.avatarUrl ?? undefined}
                 />
                 <StatusBadge
                   status={isOnline(otherUser.userId) ? "online" : "offline"}
                 />
               </>
             ) : (
-              <GroupChatAvatar participants={chat.members} type="sidebar" />
+              <UserAvatar type="sidebar" name="CirMin" />
             )}
           </div>
 
