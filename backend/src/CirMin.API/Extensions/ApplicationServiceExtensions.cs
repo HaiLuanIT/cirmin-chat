@@ -18,15 +18,22 @@ namespace CirMin.API.Extensions;
 
 public static class ApplicationServiceExtensions
 {
-    public static IServiceCollection AddCorsServices(this IServiceCollection services)
+    public static IServiceCollection AddCorsServices(this IServiceCollection services, IConfiguration configuration)
     {
         // config CORS
+        
+        var allowOrigins = configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
         var corsPolicyName = "CorsPolicy";
+
+        if (allowOrigins == null || allowOrigins.Length == 0)
+        {
+            throw new InvalidOperationException("No allowed origins configured for CORS");
+        }
         services.AddCors(options =>
         {
             options.AddPolicy(corsPolicyName, policy =>
             {
-                policy.WithOrigins("http://localhost:5173")
+                policy.WithOrigins(allowOrigins)
                     .AllowAnyHeader()
                     .AllowAnyMethod()
                     .AllowCredentials();
