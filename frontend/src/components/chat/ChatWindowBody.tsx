@@ -57,7 +57,7 @@ const ChatWindowBody = () => {
   }
   if (!messages?.length) {
     return (
-      <div className="flex h-full items-center justify-center text-muted-foreground">
+      <div className="flex h-full items-center justify-center bg-background text-muted-foreground">
         {t("message.empty")}
       </div>
     );
@@ -86,7 +86,7 @@ const ChatWindowBody = () => {
   };
 
   return (
-    <div className="p-4 bg-primary-foreground h-full flex flex-col overflow-hidden">
+    <div className="p-4 bg-background h-full flex flex-col overflow-hidden">
       <div
         id="scollableDiv"
         ref={containerRef}

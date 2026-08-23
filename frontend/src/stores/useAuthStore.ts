@@ -63,7 +63,7 @@ export const useAuthStore = create<AuthState>()(
 
           useChatStore.getState().fetchConversations();
 
-          toast.success("Chào mừng bạn quay lại với Moji!");
+          toast.success("Chào mừng bạn quay lại với CirMin!");
         } catch (error) {
           console.log(error);
           throw error;

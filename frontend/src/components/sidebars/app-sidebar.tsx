@@ -34,7 +34,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <div className="rounded-xl bg-gradient-primary p-2.5 shadow-sm">
           <div className="flex items-center justify-between gap-2">
             <h1 className="px-1 text-xl font-bold tracking-tight text-white">
-              Moji
+              CirMin
             </h1>
 
             <div className="flex items-center gap-1.5">
