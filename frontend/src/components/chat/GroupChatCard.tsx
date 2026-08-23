@@ -1,7 +1,6 @@
 import { useAuthStore } from "@/stores/useAuthStore";
 import { useChatStore } from "@/stores/useChatStore";
 import type { Conversation } from "@/types/chat";
-import React from "react";
 import ChatCard from "./ChatCard";
 import UnreadCountBadge from "./UnreadCountBadge";
 import GroupChatAvatar from "./GroupChatAvatar";

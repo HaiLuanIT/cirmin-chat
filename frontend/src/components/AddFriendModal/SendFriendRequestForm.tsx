@@ -19,7 +19,7 @@ interface SendFriendRequestProps {
   loading: boolean;
   searchedUsername: string;
   searchedDisplayName: string;
-  searchedAvataUrl: string;
+  searchedAvataUrl?: string | null;
   errors?: FieldErrors<IFromValues> | null;
   onSubmit?: (e?: React.FormEvent<HTMLFormElement>) => void;
   onBack: () => void;
@@ -118,8 +118,8 @@ const SendFriendRequestForm = ({
       </div>
 
       {/* Action Buttons */}
-      {errors.root?.server && (
-        <p className="error-message">{errors.root.server.message}</p>
+      {errors?.root?.server && (
+        <p className="error-message">{errors?.root.server.message}</p>
       )}
       <DialogFooter className="gap-2 sm:gap-2 sm:flex-row border-t-0 bg-transparent p-0 mx-0 mb-0 pt-1">
         <Button

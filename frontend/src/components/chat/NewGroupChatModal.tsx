@@ -9,7 +9,7 @@ import {
   DialogTrigger,
 } from "../ui/dialog";
 import { Button } from "../ui/button";
-import { User, UserPlus, Users } from "lucide-react";
+import { UserPlus, Users } from "lucide-react";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import type { Friend } from "@/types/user";
@@ -18,7 +18,7 @@ import SelectedUsersList from "../newGroupChat/SelectedUsersList";
 import { toast } from "sonner";
 import { useChatStore } from "@/stores/useChatStore";
 import { useTranslation } from "react-i18next";
-import { getApiErrorMessage, translateApiErrorCode } from "@/lib/api-error";
+import { getApiErrorMessage } from "@/lib/api-error";
 
 const NewGroupChatModal = () => {
   const [groupName, setGroupName] = useState("");

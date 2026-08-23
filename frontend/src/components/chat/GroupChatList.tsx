@@ -1,5 +1,4 @@
 import { useChatStore } from "@/stores/useChatStore";
-import React from "react";
 import GroupChatCard from "./GroupChatCard";
 
 const GroupChatList = () => {

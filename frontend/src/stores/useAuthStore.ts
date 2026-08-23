@@ -4,7 +4,6 @@ import { authService } from "../services/authService";
 import type { AuthState } from "../types/store";
 import { persist } from "zustand/middleware";
 import { useChatStore } from "./useChatStore";
-import { userService } from "@/services/userService";
 
 let refreshPromise: Promise<void> | null = null;
 export const useAuthStore = create<AuthState>()(

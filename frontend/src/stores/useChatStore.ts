@@ -204,7 +204,7 @@ export const useChatStore = create<ChatState>()(
               ...c,
               unreadCount: 0,
               members: c.members.map((member) =>
-                member.userId === user.id
+                member.userId === user?.id
                   ? {
                       ...member,
                       lastMessageId: latestMessage?.id ?? member?.lastMessageId,

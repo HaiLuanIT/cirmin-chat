@@ -1,4 +1,3 @@
-import React from "react";
 import { SidebarInset } from "../ui/sidebar";
 import { useTranslation } from "react-i18next";
 
