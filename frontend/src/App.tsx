@@ -13,7 +13,7 @@ function App() {
 
   useEffect(() => {
     setTheme(isDark);
-  }, [isDark]);
+  }, [isDark, setTheme]);
 
   useSignalR();
   return (

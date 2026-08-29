@@ -13,7 +13,7 @@ export const useSignalR = () => {
   const updateLastMessage = useChatStore((s) => s.updateLastMessage);
   const addConversation = useChatStore((s) => s.addConversation);
   const token = useAuthStore((s) => s.accessToken);
-  const { user } = useAuthStore();
+  const userId = useAuthStore((s) => s.user?.id);
   const {
     incrementUnreadCount,
     clearUnreadCount,
@@ -39,7 +39,7 @@ export const useSignalR = () => {
       addMessage(messageResponse);
       updateLastMessage(messageResponse);
 
-      if (messageResponse?.sender?.senderId !== user?.id) {
+      if (messageResponse?.sender?.senderId !== userId) {
         if (currentActiveId === messageResponse?.conversationId) {
           connection
             .invoke("MarkConversationAsRead", messageResponse?.conversationId)
@@ -70,7 +70,7 @@ export const useSignalR = () => {
     };
 
     const handleSessionRevoked = async () => {
-      if (!user) return;
+      if (!userId) return;
       useAuthStore.getState().signOut();
       signalRService.stopConnection();
     };
@@ -102,9 +102,14 @@ export const useSignalR = () => {
     };
   }, [
     token,
-    user?.id,
+    userId,
+    addConversation,
+    addMessage,
+    clearUnreadCount,
+    incrementUnreadCount,
     setOnlineUsers,
     setStatusUser,
+    updateLastMessage,
     updateMemberSeenConcurrently,
   ]);
 };

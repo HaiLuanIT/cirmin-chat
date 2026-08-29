@@ -16,8 +16,8 @@ const SearchUserList = ({
   onSelectUser,
   onChangePage,
 }: SearchUserListProps) => {
-  if (result?.items?.length === 0) return null;
   const { t } = useTranslation("common");
+  if (result?.items?.length === 0) return null;
 
   return (
     <div className="space-y-3">

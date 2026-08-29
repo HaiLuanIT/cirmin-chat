@@ -7,6 +7,10 @@ import data from "@emoji-mart/data";
 interface EmojiPickerProps {
   onChange: (value: string) => void;
 }
+
+interface EmojiSelection {
+  native: string;
+}
 const EmojiPicker = ({ onChange }: EmojiPickerProps) => {
   const { isDark } = useThemeStore();
 
@@ -17,15 +21,18 @@ const EmojiPicker = ({ onChange }: EmojiPickerProps) => {
       </PopoverTrigger>
 
       <PopoverContent
-        side="right"
-        sideOffset={40}
-        className="p-0 bg-transparent border-none shadow-none drop-shadow-none mb-12"
+        side="top"
+        align="end"
+        sideOffset={12}
+        collisionPadding={8}
+        className="mb-0 w-auto max-w-[calc(100vw-1rem)] overflow-hidden border-none bg-transparent p-0 shadow-none drop-shadow-none"
       >
         <Picker
           theme={isDark ? "dark" : "light"}
           data={data}
-          onEmojiSelect={(emoji: any) => onChange(emoji.native)}
+          onEmojiSelect={(emoji: EmojiSelection) => onChange(emoji.native)}
           emojiSize={24}
+          perLine={7}
         />
       </PopoverContent>
     </Popover>

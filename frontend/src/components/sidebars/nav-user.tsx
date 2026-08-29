@@ -12,8 +12,8 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  useSidebar,
 } from "@/components/ui/sidebar";
+import { useSidebar } from "@/components/ui/sidebar-context";
 import type { User } from "@/types/user";
 import { ChevronsUpDownIcon, UserIcon, Bell } from "lucide-react";
 import SignOut from "../auth/signout";

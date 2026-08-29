@@ -32,6 +32,9 @@ const ProtectedRoute = () => {
       }
     };
     init();
+    return () => {
+      active = false;
+    };
   }, []);
 
   if (starting || loading) {

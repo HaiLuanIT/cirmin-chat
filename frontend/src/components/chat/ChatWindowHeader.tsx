@@ -32,15 +32,15 @@ const ChatWindowHeader = ({ chat }: { chat?: Conversation }) => {
   }
 
   return (
-    <header className="sticky top-0 z-10 px-3 py-2 flex items-center bg-background">
-      <div className="flex items-center gap-2 w-full">
+    <header className="sticky top-0 z-10 flex shrink-0 items-center bg-background px-2 py-2 sm:px-3">
+      <div className="flex min-w-0 w-full items-center gap-1 sm:gap-2">
         <SidebarTrigger className="-ml-1 text-foreground" />
         <Separator
           orientation="vertical"
           className="mr-2 data-[orientation=vertical]:h-4"
         />
-        <div className="p-2 w-full flex items-center gap-3">
-          <div className="relative">
+        <div className="flex min-w-0 flex-1 items-center gap-3 p-2">
+          <div className="relative shrink-0">
             {chat.isGroup ? (
               <GroupChatAvatar participants={chat.members} type="sidebar" />
             ) : otherUser ? (
@@ -59,7 +59,7 @@ const ChatWindowHeader = ({ chat }: { chat?: Conversation }) => {
             )}
           </div>
 
-          <h2 className="font-semibold text-foreground">
+          <h2 className="min-w-0 truncate font-semibold text-foreground">
             {!chat.isGroup ? otherUser?.displayName : chat.name}
           </h2>
         </div>
