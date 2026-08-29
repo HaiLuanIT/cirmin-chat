@@ -13,7 +13,7 @@ import { getApiProblemDetails, translateApiErrorCode } from "@/lib/api-error";
 import type { TFunction } from "i18next";
 import { useMemo } from "react";
 
-export function createSignUpSchema(t: TFunction) {
+function createSignUpSchema(t: TFunction) {
   return z.object({
     firstName: z.string().min(1, t("VALIDATION.REQUIRED", { ns: "errors" })),
     lastName: z.string().min(1, t("VALIDATION.REQUIRED", { ns: "errors" })),
@@ -113,8 +113,8 @@ export function SignupForm({
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className="overflow-hidden p-0 border-border">
         <CardContent className="grid p-0 md:grid-cols-2">
-          <form className="p-6 md:p-8" onSubmit={handleSubmit(onSubmit)}>
-            <div className="flex flex-col gap-6">
+          <form className="p-4 sm:p-6 md:p-8" onSubmit={handleSubmit(onSubmit)}>
+            <div className="flex flex-col gap-5 sm:gap-6">
               {/* header - logo */}
               <div className="flex flex-col items-center text-center gap-2">
                 <a href="/" className="mx-auto block w-fit text-center">
@@ -127,7 +127,7 @@ export function SignupForm({
               </div>
 
               {/* họ và tên */}
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 min-[380px]:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="firstName" className="block text-sm">
                     {t("fields.firstName")}

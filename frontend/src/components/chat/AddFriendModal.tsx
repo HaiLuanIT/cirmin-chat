@@ -9,7 +9,7 @@ import {
 import { UserPlus } from "lucide-react";
 import type { SearchUser, SearchUserResponse } from "@/types/user";
 import { useFriendStore } from "@/stores/useFriendStore";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import {
@@ -40,17 +40,17 @@ const AddFriendModal = () => {
   const {
     register,
     handleSubmit,
-    watch,
     reset,
     setValue,
     setError,
     clearErrors,
+    control,
     formState: { errors },
   } = useForm<IFromValues>({
     defaultValues: { username: "", message: "" },
   });
 
-  const usernameValue = watch("username");
+  const usernameValue = useWatch({ control, name: "username" });
 
   const isFound =
     searchResult === null ? null : searchResult?.items?.length > 0;

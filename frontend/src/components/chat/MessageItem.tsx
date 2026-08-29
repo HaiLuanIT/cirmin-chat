@@ -56,13 +56,13 @@ const MessageItem = ({
 
       <div
         className={cn(
-          "flex gap-2 message-bounce mt-1",
+          "flex min-w-0 gap-2 message-bounce mt-1",
           message.isOwn ? "justify-end" : "justify-start",
         )}
       >
         {/* avatar */}
         {!message.isOwn && (
-          <div className="w-8">
+          <div className="w-8 shrink-0">
             {isGroupBreak && (
               <UserAvatar
                 type="chat"
@@ -75,7 +75,7 @@ const MessageItem = ({
         {/* message */}
         <div
           className={cn(
-            "max-w-xs lg:max-w-md space-y-1 flex flex-col",
+            "flex max-w-[calc(100%-2.5rem)] min-w-0 flex-col space-y-1 sm:max-w-xs lg:max-w-md",
             message.isOwn ? "items-end" : "items-start",
           )}
         >
@@ -87,7 +87,7 @@ const MessageItem = ({
                 : "chat-bubble-received",
             )}
           >
-            <p className="text-sm leading-relaxed break-words">
+            <p className="break-words text-sm leading-relaxed [overflow-wrap:anywhere]">
               {message.content}
             </p>
           </Card>

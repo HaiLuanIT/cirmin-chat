@@ -16,8 +16,8 @@ const ProfileCard = ({ user }: ProfileCardProps) => {
   const userIsOnline = isOnline(user.id);
   const displayedBio = user.bio || "Default bio ^.^";
   return (
-    <Card className="overflow-hidden p-0 h-52 bg-gradient-primary">
-      <CardContent className="mt-20 pb-8 flex flex-col sm:flex-row items-center sm:items-end gap-6">
+    <Card className="min-h-64 overflow-hidden bg-gradient-primary p-0 sm:h-52 sm:min-h-0">
+      <CardContent className="mt-10 flex flex-col items-center gap-4 pb-6 sm:mt-20 sm:flex-row sm:items-end sm:gap-6 sm:pb-8">
         <div className="relative">
           <UserAvatar
             type="profile"

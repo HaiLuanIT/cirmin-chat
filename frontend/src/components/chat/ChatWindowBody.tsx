@@ -53,7 +53,7 @@ const ChatWindowBody = () => {
         container.scrollTop = scrollTop;
       });
     }
-  }, [messages.length]);
+  }, [key, messages.length]);
 
   if (!selectedConversation) {
     return <ChatWelcomeScreen />;
@@ -89,12 +89,12 @@ const ChatWindowBody = () => {
   };
 
   return (
-    <div className="p-4 bg-background h-full flex flex-col overflow-hidden">
+    <div className="flex h-full min-h-0 flex-col overflow-hidden bg-background p-2 sm:p-4">
       <div
         id="scollableDiv"
         ref={containerRef}
         onScroll={handleScrollSave}
-        className="flex overflow-y-auto overflow-x-hidden beautiful-scrollbar flex-col-reverse"
+        className="beautiful-scrollbar flex min-h-0 flex-1 flex-col-reverse overflow-y-auto overflow-x-hidden"
       >
         <div ref={messageEndRef}></div>
         <InfiniteScroll

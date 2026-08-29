@@ -45,11 +45,7 @@ export const useUserStore = create<UserState>(() => ({
     }
   },
   changePassword: async (oldPassword, newPassword) => {
-    try {
-      await userService.changePassword(oldPassword, newPassword);
-      toast.success("Thay đổi mật khẩu thành công. Vui lòng đăng nhập lại");
-    } catch (error) {
-      throw error;
-    }
+    await userService.changePassword(oldPassword, newPassword);
+    toast.success("Thay đổi mật khẩu thành công. Vui lòng đăng nhập lại");
   },
 }));
