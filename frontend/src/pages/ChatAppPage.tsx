@@ -4,9 +4,9 @@ import ChatWindowLayout from "../components/chat/ChatWindowLayout";
 
 const ChatAppPage = () => {
   return (
-    <SidebarProvider>
+    <SidebarProvider className="h-svh min-h-0 overflow-hidden">
       <AppSidebar />
-      <div className="flex w-full h-screen p-2">
+      <div className="flex h-full min-w-0 flex-1 p-0 md:p-2">
         <ChatWindowLayout />
       </div>
     </SidebarProvider>

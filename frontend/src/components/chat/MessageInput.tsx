@@ -39,15 +39,16 @@ const MessageInput = () => {
     }
   };
   return (
-    <div className="flex items-center gap-2 p-3 min-h[56px] bg-background">
+    <div className="flex min-h-14 shrink-0 items-center gap-1.5 bg-background px-2 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:gap-2 sm:p-3">
       <Button
         variant="ghost"
         size="icon"
-        className="hover:bg-primary/10 transition-smooth"
+        aria-label="Attach image"
+        className="shrink-0 hover:bg-primary/10 transition-smooth"
       >
         <ImagePlus className="size-4" />
       </Button>
-      <div className="flex-1 relative">
+      <div className="relative min-w-0 flex-1">
         <Input
           onKeyDown={handleKeyPress}
           value={value}
@@ -71,6 +72,8 @@ const MessageInput = () => {
         </div>
       </div>
       <Button
+        size="icon"
+        aria-label={t("message.send", { defaultValue: "Send message" })}
         className="bg-gradient-chat hover:shadow-glow transition-smooth hover:scale-105"
         onClick={onSendMessage}
         disabled={!value.trim() === true}

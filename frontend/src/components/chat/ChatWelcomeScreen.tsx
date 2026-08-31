@@ -1,19 +1,24 @@
-import { SidebarInset } from "../ui/sidebar";
+import { SidebarInset, SidebarTrigger } from "../ui/sidebar";
 import { useTranslation } from "react-i18next";
 
 const ChatWelcomeScreen = () => {
   const { t } = useTranslation("chat");
   return (
-    <SidebarInset className="flex w-full h-full bg-transparent">
-      <div className="flex bg-background rounded-2xl flex-1 items-center justify-center">
-        <div className="text-center">
-          <div className="size-24 mx-auto bg-gradient-chat rounded-full flex items-center justify-center shadow-glow pulse-ring mb-5">
+    <SidebarInset className="flex h-full min-w-0 flex-col bg-transparent">
+      <header className="flex h-14 shrink-0 items-center px-3">
+        <SidebarTrigger className="text-foreground" />
+      </header>
+      <div className="flex flex-1 items-center justify-center rounded-none bg-background px-5 md:rounded-2xl">
+        <div className="max-w-sm text-center">
+          <div className="mx-auto mb-5 flex size-20 items-center justify-center rounded-full bg-gradient-chat shadow-glow pulse-ring sm:size-24">
             <span className="text-3xl">💭</span>
           </div>
-          <h2 className="text-2xl font-bold mb-2 bg-gradient-chat bg-clip-text text-transparent">
+          <h2 className="mb-2 bg-gradient-chat bg-clip-text text-xl font-bold text-transparent sm:text-2xl">
             {t("welcome.title")}
           </h2>
-          <p className="text-muted-foreground">{t("welcome.description")}</p>
+          <p className="text-sm text-muted-foreground sm:text-base">
+            {t("welcome.description")}
+          </p>
         </div>
       </div>
     </SidebarInset>
