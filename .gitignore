@@ -1,0 +1,15 @@
+# IDE
+.idea/
+**/.idea/
+.vscode/
+
+# Local deployment metadata
+frontend/.vercel/
+
+# Environment variables
+backend/.env*
+!backend/.env.example
+
+# OS files
+.DS_Store
+Thumbs.db
