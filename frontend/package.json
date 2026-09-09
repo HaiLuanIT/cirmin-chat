@@ -12,7 +12,7 @@
   "dependencies": {
     "@emoji-mart/data": "^1.2.1",
     "@fontsource-variable/geist": "^5.2.9",
-    "@hookform/resolvers": "^5.4.0",
+    "@hookform/resolvers": "5.4.0",
     "@microsoft/signalr": "^10.0.0",
     "@tailwindcss/vite": "^4.3.0",
     "axios": "^1.17.0",
