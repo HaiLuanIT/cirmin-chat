@@ -6,7 +6,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CirMin.BusinessLogic", "src
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CirMin.API", "src\CirMin.API\CirMin.API.csproj", "{CA6D2AEB-CF92-45B6-B42F-4765F004C0BD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CirMin.Contracts", "CirMin.Contracts\CirMin.Contracts.csproj", "{C002D583-FEFB-4E04-AE88-A07FC824F644}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CirMin.Contracts", "src\CirMin.Contracts\CirMin.Contracts.csproj", "{C002D583-FEFB-4E04-AE88-A07FC824F644}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CirMin.Contracts.Tests", "tests\CirMin.Contracts.Tests\CirMin.Contracts.Tests.csproj", "{1C08DAB8-B160-400C-974B-15E113FEF12E}"
 EndProject

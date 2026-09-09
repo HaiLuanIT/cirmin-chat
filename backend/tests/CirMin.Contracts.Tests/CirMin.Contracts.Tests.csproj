@@ -19,7 +19,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\CirMin.Contracts\CirMin.Contracts.csproj" />
+        <ProjectReference Include="..\..\src\CirMin.Contracts\CirMin.Contracts.csproj" />
     </ItemGroup>
 
 </Project>
