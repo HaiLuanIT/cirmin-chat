@@ -66,10 +66,10 @@ jobs:
           dotnet-version: 9.0.x
           
       - name: Restore dependencies
-        run: dotnet restore backend/Cirmin.sln
+        run: dotnet restore backend/CirMin.sln
         
       - name: Build backend
-        run: dotnet build backend/Cirmin.sln --configuration Release --no-restore
+        run: dotnet build backend/CirMin.sln --configuration Release --no-restore
         
       - name: Test backend
-        run: dotnet test backend/Cirmin.sln --configuration Release --no-build --no-restore --logger "console;verbosity=minimal"
+        run: dotnet test backend/CirMin.sln --configuration Release --no-build --no-restore --logger "console;verbosity=minimal"
