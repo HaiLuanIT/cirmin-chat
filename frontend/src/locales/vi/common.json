@@ -1,0 +1,58 @@
+{
+  "actions": {
+    "save": "Lưu thay đổi",
+    "saving": "Đang lưu"
+  },
+  "states": {
+    "loading": "Đang tải...",
+    "createLoading": "Đang tạo..."
+  },
+  "language": {
+    "selectLabel": "Chọn ngôn ngữ",
+    "options": {
+      "vi": "Tiếng Việt",
+      "en": "Tiếng Anh"
+    }
+  },
+  "sidebar": {
+    "groups": {
+      "label": "nhóm chat",
+      "form": {
+        "title": "tạo nhóm chat mới",
+        "nameGroup": "Tên nhóm",
+        "nameGroupPlaceholder": "Gõ tên nhóm vào đây...",
+        "invite": "Mời thành viên",
+        "invitePlaceholder": "Tìm theo tên hiển thị...",
+        "submit": "Tạo nhóm"
+      }
+    },
+    "directs": {
+      "label": "bạn bè",
+      "form": {
+        "title": "Kết bạn",
+        "searchField": "tìm kiếm theo username",
+        "searchPlaceholder": "Nhập tên tài khoản (ví dụ: alex_cirmin)..",
+        "submit": "Tìm kiếm",
+        "cancel": "Hủy"
+      }
+    },
+    "navUser": {
+      "profileLabel": "Tài khoản",
+      "notifyLabel": "Thông báo"
+    },
+    "newMessage": {
+      "label": "Gửi tin nhắn mới",
+      "dialog": {
+        "title": "Bắt đầu hội thoại mới",
+        "label": "Danh sách bạn bè",
+        "loading": "Đang tải danh sách bạn bè...",
+        "fallback": "Chưa có bạn bè. Hãy kết bạn để bắt đầu chat."
+      }
+    }
+  },
+  "paginate": {
+    "page": "Trang",
+    "prev": "Trước",
+    "next": "Sau"
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "actions": {
+    "save": "Save",
+    "saving": "Saving..."
+  },
+  "states": {
+    "loading": "Loading...",
+    "createLoading": "Creating..."
+  },
+  "language": {
+    "selectLabel": "Choose language",
+    "options": {
+      "vi": "Vietnamese",
+      "en": "English"
+    }
+  },
+  "sidebar": {
+    "groups": {
+      "label": "Group chats",
+      "form": {
+        "title": "Create a new group",
+        "nameGroup": "Group name",
+        "nameGroupPlaceholder": "Enter a group name...",
+        "invite": "Invite members",
+        "invitePlaceholder": "Search by display name...",
+        "submit": "Create group"
+      }
+    },
+    "directs": {
+      "label": "Friends",
+      "form": {
+        "title": "Add Friend",
+        "searchField": "Search by username",
+        "searchPlaceholder": "Enter a username (e.g., cirmin)..",
+        "submit": "Search",
+        "cancel": "Cancel"
+      }
+    },
+    "navUser": {
+      "profileLabel": "Account",
+      "notifyLabel": "Notification"
+    },
+    "newMessage": {
+      "label": "New Message",
+      "dialog": {
+        "title": "Start a New Conversation",
+        "label": "Friends List",
+        "loading": "Loading friends list...",
+        "fallback": "No friends yet. Add some friends to start chatting."
+      }
+    }
+  },
+  "paginate": {
+    "page": "Page",
+    "prev": "Previous",
+    "next": "Next"
+  }
+}

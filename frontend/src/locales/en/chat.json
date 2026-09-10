@@ -1,0 +1,23 @@
+{
+  "welcome": {
+    "title": "Welcome to CirMin!",
+    "description": "Select a conversation to start chatting."
+  },
+  "message": {
+    "empty": "There are no messages in this conversation yet.",
+    "placeHolder": "Type a message...",
+    "status": {
+      "delivered": "Delivered",
+      "seen": "Seen",
+      "seenBy": "Seen by {{name}}"
+    }
+  },
+  "conversations": {
+    "direct": {
+      "notFound": "No conversation found with this friend."
+    },
+    "group": {
+      "member": "members"
+    }
+  }
+}

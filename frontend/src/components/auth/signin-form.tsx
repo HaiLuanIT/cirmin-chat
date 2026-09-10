@@ -1,0 +1,139 @@
+import { Label } from "../ui/label";
+import { Input } from "../ui/input";
+import { Card, CardContent } from "../ui/card";
+import { cn } from "../../lib/utils";
+import { Button } from "../ui/button";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useAuthStore } from "../../stores/useAuthStore";
+import { useNavigate } from "react-router";
+import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
+import { useMemo } from "react";
+import { getApiProblemDetails, translateApiErrorCode } from "@/lib/api-error";
+
+function createSignInSchema(t: TFunction) {
+  return z.object({
+    username: z.string().nonempty(t("VALIDATION.REQUIRED", { ns: "errors" })),
+    password: z.string().nonempty(t("VALIDATION.REQUIRED", { ns: "errors" })),
+  });
+}
+
+type SignInFormValues = z.infer<ReturnType<typeof createSignInSchema>>;
+export function SigninForm({
+  className,
+  ...props
+}: React.ComponentProps<"div">) {
+  const { signIn } = useAuthStore();
+  const navigate = useNavigate();
+  const { t } = useTranslation(["auth", "errors"]);
+
+  const signInSchema = useMemo(() => createSignInSchema(t), [t]);
+  const {
+    register,
+    handleSubmit,
+    setError,
+    clearErrors,
+    formState: { errors, isSubmitting },
+  } = useForm<SignInFormValues>({
+    resolver: zodResolver(signInSchema),
+  });
+  const onSubmit = async (data: SignInFormValues) => {
+    clearErrors();
+    try {
+      const { username, password } = data;
+      await signIn(username, password);
+      navigate("/");
+    } catch (error) {
+      const problem = getApiProblemDetails(error);
+
+      setError("root.server", {
+        type: "server",
+        message: problem
+          ? translateApiErrorCode(problem.code, problem.params)
+          : translateApiErrorCode("SYSTEM.INTERNAL_ERROR"),
+      });
+    }
+  };
+
+  return (
+    <div className={cn("flex flex-col gap-6", className)} {...props}>
+      <Card className="overflow-hidden p-0 border-border">
+        <CardContent className="grid p-0 md:grid-cols-2">
+          <form className="p-4 sm:p-6 md:p-8" onSubmit={handleSubmit(onSubmit)}>
+            <div className="flex flex-col gap-6">
+              {/* header - logo */}
+              <div className="flex flex-col items-center text-center gap-2">
+                <a href="/" className="mx-auto block w-fit text-center">
+                  <img src="/logo.svg" alt="logo" />
+                </a>
+                <h1 className="text-2xl font-bold">{t("signIn.title")}</h1>
+                <p className="text-muted-foreground text-balance">
+                  {t("signIn.description")}
+                </p>
+              </div>
+
+              {/* username */}
+              <div className="flex flex-col gap-3">
+                <Label htmlFor="username" className="block text-sm">
+                  {t("fields.username")}
+                </Label>
+                <Input
+                  type="text"
+                  id="username"
+                  placeholder="cirmin"
+                  {...register("username")}
+                />
+                {errors.username && (
+                  <p className="error-message">{errors.username.message}</p>
+                )}
+              </div>
+              {/* password */}
+              <div className="flex flex-col gap-3">
+                <Label htmlFor="password" className="block text-sm">
+                  {t("fields.password")}
+                </Label>
+                <Input
+                  type="password"
+                  id="password"
+                  {...register("password")}
+                />
+                {errors.password && (
+                  <p className="error-message">{errors.password.message}</p>
+                )}
+              </div>
+              {errors.root?.server && (
+                <p className="error-message text-center">
+                  {errors.root.server.message}
+                </p>
+              )}
+              {/* nút đăng nhập */}
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
+                {t("signIn.submit")}
+              </Button>
+
+              <div className="text-center text-sm">
+                {t("signIn.switchPrompt")}{" "}
+                <a href="/signup" className="underline underline-offset-4">
+                  {t("signUp.submit")}
+                </a>
+              </div>
+            </div>
+          </form>
+          <div className="relative hidden bg-[#F8FAFC] dark:bg-slate-800 md:block">
+            <img
+              src="/placeholder.svg"
+              alt="Image"
+              className="absolute top-1/2 -translate-y-1/2 object-cover"
+            />
+          </div>
+        </CardContent>
+      </Card>
+      <div className=" text-xs text-balance px-6 text-center *:[a]:hover:text-primary text-muted-foreground *:[a]:underline *:[a]:underline-offset-4">
+        {t("termsAgreement.prefix")} <a href="#">{t("termsAgreement.terms")}</a>{" "}
+        {t("termsAgreement.link")} <a href="#">{t("termsAgreement.privacy")}</a>
+      </div>
+    </div>
+  );
+}

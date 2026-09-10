@@ -1,0 +1,33 @@
+using CirMin.DataAccess.Entities;
+using CirMin.DataAccess.Models;
+using CirMin.Contracts.Models.Paginations.OffsetPagination;
+
+namespace CirMin.DataAccess.Repositories;
+
+public interface IUserRepository
+{
+    void Add(User user);
+
+    Task<User?> FindByUsernameAsync(string username);
+
+    Task<User?> FindByIdAsync(Guid id, CancellationToken cancellationToken);
+
+    Task<bool> IsEmailUniqueAsync(string email);
+
+    Task<OffsetPagingResult<UserSearchProjection>> SearchUserByUsername(Guid currentUserId, string username,
+        int pageNumber,
+        int pageSize);
+
+    Task<AvatarUpdateSnapshot?> GetAvatarUpdateSnapshot(Guid userId, CancellationToken cancellationToken);
+
+    Task<(UpdatedResult, DateTimeOffset)> TryUpdateAvatar(Guid userId, uint expectedVersion, string newAvatarUrl,
+        string newAvatarId, CancellationToken cancellationToken);
+
+    Task<(UpdatedResult, UpdateUserInfoSnapShot?)> UpdateUserInfo(User user, string? newDisplayName, string? newBio,
+        string? newEmail,
+        CancellationToken cancellationToken);
+
+    Task<User?> GetTrackedUser(Guid userId, CancellationToken cancellationToken);
+
+    Task<int?> GetAuthVersion(Guid userId, CancellationToken cancellationToken);
+}
