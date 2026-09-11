@@ -97,7 +97,7 @@ public class ConversationRepository : IConversationRepository
         List<Guid> currentDirectConversationIds)
     {
         var result = await _context.Conversations
-            .Where(conversation => !conversation.IsGroup
+            .Where(conversation => !conversation.IsGroup && currentDirectConversationIds.Contains(conversation.Id)
                                    && conversation.Members.Any(member => userIds.Contains(member.UserId)))
             .SelectMany(conversation => conversation.Members
                 .Where(member => userIds.Contains(member.UserId))

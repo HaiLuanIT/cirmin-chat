@@ -65,7 +65,16 @@ public class FriendShipService : IFriendShipService
         if (friendRequest == null) throw new CirMinNotFoundException(ErrorCodes.Friendship.FriendRequestNotFound);
 
         //check permission with friend request
+        //not be requester
         if (friendRequest.RequesterId == currentUserId)
+            throw new CirMinForbiddenException(ErrorCodes.Auth.Forbidden);
+
+        //must be receiver
+        var receiverId = friendRequest.RequesterId == friendRequest.UserLeftId
+            ? friendRequest.UserRightId
+            : friendRequest.UserLeftId;
+
+        if (receiverId != currentUserId)
             throw new CirMinForbiddenException(ErrorCodes.Auth.Forbidden);
 
         if (friendRequest.Status != FriendShipStatus.Pending)

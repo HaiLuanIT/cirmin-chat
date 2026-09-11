@@ -67,8 +67,15 @@ public class MessageService : IMessageService
             //update lastmessage and unreadcount of member in conversations, instead of sender
             foreach (var member in conversation.Members)
             {
-                member.LastSeenMessageId = message.Id;
-                if (member.UserId != senderId) member.UnreadCount += 1;
+
+                if (member.UserId != senderId)
+                {
+                    member.UnreadCount += 1;
+                }
+                else
+                {
+                    member.LastSeenMessageId = message.Id;
+                }
             }
 
             _conversationRepository.Update(conversation);
