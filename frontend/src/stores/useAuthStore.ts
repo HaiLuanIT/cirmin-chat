@@ -73,11 +73,16 @@ export const useAuthStore = create<AuthState>()(
 
       signOut: async () => {
         try {
-          get().clearState();
+          await authService.signOut();
+
           toast.success("Đăng xuất thành công!");
         } catch (error) {
           console.log(error);
-          toast.error("Đăng xuất không thành công");
+          toast.warning(
+            "Đã đăng xuất khỏi thiết bị, nhưng không thể kết nối máy chủ.",
+          );
+        } finally {
+          get().clearState();
         }
       },
       fetchMe: async () => {
